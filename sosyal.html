@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<title>Sosyal Bilgiler 1. Yazılı</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+/* Layout: one study card at a time on a map-paper background; a slim progress strip on top, topic chips to start, a results sheet at the end. */
+:root{
+  --paper:#eef5f4; --card:#ffffff; --sunk:#e1ecea; --line:#c9dbd8; --ink:#15302d; --mute:#557371;
+  --sea:#1f7a8c; --land:#e0a33a; --good:#2f9e5b; --bad:#d4553f; --good-bg:#e3f5ea; --bad-bg:#fbe7e3;
+  --display:'Baloo 2', 'Trebuchet MS', system-ui, sans-serif; --body:'Nunito', system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0f1c1b; --card:#162927; --sunk:#1d3432; --line:#2b4744; --ink:#e7f3f1; --mute:#9bb9b5;
+  --sea:#4cc2d6; --land:#f0b956; --good:#4fcf85; --bad:#ff7d68; --good-bg:#173a28; --bad-bg:#3d1f1a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0f1c1b; --card:#162927; --sunk:#1d3432; --line:#2b4744; --ink:#e7f3f1; --mute:#9bb9b5;
+  --sea:#4cc2d6; --land:#f0b956; --good:#4fcf85; --bad:#ff7d68; --good-bg:#173a28; --bad-bg:#3d1f1a; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:44px 44px;background-attachment:fixed}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--land);outline-offset:2px}
+.wrap{max-width:720px;margin:0 auto;padding-block:22px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:16px}
+header{display:flex;align-items:center;gap:12px}
+.badge{width:46px;height:46px;border-radius:12px;background:var(--sea);display:grid;place-items:center;flex:none}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(24px,5vw,32px);line-height:1.05;margin:0;text-wrap:balance}
+header p{margin:2px 0 0;color:var(--mute);font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:14px;box-shadow:0 6px 0 var(--sunk)}
+h2{font-family:var(--display);font-weight:800;font-size:22px;margin:0;line-height:1.15;text-wrap:balance}
+.mute{color:var(--mute)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:2px solid var(--line);background:var(--card);border-radius:999px;padding:8px 14px;cursor:pointer;font-weight:800}
+.chip[aria-pressed="true"]{border-color:var(--sea);background:var(--sea);color:var(--card)}
+.chip small{font-weight:600;opacity:.8}
+.btn{border:0;border-radius:14px;padding:13px 20px;font-weight:800;cursor:pointer;background:var(--sea);color:var(--card);font-size:17px}
+.btn.alt{background:var(--sunk);color:var(--ink)}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row .btn{flex:1;min-width:150px}
+.strip{display:flex;align-items:center;gap:12px}
+.bar{flex:1;height:10px;background:var(--sunk);border-radius:999px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--sea);border-radius:999px;transition:width .3s}
+.count{font-weight:800;font-variant-numeric:tabular-nums;color:var(--mute);font-size:14px;white-space:nowrap}
+.tag{align-self:flex-start;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--sea);background:var(--sunk);border-radius:999px;padding:3px 10px}
+.q{font-family:var(--display);font-weight:600;font-size:clamp(20px,4.4vw,24px);line-height:1.3;margin:0}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;border:2px solid var(--line);background:var(--card);border-radius:14px;padding:12px 14px;cursor:pointer;font-weight:600}
+.opt:hover:not([disabled]){border-color:var(--sea)}
+.opt b{flex:none;width:28px;height:28px;border-radius:8px;background:var(--sunk);display:grid;place-items:center;font-weight:800}
+.opt.right{border-color:var(--good);background:var(--good-bg)}.opt.right b{background:var(--good);color:var(--card)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-bg)}.opt.wrong b{background:var(--bad);color:var(--card)}
+.opt[disabled]{cursor:default}
+.why{border-radius:14px;padding:12px 14px;font-weight:600}
+.why.ok{background:var(--good-bg);border:1px solid var(--good)}
+.why.no{background:var(--bad-bg);border:1px solid var(--bad)}
+.why strong{display:block;font-family:var(--display);font-size:18px}
+.score{font-family:var(--display);font-weight:800;font-size:64px;line-height:1;color:var(--sea);font-variant-numeric:tabular-nums}
+.score small{font-size:24px;color:var(--mute)}
+.units{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.unit{background:var(--sunk);border-radius:12px;padding:12px}
+.unit b{display:block;font-variant-numeric:tabular-nums;font-size:20px}
+.review{display:flex;flex-direction:column;gap:10px}
+.rv{border-left:4px solid var(--bad);background:var(--sunk);border-radius:10px;padding:10px 12px;font-size:15px}
+.rv p{margin:2px 0 0}
+.rv .a{color:var(--good);font-weight:800}
+.best{font-size:14px;color:var(--mute)}
+footer{font-size:13px;color:var(--mute);text-align:center}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="badge" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="11" stroke="#fff" stroke-width="2.4"/><path d="M5 11c4 1 6-2 9-1s4 4 9 2M6 18c3-1 5 1 8 0s5-3 9-1" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></div>
+    <div><h1>Sosyal Bilgiler 1. Yazılı</h1><p>5. sınıf · 1. dönem · Çalışma testi</p></div>
+  </header>
+
+  <!-- start -->
+  <section class="card" id="start">
+    <h2>Hangi konuları çalışmak istersin?</h2>
+    <div class="chips" id="units"></div>
+    <div><div class="mute" style="font-weight:700;margin-bottom:6px">Kaç soru?</div><div class="chips" id="sizes"></div></div>
+    <div class="row"><button class="btn" id="go">Teste başla</button></div>
+    <p class="best" id="best"></p>
+  </section>
+
+  <!-- question -->
+  <section class="card" id="quiz" hidden>
+    <div class="strip"><div class="bar"><i id="bar"></i></div><span class="count" id="count">1 / 10</span></div>
+    <span class="tag" id="tag"></span>
+    <p class="q" id="q"></p>
+    <div class="opts" id="opts"></div>
+    <div class="why" id="why" hidden></div>
+    <div class="row"><button class="btn" id="next" hidden>Sonraki soru</button></div>
+  </section>
+
+  <!-- results -->
+  <section class="card" id="done" hidden>
+    <h2 id="doneTitle">Test bitti!</h2>
+    <div class="score" id="score">0<small> / 0</small></div>
+    <div class="units" id="byUnit"></div>
+    <div id="wrongWrap"><h2 style="font-size:19px">Yanlış yaptığın sorular</h2><div class="review" id="review"></div></div>
+    <div class="row"><button class="btn" id="retryWrong">Yanlışları tekrar çöz</button><button class="btn alt" id="again">Yeni test</button></div>
+  </section>
+
+  <footer>Sorular 5. sınıf Sosyal Bilgiler "Birlikte Yaşamak" ve "Evimiz Dünya" ünitelerine göre hazırlandı. Öğretmeninin işlediği konular farklı olabilir; ders kitabına da mutlaka göz at.</footer>
+</div>
+
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const UNITS={u1:'Birlikte Yaşamak',u2:'Evimiz Dünya'};
+// [unit, question, options, index of the right one, explanation]
+const TF=['Doğru','Yanlış'];
+const Q=[
+ ['u1','Aşağıdakilerden hangisi insanın doğduğu anda üyesi olduğu bir gruptur?',['Aile','Okul futbol takımı','Satranç kulübü','Arkadaş grubu'],0,'Aileye doğuştan katılırız. Takım, kulüp ve arkadaş grubuna ise sonradan, kendi isteğimizle katılırız.'],
+ ['u1','Ali evde abi, okulda öğrenci, futbol takımında kaptandır. Bu durum neyi gösterir?',['Bir kişinin farklı gruplarda farklı rolleri olabileceğini','Rollerin hiç değişmediğini','Herkesin aynı role sahip olduğunu','Grupların kurallarının olmadığını'],0,'Aynı kişi içinde bulunduğu her grupta farklı bir rol üstlenebilir: evde abi, okulda öğrenci, takımda kaptan.'],
+ ['u1','Aşağıdakilerden hangisi sınıf başkanının sorumluluklarından biridir?',['Öğretmen sınıfta yokken düzenin korunmasına yardım etmek','Arkadaşlarına not vermek','Ders programını tek başına değiştirmek','Okul müdürünü seçmek'],0,'Sınıf başkanı sınıfın düzenine yardımcı olur ve arkadaşlarını temsil eder. Not vermek ya da programı değiştirmek onun görevi değildir.'],
+ ['u1','Aşağıdakilerden hangisi bir hak değil, bir sorumluluktur?',['Eğitim almak','Oyun oynamak','Okul eşyalarını özenle kullanmak','Sağlıklı bir ortamda yaşamak'],2,'Eğitim, oyun ve sağlıklı çevre haklarımızdır. Okul eşyalarına özen göstermek ise yerine getirmemiz gereken bir sorumluluktur.'],
+ ['u1','Grupların kurallarının olmasının en önemli nedeni nedir?',['Grupta düzeni sağlamak ve birlikte yaşamayı kolaylaştırmak','Üyeleri cezalandırmak','Grubu küçültmek','Sadece liderin işini kolaylaştırmak'],0,'Kurallar herkesin haklarını korur, düzeni sağlar ve birlikte uyum içinde yaşamamıza yardım eder.'],
+ ['u1','Aşağıdakilerden hangisi rollerin zamanla değişebileceğine örnektir?',['Öğrenciyken büyüyünce öğretmen olmak','Her gün okula gitmek','Kahvaltı yapmak','Ödev yapmak'],0,'Bugün öğrenci olan biri ileride öğretmen, anne ya da baba olabilir. Yaşla birlikte rollerimiz değişir.'],
+ ['u1','Aşağıdakilerden hangisi kültürel bir özellik değildir?',['Düğün gelenekleri','Yöresel yemekler','Halk oyunları','Göz rengi'],3,'Göz rengi doğuştan gelen fiziksel bir özelliktir. Düğünler, yemekler ve halk oyunları ise kültürümüzün parçasıdır.'],
+ ['u1','Farklı kültürlere saygı gösterilen bir toplumda ne olur?',['Barış ve hoşgörü artar','Kavgalar çoğalır','İnsanlar birbirinden uzaklaşır','Gelenekler tamamen yok olur'],0,'Farklılıklara saygı, insanların bir arada huzur içinde yaşamasını sağlar.'],
+ ['u1','"Kendini başkasının yerine koyarak onun ne hissettiğini anlamaya çalışmak" neyin tanımıdır?',['Empati','Rekabet','Kıskançlık','Sorumluluk'],0,'Empati, karşımızdakinin duygu ve düşüncelerini onun gözünden görmeye çalışmaktır.'],
+ ['u1','Bir köyde herkesin bir araya gelip birinin evini ya da tarlasını birlikte bitirmesine ne denir?',['İmece','Kermes','Bayramlaşma','Ticaret'],0,'İmece, köy halkının bir işi el birliğiyle yapmasıdır. Yardımlaşma ve dayanışmanın güzel bir örneğidir.'],
+ ['u1','Aşağıdakilerden hangisi yardımlaşma ve dayanışma örneği değildir?',['Okulda ihtiyaç sahibi öğrenciler için kermes düzenlemek','Depremzedelere yardım kolisi göndermek','Yaşlı komşunun alışverişine yardım etmek','Sırada beklerken arkadaşının önüne geçmek'],3,'Sırada önüne geçmek kurala ve başkasının hakkına uymaz. Diğer üçü birbirimize destek olduğumuz davranışlardır.'],
+ ['u1','Bir kişinin malını ya da parasını toplumun yararına kalıcı olarak bağışlamasıyla kurulan kuruluşlara ne denir?',['Vakıf','Fabrika','Banka','Market'],0,'Vakıflar okul, çeşme, aşevi gibi hizmetlerle insanlara yüzyıllardır yardım eder.'],
+ ['u1','Kan bağışı toplayan ve afetzedelere yardım ulaştıran kuruluş hangisidir?',['Türk Kızılay','Türkiye Futbol Federasyonu','Devlet Opera ve Balesi','Milli Kütüphane'],0,'Türk Kızılay; kan bağışı, afetlerde yardım ve ihtiyaç sahiplerine destek çalışmaları yapar.'],
+ ['u1','Fırında parası olmayanlar için önceden ekmek parası bırakılmasına "askıda ekmek" denir. Bu uygulama hangi değerle ilgilidir?',['Yardımseverlik','Tembellik','Bencillik','Rekabet'],0,'Askıda ekmek, kim olduğunu bilmediğimiz birine yardım etmektir. Bu yardımseverliğin güzel bir örneğidir.'],
+ ['u1','Bayramlarda büyükleri ziyaret edip ellerini öpmek toplum için neden önemlidir?',['Aile ve akraba bağlarını güçlendirir','Sadece hediye almak içindir','Okul kurallarıyla ilgilidir','İnsanları birbirinden uzaklaştırır'],0,'Bayram ziyaretleri gelenekleri yaşatır, insanları birbirine yakınlaştırır ve toplumsal birliği güçlendirir.'],
+ ['u1','"Bir grubun kurallarına uymak sadece grubun liderinin görevidir."',TF,1,'Yanlış. Kurallara grubun bütün üyeleri uymalıdır; lider de dahil.'],
+ ['u1','"Sınıf kuralları öğretmen ve öğrenciler birlikte konuşarak belirlenebilir."',TF,0,'Doğru. Birlikte belirlenen kurallara herkes daha kolay uyar.'],
+ ['u1','"Türkiye\'nin farklı yörelerinde farklı yemek, giyim ve müzik gelenekleri vardır."',TF,0,'Doğru. Bu farklılıklar kültürümüzün zenginliğidir.'],
+ ['u2','Bir yerin çevresindeki başka yerlere göre nerede olduğunu anlatmaya ne denir?',['Göreceli konum','Saat dilimi','Nüfus','İklim'],0,'Göreceli konum, bir yeri çevresindekilere göre tarif etmektir: "Okulumuz parkın karşısında" gibi.'],
+ ['u2','Aşağıdakilerden hangisi göreceli konum anlatımıdır?',['Kütüphane, okulun hemen yanındadır.','Okulumuz 1990 yılında açıldı.','Sınıfımızda 28 öğrenci var.','Bugün hava çok sıcak.'],0,'Kütüphanenin yerini okula göre anlattığı için bu bir göreceli konum anlatımıdır.'],
+ ['u2','Kuzey ile doğu yönlerinin arasında kalan ara yön hangisidir?',['Kuzeydoğu','Güneybatı','Kuzeybatı','Güneydoğu'],0,'Ara yönlerin adı iki ana yönden gelir: kuzey + doğu = kuzeydoğu.'],
+ ['u2','Güneş sabahları yaklaşık olarak hangi yönden doğar?',['Doğu','Batı','Kuzey','Güney'],0,'Güneş doğudan doğar ve batıdan batar. Bu bilgi yön bulmamıza yardım eder.'],
+ ['u2','Haritalarda kuzey yönü genellikle nerede gösterilir?',['Haritanın üst kısmında','Haritanın alt kısmında','Haritanın sağında','Haritanın solunda'],0,'Haritalarda kuzey genellikle yukarıdadır. Bu yüzden güney aşağıda, doğu sağda, batı solda olur.'],
+ ['u2','Aşağıdakilerden hangisi doğal çevrenin bir unsurudur?',['Dağ','Köprü','Baraj','Apartman'],0,'Dağ doğada kendiliğinden oluşmuştur. Köprü, baraj ve apartman ise insanların yaptığı beşerî unsurlardır.'],
+ ['u2','Aşağıdakilerden hangisi beşerî (insan yapımı) bir unsurdur?',['Baraj','Göl','Orman','Akarsu'],0,'Barajı insanlar yapar. Göl, orman ve akarsu doğal unsurlardır.'],
+ ['u2','Aşağıdakilerden hangisi insanların doğal çevreyi değiştirmesine örnektir?',['Dağın içinden tünel açmak','Yağmurun yağması','Mevsimlerin değişmesi','Kuşların göç etmesi'],0,'Tünel açmak, insanların ihtiyaçları için doğal çevreyi değiştirmesidir. Diğerleri doğanın kendi olaylarıdır.'],
+ ['u2','Deprem sırasında içerideysen ne yapmalısın?',['Çök, kapan, tutun','Hemen asansöre binmek','Pencereden atlamak','Merdivenlerden koşarak inmek'],0,'Sağlam bir masanın yanına çök, başını ve enseni koruyarak kapan, sarsıntı bitene kadar tutun.'],
+ ['u2','Aşağıdakilerden hangisi afet ve acil durum çantasında olmasına gerek olmayan bir eşyadır?',['Oyun konsolu','Su','El feneri ve pil','İlk yardım malzemeleri'],0,'Çantada su, yiyecek, el feneri, düdük, ilk yardım malzemesi ve önemli belgeler olmalıdır. Oyun konsolu gerekli değildir.'],
+ ['u2','Türkiye\'de afetlerde arama kurtarma ve yardım çalışmalarını düzenleyen devlet kurumu hangisidir?',['AFAD','TRT','PTT','TÜBİTAK'],0,'AFAD (Afet ve Acil Durum Yönetimi Başkanlığı) afetlere hazırlık ve afet sonrası çalışmaları yönetir.'],
+ ['u2','Aşağıdakilerden hangisi bir doğal afettir?',['Sel','Trafik sıkışıklığı','Elektrik faturası','Okul tatili'],0,'Sel; deprem, heyelan, çığ ve orman yangını gibi büyük zararlar verebilen bir afettir.'],
+ ['u2','Eğimli yerlerde, özellikle bol yağıştan sonra toprağın kayarak aşağı inmesine ne denir?',['Heyelan','Çığ','Kuraklık','Fırtına'],0,'Heyelan toprak kaymasıdır. Çığ ise kar kütlesinin dağ yamacından kaymasıdır.'],
+ ['u2','Afetten sonra insanların güvenle bir araya gelmesi için önceden belirlenmiş açık alanlara ne denir?',['Toplanma alanı','Otopark','Alışveriş merkezi','Spor salonu'],0,'Toplanma alanları AFAD tarafından belirlenir. Ailece en yakın toplanma alanınızı önceden öğrenin.'],
+ ['u2','Acil bir durumda ambulans, itfaiye ve polise ulaşmak için hangi numara aranır?',['112','118','144','155555'],0,'Türkiye\'de tüm acil durumlar için 112 Acil Çağrı Merkezi aranır.'],
+ ['u2','"Depremden hemen sonra binadan çıkarken asansör kullanmak güvenlidir."',TF,1,'Yanlış. Deprem sonrası elektrik kesilebilir, asansörde mahsur kalabilirsin. Merdivenleri sakince kullan.'],
+ ['u2','"Afetlere önceden hazırlanmak, afetin zararlarını azaltır."',TF,0,'Doğru. Afet çantası hazırlamak, eşyaları sabitlemek ve toplanma alanını bilmek zararları azaltır.'],
+];
+
+let pickUnits=new Set(['u1','u2']),size=10,set=[],i=0,answers=[];
+const store={get(){try{return JSON.parse(localStorage.getItem('sosyal5best')||'{}')}catch(e){return {}}},set(v){try{localStorage.setItem('sosyal5best',JSON.stringify(v))}catch(e){}}};
+function drawStart(){
+  $('units').innerHTML=Object.entries(UNITS).map(([k,v])=>`<button class="chip" data-u="${k}" aria-pressed="${pickUnits.has(k)}">${v} <small>(${Q.filter(q=>q[0]===k).length})</small></button>`).join('');
+  const total=Q.filter(q=>pickUnits.has(q[0])).length;
+  $('sizes').innerHTML=[10,20,0].map(n=>`<button class="chip" data-s="${n}" aria-pressed="${size===n}">${n?n+' soru':'Hepsi ('+total+')'}</button>`).join('');
+  $('go').disabled=!pickUnits.size;
+  const b=store.get();$('best').textContent=b.pct!=null?`En iyi sonucun: %${b.pct} (${b.right}/${b.n})`:'';
+}
+$('units').onclick=e=>{const u=e.target.closest('[data-u]');if(!u)return;const k=u.dataset.u;pickUnits.has(k)?pickUnits.delete(k):pickUnits.add(k);drawStart()};
+$('sizes').onclick=e=>{const s=e.target.closest('[data-s]');if(!s)return;size=+s.dataset.s;drawStart()};
+const shuffle=a=>{a=a.slice();for(let k=a.length-1;k>0;k--){const j=Math.random()*(k+1)|0;[a[k],a[j]]=[a[j],a[k]]}return a};
+function begin(list){
+  set=list.map(q=>{ // shuffle answers too, except Doğru/Yanlış
+    if(q[2]===TF)return {u:q[0],q:q[1],o:q[2],a:q[3],w:q[4]};
+    const order=shuffle(q[2].map((_,k)=>k));return {u:q[0],q:q[1],o:order.map(k=>q[2][k]),a:order.indexOf(q[3]),w:q[4]};
+  });
+  i=0;answers=[];$('start').hidden=true;$('done').hidden=true;$('quiz').hidden=false;show();
+}
+$('go').onclick=()=>{let pool=shuffle(Q.filter(q=>pickUnits.has(q[0])));if(size)pool=pool.slice(0,size);begin(pool)};
+function show(){
+  const c=set[i];
+  $('bar').style.width=(100*i/set.length)+'%';$('count').textContent=(i+1)+' / '+set.length;
+  $('tag').textContent=UNITS[c.u];$('q').textContent=c.q;
+  $('opts').innerHTML=c.o.map((t,k)=>`<button class="opt" data-k="${k}"><b>${c.o===TF?(k?'Y':'D'):'ABCD'[k]}</b><span>${esc(t)}</span></button>`).join('');
+  $('why').hidden=true;$('next').hidden=true;
+  $('opts').querySelector('.opt').focus({preventScroll:true});
+}
+$('opts').onclick=e=>{
+  const b=e.target.closest('.opt');if(!b||b.disabled)return;
+  const c=set[i],k=+b.dataset.k,ok=k===c.a;answers.push({c,k,ok});
+  $('opts').querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(+x.dataset.k===c.a)x.classList.add('right')});
+  if(!ok)b.classList.add('wrong');
+  $('why').className='why '+(ok?'ok':'no');$('why').innerHTML=`<strong>${ok?'Doğru! 🎉':'Yanlış'}</strong>${esc(c.w)}`;$('why').hidden=false;
+  $('next').textContent=i===set.length-1?'Sonuçları gör':'Sonraki soru';$('next').hidden=false;$('next').focus({preventScroll:true});
+};
+$('next').onclick=()=>{i++;if(i<set.length)show();else finish()};
+addEventListener('keydown',e=>{
+  if($('quiz').hidden)return;
+  const m={a:0,b:1,c:2,d:3,'1':0,'2':1,'3':2,'4':3}[e.key.toLowerCase()];
+  if(m!=null&&$('next').hidden){const o=$('opts').querySelector(`[data-k="${m}"]`);if(o)o.click()}
+  else if(e.key==='Enter'&&!$('next').hidden&&document.activeElement!==$('next')){$('next').click()}
+});
+function finish(){
+  $('quiz').hidden=true;$('done').hidden=false;$('bar').style.width='100%';
+  const right=answers.filter(a=>a.ok).length,n=answers.length,pct=Math.round(100*right/n);
+  $('score').innerHTML=`${right}<small> / ${n}</small>`;
+  $('doneTitle').textContent=pct>=85?'Harika, yazılıya hazırsın!':pct>=60?'Güzel gidiyor!':'Biraz daha çalışalım!';
+  $('byUnit').innerHTML=Object.entries(UNITS).map(([k,v])=>{const a=answers.filter(x=>x.c.u===k);return a.length?`<div class="unit"><span class="mute">${v}</span><b>${a.filter(x=>x.ok).length} / ${a.length} doğru</b></div>`:''}).join('');
+  const wrong=answers.filter(a=>!a.ok);
+  $('wrongWrap').hidden=!wrong.length;$('retryWrong').hidden=!wrong.length;
+  $('review').innerHTML=wrong.map(a=>`<div class="rv"><b>${esc(a.c.q)}</b><p>Senin cevabın: ${esc(a.c.o[a.k])}</p><p class="a">Doğru cevap: ${esc(a.c.o[a.c.a])}</p><p class="mute">${esc(a.c.w)}</p></div>`).join('');
+  const b=store.get();if(n>=5&&(b.pct==null||pct>b.pct))store.set({pct,right,n});
+  scrollTo({top:0,behavior:'smooth'});
+}
+$('retryWrong').onclick=()=>{const w=answers.filter(a=>!a.ok).map(a=>Q.find(q=>q[1]===a.c.q));begin(shuffle(w))};
+$('again').onclick=()=>{$('done').hidden=true;$('start').hidden=false;drawStart()};
+drawStart();
+})();
+</script>
+
+</html>

@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<title>Snake Arena Live</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Chakra+Petch:wght@400;600&display=swap">
+<style>
+/* Layout: arena on the left, live leaderboard on the right (stacks under the arena on phones). Deliberately dark only. */
+:root{
+  --night:#0b0820; --panel:#151036; --grid:#1a1544; --line:#2c2468;
+  --ink:#ecebff; --mute:#9a94c9; --food:#ff3d9a; --gold:#ffd23f; --live:#5dff9e;
+  --display:'Orbitron', ui-monospace, monospace; --body:'Chakra Petch', system-ui, sans-serif;
+  color-scheme:dark;
+}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:radial-gradient(ellipse at 30% 0%,#1a1250 0%,var(--night) 60%) fixed,var(--night);color:var(--ink);font-family:var(--body);margin:0;
+  box-sizing:border-box;overflow:hidden;display:flex;flex-direction:column;gap:10px;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:12px}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+h1{font-family:var(--display);font-weight:900;font-size:18px;letter-spacing:.08em;margin:0;
+  background:linear-gradient(90deg,#3ef0ff,var(--food));-webkit-background-clip:text;background-clip:text;color:transparent}
+.status{font-size:13px;color:var(--mute);display:flex;align-items:center;gap:8px}
+.status i{width:8px;height:8px;border-radius:50%;background:var(--mute);display:inline-block}
+.status.on i{background:var(--live);box-shadow:0 0 8px var(--live)}
+main{flex:1;min-height:0;display:flex;gap:14px}
+.board{position:relative;flex:1;min-width:0;min-height:0;display:flex;align-items:center;justify-content:center}
+canvas{display:block;border-radius:6px;box-shadow:0 0 0 2px var(--line),0 0 40px rgba(62,240,255,.12);touch-action:none;background:var(--night)}
+aside{width:230px;flex:none;display:flex;flex-direction:column;gap:10px;min-height:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px}
+.card h2{font-family:var(--display);font-size:11px;letter-spacing:.16em;color:var(--mute);margin:0 0 8px;font-weight:600}
+ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;overflow:auto}
+li{display:grid;grid-template-columns:12px 1fr auto auto;gap:8px;align-items:center;font-size:14px}
+li .sw{width:12px;height:12px;border-radius:3px}
+li .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+li .nm small{color:var(--mute);margin-left:4px}
+li b,li span.k{font-family:var(--display);font-size:13px;font-variant-numeric:tabular-nums}
+li span.k{color:var(--mute);font-size:11px}
+li.dead{opacity:.45}
+.you{display:flex;flex-direction:column;gap:8px}
+.you label{font-size:12px;color:var(--mute)}
+.you input{background:var(--night);border:1px solid var(--line);border-radius:4px;padding:6px 8px;width:100%;box-sizing:border-box}
+.cols{display:flex;gap:6px;flex-wrap:wrap}
+.cols button{width:24px;height:24px;border-radius:4px;border:2px solid transparent;cursor:pointer}
+.cols button[aria-pressed="true"]{border-color:var(--ink)}
+.tip{font-size:12px;color:var(--mute);margin:0}
+.screen{position:absolute;inset:0;margin:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;
+  background:rgba(11,8,32,.85);border-radius:6px;padding:20px;box-sizing:border-box}
+.screen h2{font-family:var(--display);font-weight:900;font-size:clamp(22px,5vw,36px);margin:0;text-wrap:balance}
+.screen p{margin:0;color:var(--mute);max-width:38ch}
+.play{font-family:var(--display);font-weight:900;font-size:15px;letter-spacing:.1em;border:0;border-radius:4px;padding:12px 26px;cursor:pointer;
+  background:#3ef0ff;color:var(--night);box-shadow:0 0 24px rgba(62,240,255,.5)}
+.pad{display:none;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(2,44px);gap:6px;justify-content:center}
+.pad button{background:var(--panel);border:2px solid var(--line);border-radius:8px;font-size:18px;touch-action:manipulation}
+.pad .u{grid-column:2}.pad .l{grid-column:1;grid-row:2}.pad .d{grid-column:2;grid-row:2}.pad .r{grid-column:3;grid-row:2}
+@media (pointer:coarse){.pad{display:grid}}
+@media (max-width:720px){
+  body{overflow:auto}
+  main{flex-direction:column}
+  .board{flex:none}
+  aside{width:auto}
+}
+</style>
+
+<header>
+  <h1>SNAKE ARENA LIVE</h1>
+  <div class="status" id="status"><i></i><span id="statusText">Connecting…</span></div>
+</header>
+
+<main>
+  <div class="board" id="board">
+    <canvas id="cv" aria-label="Snake arena"></canvas>
+    <div class="screen" id="start">
+      <h2>SNAKE ARENA LIVE</h2>
+      <p>Everyone who opens this page plays in the same arena. Eat to grow. If your head hits another snake, you're out, and they get the kill. The edges wrap around.</p>
+      <button class="play" id="go">JOIN THE ARENA</button>
+    </div>
+  </div>
+  <aside>
+    <div class="card">
+      <h2>IN THE ARENA</h2>
+      <ol id="board-list"></ol>
+    </div>
+    <div class="card you">
+      <h2>YOU</h2>
+      <label for="nick">Name</label>
+      <input id="nick" maxlength="14" autocomplete="off">
+      <div class="cols" id="cols"></div>
+      <p class="tip">Arrows or WASD to steer. Swipe on a phone. Share this page's link with a friend so they can join.</p>
+    </div>
+    <div class="pad" id="pad">
+      <button class="u" data-d="0,-1" aria-label="Up">▲</button>
+      <button class="l" data-d="-1,0" aria-label="Left">◀</button>
+      <button class="d" data-d="0,1" aria-label="Down">▼</button>
+      <button class="r" data-d="1,0" aria-label="Right">▶</button>
+    </div>
+  </aside>
+</main>
+
+<script>
+(()=>{
+const N=36,TICK=.11,MAXSEND=180,FOODS=7;
+const PAL=['#3ef0ff','#b6ff3e','#ffd23f','#c89bff','#ff8a3d','#5aa8ff','#ff5d5d','#ffffff'];
+const $=id=>document.getElementById(id),cv=$('cv'),ctx=cv.getContext('2d');
+let cell=16;
+
+/* ---------- me ---------- */
+let nick='',col=Math.random()*PAL.length|0;
+try{nick=localStorage.getItem('arenaNick')||'';const c=localStorage.getItem('arenaCol');if(c!==null)col=+c%PAL.length}catch(e){}
+if(!nick)nick='Player'+(100+Math.random()*900|0);
+$('nick').value=nick;
+$('nick').addEventListener('input',()=>{nick=$('nick').value.trim().slice(0,14)||'Player';try{localStorage.setItem('arenaNick',nick)}catch(e){}});
+function drawCols(){const w=$('cols');w.innerHTML='';PAL.forEach((c,i)=>{const b=document.createElement('button');b.style.background=c;b.setAttribute('aria-label','Colour '+(i+1));b.setAttribute('aria-pressed',i===col);
+  b.onclick=()=>{col=i;try{localStorage.setItem('arenaCol',i)}catch(e){}drawCols()};w.appendChild(b)})}
+drawCols();
+
+/* ---------- shared food: positions come from the id, so everyone agrees ---------- */
+const eaten=new Set();let low=0;const myAte=[];
+function hash(n){n=Math.imul(n^0x9e3779b9,0x85ebca6b);n^=n>>>13;n=Math.imul(n,0xc2b2ae35);n^=n>>>16;return n>>>0}
+function foodPos(id){return{x:hash(id*2+1)%N,y:hash(id*2+2)%N,gold:id%9===4}}
+function markEaten(id){eaten.add(id);while(eaten.has(low))low++}
+function activeFood(){const out=[];for(let id=low;out.length<FOODS&&id<low+500;id++)if(!eaten.has(id))out.push({id,...foodPos(id)});return out}
+
+/* ---------- game state ---------- */
+let me=null,started=false,acc=0,kills=0,best=0,parts=[],pops=[],shake=0,lastKillSeen={},myPeer=null,deathMsg='';
+function spawn(){
+  const x=Math.random()*N|0,y=Math.random()*N|0,dirs=[[1,0],[-1,0],[0,1],[0,-1]],[dx,dy]=dirs[Math.random()*4|0];
+  me={body:[{x,y},{x:(x-dx+N)%N,y:(y-dy+N)%N},{x:(x-2*dx+N)%N,y:(y-2*dy+N)%N}],dir:{x:dx,y:dy},queue:[],grow:0,alive:true,inv:1.6,score:0,respawn:0};
+}
+function turn(dx,dy){
+  if(!me||!me.alive)return;const last=me.queue.length?me.queue[me.queue.length-1]:me.dir;
+  if((dx===-last.x&&dy===-last.y)||(dx===last.x&&dy===last.y))return;if(me.queue.length<3)me.queue.push({x:dx,y:dy});
+}
+function burst(x,y,c,n=10,sp=4){for(let i=0;i<n;i++){const a=Math.random()*6.283,v=(.4+Math.random())*sp;parts.push({x:(x+.5)*cell,y:(y+.5)*cell,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:1,c})}}
+function pop(x,y,t,c){pops.push({x:(x+.5)*cell,y:(y+.5)*cell,t,c,life:1})}
+
+/* ---------- room ---------- */
+let room=null,others=[];
+function readPeers(){
+  if(!room){others=[];return}
+  const list=[];
+  for(const p of room.peers()){
+    if(p.sameTab){myPeer=p.peer;continue}
+    const s=p.presence||{};if(!Array.isArray(s.b))continue;
+    const b=[];for(let i=0;i+1<s.b.length&&i<MAXSEND*2;i+=2){const x=s.b[i],y=s.b[i+1];if(Number.isInteger(x)&&Number.isInteger(y)&&x>=0&&y>=0&&x<N&&y<N)b.push({x,y})}
+    list.push({peer:p.peer,n:typeof s.n==='string'?s.n.slice(0,14):'Player',c:PAL[(s.c|0)%PAL.length]||PAL[0],b,alive:!!s.a,inv:!!s.i,score:s.s|0,kills:s.k|0,low:s.low|0,ate:Array.isArray(s.ate)?s.ate:[],kb:s.kb,kt:s.kt,idle:Date.now()-p.updatedAt>4000});
+  }
+  others=list;
+  for(const o of list){
+    // food others have eaten
+    if(o.low>low){for(let i=low;i<o.low;i++)eaten.add(i);while(eaten.has(low))low++}
+    for(const id of o.ate)if(Number.isInteger(id)&&id>=0&&id<low+2000&&!eaten.has(id))markEaten(id);
+    // kills credited to me
+    if(myPeer&&o.kb===myPeer&&typeof o.kt==='number'&&lastKillSeen[o.peer]!==o.kt){lastKillSeen[o.peer]=o.kt;kills++;if(me&&me.alive){me.grow+=3;pop(me.body[0].x,me.body[0].y,'KILL!','#ff5d5d')}beep(880,.15,'square',300)}
+  }
+}
+function sendPresence(extra={}){
+  if(!room)return;
+  const b=[];if(me)for(const s of me.body.slice(0,MAXSEND))b.push(s.x,s.y);
+  room.presence(Object.assign({n:nick,c:col,b,a:!!(me&&me.alive),i:!!(me&&me.inv>0),s:me?me.score:0,k:kills,low,ate:myAte.slice(-30)},extra)).catch(()=>{});
+}
+(async()=>{
+  try{room=await window.claude?.use?.('room')}catch(e){room=null}
+  if(!room){setStatus(false,'Solo mode: live play is not available here');return}
+  room.onConnection(on=>setStatus(on,on?'Live':'Reconnecting…'),()=>{room=null;setStatus(false,'Solo mode: live play is not available here')});
+  room.onPeers(()=>{readPeers();renderList()},()=>{});
+  sendPresence();
+})();
+function setStatus(on,t){$('status').classList.toggle('on',on);$('statusText').textContent=t}
+setTimeout(()=>{if(!room)setStatus(false,'Solo mode: live play is not available here')},10500);
+
+/* ---------- sound ---------- */
+let AC=null;
+function beep(f,d=.08,type='square',slide=0,vol=.04){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain(),t=AC.currentTime;
+  o.type=type;o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(40,f+slide),t+d);g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(AC.destination);o.start(t);o.stop(t+d+.02)}catch(e){}}
+
+/* ---------- step ---------- */
+function die(why,killer){
+  me.alive=false;me.respawn=2.5;shake=10;deathMsg=why;
+  for(const s of me.body.slice(0,10))burst(s.x,s.y,PAL[col],6,5);
+  best=Math.max(best,me.score);beep(200,.4,'sawtooth',-150,.05);
+  sendPresence(killer?{kb:killer,kt:Date.now()}:{});
+}
+function step(){
+  if(!me.alive)return;
+  if(me.queue.length)me.dir=me.queue.shift();
+  const h=me.body[0],nx=(h.x+me.dir.x+N)%N,ny=(h.y+me.dir.y+N)%N;
+  const tailMoves=me.grow===0,own=me.body.slice(0,tailMoves?-1:undefined);
+  if(me.inv<=0){
+    if(own.some(p=>p.x===nx&&p.y===ny))return die('You bit your own tail');
+    for(const o of others){if(!o.alive||o.inv||o.idle)continue;if(o.b.some(p=>p.x===nx&&p.y===ny))return die(o.n+' got you',o.peer)}
+  }
+  me.body.unshift({x:nx,y:ny});if(me.grow>0)me.grow--;else me.body.pop();
+  for(const f of activeFood())if(f.x===nx&&f.y===ny){
+    markEaten(f.id);myAte.push(f.id);if(myAte.length>30)myAte.shift();
+    const pts=f.gold?5:1;me.score+=pts;me.grow+=pts;best=Math.max(best,me.score);
+    burst(nx,ny,f.gold?'#ffd23f':'#ff3d9a',f.gold?20:10);pop(nx,ny,'+'+pts,f.gold?'#ffd23f':'#ff3d9a');beep(f.gold?880:520,.08,'square',200);
+  }
+  sendPresence();
+}
+
+/* ---------- loop ---------- */
+function update(dt){
+  shake=Math.max(0,shake-dt*30);
+  for(const p of parts){p.x+=p.vx;p.y+=p.vy;p.vx*=.9;p.vy*=.9;p.life-=dt*1.6}parts=parts.filter(p=>p.life>0);
+  for(const p of pops){p.y-=30*dt;p.life-=dt}pops=pops.filter(p=>p.life>0);
+  readPeers();
+  if(!started||!me)return;
+  if(me.inv>0)me.inv-=dt;
+  if(!me.alive){me.respawn-=dt;if(me.respawn<=0){spawn();sendPresence({kb:null})}return}
+  acc+=dt;while(acc>=TICK){acc-=TICK;step();if(!me.alive)break}
+}
+function rr(x,y,w,h,r,c,glow){ctx.shadowColor=c;ctx.shadowBlur=glow;ctx.fillStyle=c;ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill();ctx.shadowBlur=0}
+function drawSnake(body,c,alpha,label,isMe){
+  const n=body.length;
+  for(let i=n-1;i>=0;i--){const p=body[i],k=1-i/Math.max(n,1)*.5,pad=cell*(.08+(1-k)*.16);ctx.globalAlpha=alpha*(.5+k*.5);rr(p.x*cell+pad,p.y*cell+pad,cell-pad*2,cell-pad*2,cell*.25,c,i===0?16:6)}
+  ctx.globalAlpha=1;
+  if(n&&label){const h=body[0];ctx.font=`600 ${Math.max(10,cell*.75)}px Chakra Petch, sans-serif`;ctx.textAlign='center';ctx.textBaseline='bottom';
+    ctx.fillStyle='rgba(11,8,32,.8)';const w=ctx.measureText(label).width+8;ctx.fillRect((h.x+.5)*cell-w/2,h.y*cell-cell*.95,w,cell*.85);
+    ctx.fillStyle=isMe?'#ffffff':c;ctx.fillText(label,(h.x+.5)*cell,h.y*cell-cell*.15)}
+}
+function render(){
+  const size=cell*N,t=performance.now()/1000;
+  ctx.save();ctx.fillStyle='#0b0820';ctx.fillRect(0,0,size,size);
+  if(shake)ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);
+  ctx.strokeStyle='#1a1544';ctx.lineWidth=1;ctx.beginPath();for(let i=1;i<N;i++){ctx.moveTo(i*cell+.5,0);ctx.lineTo(i*cell+.5,size);ctx.moveTo(0,i*cell+.5);ctx.lineTo(size,i*cell+.5)}ctx.stroke();
+  for(const f of activeFood()){const s=cell*.6*(1+.12*Math.sin(t*7+f.id));rr((f.x+.5)*cell-s/2,(f.y+.5)*cell-s/2,s,s,s*.3,f.gold?'#ffd23f':'#ff3d9a',16)}
+  for(const o of others)if(o.alive)drawSnake(o.b,o.c,(o.inv?.45:1)*(o.idle?.4:1),o.n,false);
+  if(me&&me.alive){drawSnake(me.body,PAL[col],me.inv>0&&Math.floor(t*10)%2?.4:1,nick+' (you)',true);
+    const h=me.body[0],d=me.dir;ctx.fillStyle='#0b0820';for(const s of[-1,1]){ctx.beginPath();ctx.arc((h.x+.5+d.x*.15-d.y*s*.18)*cell,(h.y+.5+d.y*.15+d.x*s*.18)*cell,cell*.09,0,7);ctx.fill()}}
+  for(const p of parts){ctx.globalAlpha=p.life;ctx.fillStyle=p.c;ctx.fillRect(p.x-2,p.y-2,4,4)}ctx.globalAlpha=1;
+  ctx.font=`900 ${Math.max(12,cell*.9)}px Orbitron, monospace`;ctx.textAlign='center';ctx.textBaseline='middle';
+  for(const p of pops){ctx.globalAlpha=Math.min(1,p.life*2);ctx.fillStyle=p.c;ctx.fillText(p.t,p.x,p.y)}ctx.globalAlpha=1;
+  if(started&&me&&!me.alive){ctx.fillStyle='rgba(11,8,32,.55)';ctx.fillRect(0,0,size,size);ctx.fillStyle='#ecebff';ctx.font=`900 ${cell*1.6}px Orbitron, monospace`;ctx.fillText('OUT',size/2,size/2-cell*1.2);
+    ctx.font=`600 ${cell*.9}px Chakra Petch, sans-serif`;ctx.fillStyle='#9a94c9';ctx.fillText(deathMsg+' · back in '+Math.ceil(me.respawn),size/2,size/2+cell*.6)}
+  if(started&&me){ctx.font=`600 ${Math.max(11,cell*.8)}px Chakra Petch, sans-serif`;ctx.textAlign='left';ctx.textBaseline='top';ctx.fillStyle='rgba(236,235,255,.75)';
+    ctx.fillText('Length '+(me.alive?me.body.length:0)+' · Kills '+kills+' · Best '+best,8,8)}
+  ctx.restore();
+}
+let lastList=0;
+function renderList(){
+  const rows=[];
+  if(started&&me)rows.push({n:nick,you:true,c:PAL[col],len:me.alive?me.body.length:0,kills,alive:me.alive});
+  for(const o of others)rows.push({n:o.n,c:o.c,len:o.alive?o.b.length:0,kills:o.kills,alive:o.alive&&!o.idle,watch:!o.b.length});
+  rows.sort((a,b)=>b.len-a.len||b.kills-a.kills);
+  const ol=$('board-list');ol.textContent='';
+  if(!rows.length){const li=document.createElement('li');li.style.display='block';li.style.color='var(--mute)';li.textContent=room?'Nobody is playing yet. Join, then share the link.':'Playing solo.';ol.appendChild(li);return}
+  for(const r of rows){const li=document.createElement('li');if(!r.alive)li.className='dead';
+    const sw=document.createElement('i');sw.className='sw';sw.style.background=r.c;
+    const nm=document.createElement('span');nm.className='nm';nm.textContent=r.n;if(r.you||r.watch){const s=document.createElement('small');s.textContent=r.you?'you':'watching';nm.appendChild(s)}
+    const b=document.createElement('b');b.textContent=r.len;const k=document.createElement('span');k.className='k';k.textContent=r.kills+' K';
+    li.append(sw,nm,b,k);ol.appendChild(li)}
+}
+let last=performance.now();
+function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;update(dt);render();if(now-lastList>300){lastList=now;renderList()}requestAnimationFrame(loop)}
+
+/* ---------- layout and input ---------- */
+function fit(){
+  const b=$('board').getBoundingClientRect(),narrow=innerWidth<=720;
+  const avail=narrow?Math.min(b.width,innerHeight*.62):Math.min(b.width,b.height);
+  const size=Math.max(216,Math.floor(Math.min(avail,760)/N)*N);cell=size/N;
+  const dpr=window.devicePixelRatio||1;cv.width=size*dpr;cv.height=size*dpr;cv.style.width=size+'px';cv.style.height=size+'px';ctx.setTransform(dpr,0,0,dpr,0,0);
+  if(narrow)$('board').style.height=size+'px';else $('board').style.height='';
+  $('start').style.width=size+'px';$('start').style.height=size+'px';
+}
+new ResizeObserver(fit).observe($('board'));addEventListener('resize',fit);
+$('go').onclick=()=>{started=true;$('start').hidden=true;spawn();sendPresence();beep(440,.1,'square',440)};
+const DIRS={arrowup:[0,-1],w:[0,-1],arrowdown:[0,1],s:[0,1],arrowleft:[-1,0],a:[-1,0],arrowright:[1,0],d:[1,0]};
+addEventListener('keydown',e=>{if(document.activeElement===$('nick'))return;const d=DIRS[e.key.toLowerCase()];if(d&&started){e.preventDefault();turn(...d)}});
+document.querySelectorAll('#pad button').forEach(b=>b.addEventListener('pointerdown',e=>{e.preventDefault();const [x,y]=b.dataset.d.split(',').map(Number);turn(x,y)}));
+let sw=null;
+cv.addEventListener('pointerdown',e=>{sw={x:e.clientX,y:e.clientY}});
+cv.addEventListener('pointermove',e=>{if(!sw)return;const dx=e.clientX-sw.x,dy=e.clientY-sw.y;if(Math.hypot(dx,dy)>22){Math.abs(dx)>Math.abs(dy)?turn(Math.sign(dx),0):turn(0,Math.sign(dy));sw={x:e.clientX,y:e.clientY}}});
+addEventListener('pointerup',()=>sw=null);
+
+fit();renderList();requestAnimationFrame(loop);
+})();
+</script>
+
+</html>

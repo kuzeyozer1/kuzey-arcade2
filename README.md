@@ -35,3 +35,10 @@ https://kuzeyozer1.github.io/kuzey-arcade2/yazili/ — a study plan for the 5th 
 (8–13 November 2026): about an hour of tasks a day, with quizzes, flashcards, read-aloud listening practice
 and game breaks. Progress is saved on the device. The questions and the plan live in the `SETS` and `DAYS`
 lists at the top of the script in `yazili/index.html`.
+
+## More pages
+- `sosyal.html` — Sosyal Bilgiler 1. Yazılı practice quiz.
+- `elementals.html` — website for the Elementals mod.
+- `minecraft/` — Food Vending Machine schematics (.litematic, Java 1.21.1) with setup steps.
+- `snake-arena.html` — Snake Arena (live multiplayer only works inside Claude; solo here).
+- `app-forge.html` — App Forge (AI app making only works inside Claude).

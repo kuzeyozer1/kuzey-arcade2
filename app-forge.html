@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<title>App Forge</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a workbench. Left rail holds the prompt, the follow-up box and your saved apps; the right side is a device frame running the app. Stacks on phones. */
+:root{
+  --bg:#f3f1ec; --surface:#ffffff; --sunk:#e9e6df; --line:#d8d3c8; --ink:#1d1b26; --mute:#6b6676;
+  --accent:#4b3fe0; --accent-ink:#ffffff; --spark:#ff7a45; --ok:#1f9d63; --bad:#c8342c;
+  --display:'Bricolage Grotesque', system-ui, sans-serif; --body:'Figtree', system-ui, sans-serif; --mono:'IBM Plex Mono', ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#14131a; --surface:#1d1c25; --sunk:#26242f; --line:#35323f; --ink:#efedf5; --mute:#a19cb0;
+  --accent:#8f85ff; --accent-ink:#14131a; --spark:#ff9466; --ok:#46c98b; --bad:#ff6b62; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#14131a; --surface:#1d1c25; --sunk:#26242f; --line:#35323f; --ink:#efedf5; --mute:#a19cb0;
+  --accent:#8f85ff; --accent-ink:#14131a; --spark:#ff9466; --ok:#46c98b; --bad:#ff6b62; color-scheme:dark}
+[hidden]{display:none!important}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;margin:0;display:flex;flex-direction:column;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:14px;gap:12px}
+button,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:10px}
+.logo svg{flex:none}
+h1{font-family:var(--display);font-weight:800;font-size:24px;letter-spacing:-.02em;margin:0}
+.tag{color:var(--mute);font-size:14px}
+main{flex:1;min-height:0;display:grid;grid-template-columns:minmax(300px,380px) minmax(0,1fr);gap:16px}
+.rail{display:flex;flex-direction:column;gap:12px;min-height:0;overflow:auto;padding-bottom:4px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.card h2{font-family:var(--display);font-size:16px;font-weight:600;margin:0}
+label.small{font-size:12px;color:var(--mute);font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+textarea{width:100%;resize:vertical;min-height:92px;background:var(--sunk);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+textarea#follow{min-height:60px}
+.ideas{display:flex;flex-wrap:wrap;gap:6px}
+.idea{background:transparent;border:1px dashed var(--line);border-radius:999px;padding:4px 10px;font-size:13px;cursor:pointer;color:var(--mute)}
+.idea:hover{border-color:var(--accent);color:var(--ink)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:8px;padding:10px 16px;font-weight:600;cursor:pointer;background:var(--accent);color:var(--accent-ink)}
+.btn:hover{filter:brightness(1.06)}
+.btn[disabled]{opacity:.55;cursor:not-allowed}
+.btn.quiet{background:var(--sunk);color:var(--ink);border:1px solid var(--line)}
+.btn.stop{background:var(--bad);color:#fff}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row .btn{flex:1}
+.note{font-size:13px;color:var(--mute);margin:0}
+.err{font-size:13px;color:var(--bad);margin:0}
+.apps{display:flex;flex-direction:column;gap:6px;max-height:260px;overflow:auto}
+.app{display:grid;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;gap:10px;padding:8px;border-radius:8px;border:1px solid transparent;background:var(--sunk);cursor:pointer;text-align:left;width:100%}
+.app:hover{border-color:var(--line)}
+.app[aria-current="true"]{border-color:var(--accent)}
+.app .ic{width:28px;height:28px;border-radius:7px;display:grid;place-items:center;font-family:var(--display);font-weight:800;color:#fff;font-size:14px}
+.app b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.app small{color:var(--mute);font-size:12px}
+.del{background:none;border:0;color:var(--mute);cursor:pointer;font-size:12px;padding:4px 6px;border-radius:6px}
+.del:hover{color:var(--bad);background:var(--surface)}
+.empty{font-size:13px;color:var(--mute)}
+.stage{display:flex;flex-direction:column;gap:10px;min-height:0;min-width:0}
+.bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.bar h2{font-family:var(--display);font-weight:800;font-size:22px;margin:0;letter-spacing:-.01em;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.pill{font-family:var(--mono);font-size:12px;padding:3px 9px;border-radius:999px;background:var(--sunk);border:1px solid var(--line);color:var(--mute)}
+.pill.live{color:var(--spark);border-color:var(--spark)}
+.pill.ok{color:var(--ok);border-color:var(--ok)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{background:var(--surface);border:0;padding:6px 12px;cursor:pointer;font-size:13px;color:var(--mute)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.device{flex:1;min-height:420px;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.device .chrome{display:flex;align-items:center;gap:6px;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--sunk)}
+.device .chrome i{width:10px;height:10px;border-radius:50%;background:var(--line)}
+.device .chrome span{margin-left:8px;font-family:var(--mono);font-size:12px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.screen{flex:1;display:flex;justify-content:center;background:repeating-linear-gradient(45deg,var(--sunk) 0 10px,var(--bg) 10px 20px);min-height:0}
+iframe{border:0;width:100%;height:100%;background:#fff;display:block}
+.screen.phone{padding:18px}
+.screen.phone iframe{width:390px;max-width:100%;border-radius:22px;box-shadow:0 0 0 8px var(--ink)}
+pre{margin:0;flex:1;overflow:auto;padding:14px;font-family:var(--mono);font-size:12.5px;line-height:1.55;background:var(--surface);white-space:pre-wrap;word-break:break-word}
+.forging{position:absolute;inset:auto 12px 12px auto;background:var(--ink);color:var(--bg);font-size:13px;padding:8px 12px;border-radius:8px;display:flex;align-items:center;gap:8px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--spark);animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.dot{animation:none}}
+@media (max-width:860px){
+  body{height:auto;min-height:100%}
+  main{grid-template-columns:1fr}
+  .rail{overflow:visible}
+  .device{min-height:520px}
+}
+</style>
+
+<header>
+  <div class="logo">
+    <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><rect x="1" y="1" width="32" height="32" rx="9" fill="var(--accent)"/><path d="M10 22h14M12 22l2-9h6l2 9M15 13l2-4 2 4" stroke="var(--accent-ink)" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div><h1>App Forge</h1><div class="tag">Describe an app. Claude builds it. You use it right here.</div></div>
+  </div>
+</header>
+
+<main>
+  <div class="rail">
+    <div class="card">
+      <h2>Make a new app</h2>
+      <label class="small" for="idea">What should it do?</label>
+      <textarea id="idea" placeholder="A pocket money tracker where I add what I earn and spend, with a total and a little chart"></textarea>
+      <div class="ideas" id="ideas"></div>
+      <div class="row">
+        <button class="btn" id="make">Build it</button>
+        <button class="btn stop" id="stop" hidden>Stop</button>
+      </div>
+      <p class="err" id="err" hidden></p>
+      <p class="note" id="aiNote" hidden>Building apps needs Claude, which isn't available in this view. You can still open and use your saved apps.</p>
+    </div>
+
+    <div class="card">
+      <h2>Change this app</h2>
+      <label class="small" for="follow">What should change?</label>
+      <textarea id="follow" placeholder="Make the buttons bigger and add a dark mode"></textarea>
+      <button class="btn quiet" id="change">Apply the change</button>
+    </div>
+
+    <div class="card">
+      <h2>Your apps</h2>
+      <div class="apps" id="apps"></div>
+      <p class="note" id="saveNote">Apps you build are saved to your account, and only you can see them.</p>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="bar">
+      <h2 id="title">Tip Splitter</h2>
+      <span class="pill" id="state">Example app</span>
+      <div class="seg" role="group" aria-label="Preview size">
+        <button id="vDesk" aria-pressed="true">Wide</button><button id="vPhone" aria-pressed="false">Phone</button><button id="vCode" aria-pressed="false">Code</button>
+      </div>
+      <button class="btn quiet" id="copy">Copy code</button>
+      <button class="btn quiet" id="dl" hidden>Download</button>
+    </div>
+    <div class="device">
+      <div class="chrome"><i></i><i></i><i></i><span id="addr">app-forge / tip-splitter</span></div>
+      <div class="screen" id="screen"><iframe id="frame" sandbox="allow-scripts allow-forms allow-modals" title="Your app"></iframe></div>
+      <pre id="code" hidden></pre>
+      <div class="forging" id="forging" hidden><span class="dot"></span><span id="forgeText">Building…</span></div>
+    </div>
+  </div>
+</main>
+
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const IDEAS=['Pocket money tracker','Reaction speed test','Flashcards for my spelling words','Pixel art drawing board','Countdown to my birthday','Rock paper scissors vs the computer','Workout timer','Dice roller for board games'];
+const EXAMPLE={id:'example',name:'Tip Splitter',prompt:'A tip splitter for restaurant bills',example:true,html:`<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tip Splitter</title>
+<style>body{font-family:system-ui,sans-serif;background:#fff7ef;color:#2a1d12;margin:0;display:grid;place-items:center;min-height:100vh}
+.c{background:#fff;border-radius:18px;padding:24px;width:min(340px,92vw);box-shadow:0 10px 30px rgba(120,60,20,.15)}
+h1{margin:0 0 16px;font-size:22px}label{display:block;font-size:13px;color:#8a6a50;margin-top:12px}
+input{width:100%;font-size:20px;padding:8px 10px;border:2px solid #f0dcc8;border-radius:10px;box-sizing:border-box}
+.tips{display:flex;gap:6px;margin-top:6px}.tips button{flex:1;padding:10px;border:2px solid #f0dcc8;background:#fff;border-radius:10px;font-size:16px;cursor:pointer}
+.tips button.on{background:#ff7a45;border-color:#ff7a45;color:#fff}
+.out{margin-top:18px;background:#2a1d12;color:#fff;border-radius:12px;padding:14px;display:flex;justify-content:space-between}
+.out b{font-size:28px}</style></head><body><div class="c"><h1>Tip Splitter</h1>
+<label>Bill</label><input id="bill" type="number" value="48.50" step="0.01">
+<label>Tip</label><div class="tips" id="tips"><button>10%</button><button class="on">15%</button><button>20%</button></div>
+<label>People</label><input id="ppl" type="number" value="3" min="1">
+<div class="out"><div>Each pays<br><small id="tipAmt"></small></div><b id="each"></b></div></div>
+<script>let tip=.15;const $=id=>document.getElementById(id);
+function calc(){const b=+$('bill').value||0,p=Math.max(1,+$('ppl').value||1);$('each').textContent=(b*(1+tip)/p).toFixed(2);$('tipAmt').textContent='Tip '+(b*tip).toFixed(2)}
+document.querySelectorAll('#tips button').forEach(x=>x.onclick=()=>{document.querySelectorAll('#tips button').forEach(y=>y.classList.remove('on'));x.classList.add('on');tip=parseInt(x.textContent)/100;calc()});
+$('bill').oninput=calc;$('ppl').oninput=calc;calc();<\/script></body></html>`};
+
+let apps=[],current=EXAMPLE,busy=null,sample=null,db=null,uid=null,dl=null,view='desk';
+
+/* ---------- ideas ---------- */
+IDEAS.forEach(t=>{const b=document.createElement('button');b.className='idea';b.textContent=t;b.onclick=()=>{$('idea').value=t;$('idea').focus()};$('ideas').appendChild(b)});
+
+/* ---------- preview ---------- */
+function show(app,{streaming=false}={}){
+  current=app;
+  $('title').textContent=app.name||'Untitled app';
+  $('addr').textContent='app-forge / '+slug(app.name||'app');
+  if(!streaming){$('frame').srcdoc=app.html||'';}
+  $('code').textContent=app.html||'';
+  $('state').className='pill'+(app.example?'':' ok');
+  $('state').textContent=app.example?'Example app':'Saved';
+  renderApps();
+}
+function setView(v){
+  view=v;$('vDesk').setAttribute('aria-pressed',v==='desk');$('vPhone').setAttribute('aria-pressed',v==='phone');$('vCode').setAttribute('aria-pressed',v==='code');
+  $('screen').hidden=v==='code';$('code').hidden=v!=='code';$('screen').classList.toggle('phone',v==='phone');
+}
+$('vDesk').onclick=()=>setView('desk');$('vPhone').onclick=()=>setView('phone');$('vCode').onclick=()=>setView('code');
+const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40)||'app';
+
+$('copy').onclick=()=>{
+  const done=()=>{$('copy').textContent='Copied';setTimeout(()=>$('copy').textContent='Copy code',1300)};
+  try{navigator.clipboard.writeText(current.html).then(done,()=>{setView('code');selectCode()})}catch(e){setView('code');selectCode()}
+};
+function selectCode(){const r=document.createRange();r.selectNodeContents($('code'));const s=getSelection();s.removeAllRanges();s.addRange(r)}
+$('dl').onclick=async()=>{
+  if(!dl)return;
+  try{await dl.save({filename:slug(current.name)+'.html',data:current.html})}catch(e){if(e&&e.code!=='cancelled'&&e.code!=='declined')showErr('The download did not start. Try Copy code instead.')}
+};
+
+/* ---------- saved apps ---------- */
+const COLORS=['#4b3fe0','#ff7a45','#1f9d63','#d6336c','#0b7fab','#a05be0','#c48a00'];
+function renderApps(){
+  const box=$('apps');box.textContent='';
+  const list=[EXAMPLE,...apps.slice().sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0))];
+  for(const a of list){
+    const row=document.createElement('div');row.className='app';row.setAttribute('role','button');row.tabIndex=0;row.setAttribute('aria-current',current&&current.id===a.id);
+    const ic=document.createElement('span');ic.className='ic';ic.style.background=COLORS[(a.name||'A').charCodeAt(0)%COLORS.length];ic.textContent=(a.name||'A')[0].toUpperCase();
+    const t=document.createElement('span');const b=document.createElement('b');b.textContent=a.name||'Untitled app';const sm=document.createElement('small');
+    sm.textContent=a.example?'Example':ago(a.updatedAt);t.append(b,sm);row.append(ic,t);
+    if(!a.example){const d=document.createElement('button');d.className='del';d.textContent='Delete';d.setAttribute('aria-label','Delete '+(a.name||'app'));
+      let armed=false;d.onclick=ev=>{ev.stopPropagation();if(!armed){armed=true;d.textContent='Sure?';setTimeout(()=>{armed=false;d.textContent='Delete'},2500);return}removeApp(a)};row.appendChild(d)}
+    else row.appendChild(document.createElement('span'));
+    const open=()=>{if(!busy){show(a)}};row.onclick=open;row.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}};
+    box.appendChild(row);
+  }
+}
+function ago(t){if(!t)return'';const s=(Date.now()-t)/1000;if(s<60)return'Just now';if(s<3600)return Math.floor(s/60)+' min ago';if(s<86400)return Math.floor(s/3600)+' h ago';return new Date(t).toLocaleDateString()}
+
+async function saveApp(app){
+  app.updatedAt=Date.now();
+  const i=apps.findIndex(a=>a.id===app.id);if(i>=0)apps[i]=app;else apps.push(app);
+  renderApps();
+  if(db&&uid){try{await db.collection('data/users/'+uid+'/apps').doc(app.id).set({name:app.name,prompt:app.prompt,html:app.html,updatedAt:app.updatedAt})}catch(e){$('saveNote').textContent='This app could not be saved to your account. It stays here until you close the page.'}}
+  else localSave();
+}
+async function removeApp(app){
+  apps=apps.filter(a=>a.id!==app.id);if(current.id===app.id)show(EXAMPLE);else renderApps();
+  if(db&&uid){try{await db.collection('data/users/'+uid+'/apps').doc(app.id).delete()}catch(e){}}else localSave();
+}
+function localSave(){try{localStorage.setItem('appForgeApps',JSON.stringify(apps.slice(-20)))}catch(e){}}
+function localLoad(){try{const s=JSON.parse(localStorage.getItem('appForgeApps')||'[]');if(Array.isArray(s))apps=s.filter(a=>a&&typeof a.html==='string')}catch(e){}}
+
+/* ---------- building ---------- */
+const RULES=`You build small web apps. Reply with ONE complete, self-contained HTML document and nothing else: start with <!doctype html> and end with </html>.
+Rules:
+- All CSS and JavaScript inline. No external scripts, stylesheets, fonts, images or network requests of any kind.
+- Make it look polished and friendly: a clear title, good spacing, readable sizes, rounded controls, a pleasant colour palette that fits the app. Use system fonts.
+- It must work at phone width (about 380px) and on desktop.
+- Make every button and control actually work. Use touch and mouse events where it matters.
+- Draw any graphics with CSS, inline SVG or <canvas>. Use emoji only if they really help.
+- Do not use alert(), confirm() or prompt(); build any messages into the page.
+- Save the user's data with localStorage wrapped in try/catch, so the app still works if storage is blocked.
+- Keep the code reasonably compact (under about 400 lines).
+The first line inside <head> must be a <title> with a short, catchy app name (two or three words).`;
+
+function extractHtml(text){
+  let t=text;const fence=t.match(/```(?:html)?\s*([\s\S]*?)(```|$)/i);if(fence&&/<html|<!doctype/i.test(fence[1]))t=fence[1];
+  const s=t.search(/<!doctype html|<html/i);if(s<0)return null;t=t.slice(s);
+  const e=t.toLowerCase().lastIndexOf('</html>');return e>=0?t.slice(0,e+7):t;
+}
+function nameOf(html,fallback){const m=html&&html.match(/<title>([^<]{1,60})<\/title>/i);return (m?m[1].trim():fallback).slice(0,40)}
+
+async function build(kind){
+  if(busy||!sample)return;
+  const idea=$('idea').value.trim(),change=$('follow').value.trim();
+  if(kind==='new'&&!idea){showErr('Type what your app should do, or pick one of the ideas.');$('idea').focus();return}
+  if(kind==='change'&&!change){showErr('Type what should change first.');$('follow').focus();return}
+  hideErr();
+  const input=kind==='new'
+    ?[{role:'user',content:RULES+'\n\nThe app: '+idea}]
+    :[{role:'user',content:RULES+'\n\nHere is the current app:\n\n'+current.html+'\n\nChange it like this: '+change+'\n\nReply with the whole updated HTML document.'}];
+  const ctrl=new AbortController();busy=ctrl;setBusy(true,kind==='new'?'Building your app…':'Applying your change…');
+  setView('code');$('code').textContent='';
+  try{
+    const res=await sample(input,{signal:ctrl.signal,cache:false,modelTier:'default',onText:u=>{$('code').textContent=u.text;$('code').scrollTop=$('code').scrollHeight;$('forgeText').textContent='Writing code… '+u.text.length.toLocaleString()+' characters'}});
+    const html=extractHtml(res.text);
+    if(!html){showErr('Claude did not send back an app that time. Try again, or describe it a little differently.');restore();return}
+    if(res.truncated&&!/<\/html>/i.test(html)){showErr('The app was too long and got cut off. Try asking for a simpler version.');restore();return}
+    const app=kind==='new'
+      ?{id:'a'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:nameOf(html,idea),prompt:idea,html}
+      :Object.assign({},current.example?{id:'a'+Date.now().toString(36),prompt:current.prompt}:current,{html,name:nameOf(html,current.name)});
+    if(kind==='change')delete app.example;
+    show(app);setView(view==='code'?'desk':view);
+    if(kind==='new')$('idea').value='';else $('follow').value='';
+    await saveApp(app);show(app);
+  }catch(e){
+    if(e&&e.name==='AbortError'||e&&e.code==='aborted'){restore()}
+    else if(e&&e.code==='not_granted'){showErr('Claude needs your permission to build apps here. Allow it when the page asks, then try again.');restore()}
+    else if(e&&e.code==='rate_limited'){showErr('Claude is busy right now. Wait a minute, then try again.');restore()}
+    else{showErr('Something went wrong while building. Try again in a moment.');restore()}
+  }finally{busy=null;setBusy(false)}
+}
+function restore(){show(current);setView('desk')}
+function setBusy(on,label){
+  $('make').disabled=on;$('change').disabled=on;$('stop').hidden=!on;$('forging').hidden=!on;
+  if(on){$('forgeText').textContent=label;$('state').className='pill live';$('state').textContent='Building'}
+}
+$('make').onclick=()=>build('new');$('change').onclick=()=>build('change');$('stop').onclick=()=>busy&&busy.abort();
+$('idea').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.metaKey||e.ctrlKey))build('new')});
+$('follow').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.metaKey||e.ctrlKey))build('change')});
+function showErr(t){$('err').textContent=t;$('err').hidden=false}
+function hideErr(){$('err').hidden=true}
+
+/* ---------- start ---------- */
+localLoad();show(EXAMPLE);setView('desk');
+$('make').disabled=true;$('change').disabled=true;
+(async()=>{
+  const c=window.claude;
+  const [s,d,u,dw]=await Promise.all(['sample','db','user','downloads'].map(n=>c&&c.use?c.use(n).catch(()=>null):Promise.resolve(null)));
+  sample=s;dl=dw;
+  if(sample){$('make').disabled=false;$('change').disabled=false}else $('aiNote').hidden=false;
+  if(dl)$('dl').hidden=false;
+  if(d&&u){
+    try{uid=await u.id()}catch(e){uid=null}
+    if(uid){db=d;
+      db.collection('data/users/'+uid+'/apps').onSnapshot(snap=>{
+        apps=snap.docs.map(x=>{const v=x.data()||{};return{id:x.id,name:String(v.name||'Untitled app'),prompt:String(v.prompt||''),html:String(v.html||''),updatedAt:+v.updatedAt||0}});
+        const still=apps.find(a=>a.id===current.id);if(still&&!busy&&still.html!==current.html)show(still);else renderApps();
+      },()=>{db=null;$('saveNote').textContent='Your saved apps could not load. New apps stay in this browser.';localLoad();renderApps()});
+    }
+  }
+  if(!db)$('saveNote').textContent='Apps you build are kept in this browser.';
+})();
+})();
+</script>
+
+</html>

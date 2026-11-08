@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Food Vending Machine</title>
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+<style>
+:root{--bg:#10141f;--card:#1a2030;--ink:#eef2f8;--dim:#a7b0c2;--acc:#7bd88f;--line:#2b3347}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){--bg:#f4f6f9;--card:#fff;--ink:#172030;--dim:#56607a;--acc:#1f8a3b;--line:#dde2ea}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:760px;margin:0 auto;padding:24px 16px 48px}
+a{color:var(--acc)}
+h1{font-size:1.7rem;margin:.2em 0}
+h2{font-size:1.15rem;margin:1.6em 0 .5em}
+.dl{display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:10px 0;text-decoration:none;color:var(--ink)}
+.dl b{color:var(--acc)}
+.dl span{display:block;color:var(--dim);font-size:.92rem}
+li{margin:.35em 0}
+.back{font-size:.95rem}
+</style>
+</head>
+<body>
+<main>
+<a class="back" href="../">← Kuzey Arcade</a>
+<h1>Food Vending Machine</h1>
+<p>A Minecraft <b>Java 1.21.1</b> food vending machine made with crafters. Open the files with the <b>Litematica</b> mod. Every version was tested in a real 1.21.1 server.</p>
+
+<a class="dl" href="Food_Vending_Machine_with_Farms.litematic" download><b>Machine + farms (newest)</b><span>16 × 12 × 9. Chicken cooker, pumpkin, sugar cane and egg farms, honey and a fox berry pen fill the machine on their own.</span></a>
+<a class="dl" href="Food_Vending_Machine_v2.litematic" download><b>Machine + chicken farm</b><span>15 × 12 × 5.</span></a>
+<a class="dl" href="Food_Vending_Machine.litematic" download><b>Machine only</b><span>15 × 5 × 3. You fill every chest yourself.</span></a>
+
+<h2>Buttons (left to right)</h2>
+<p>Sweet berries, cooked chicken, honey, cake, pumpkin pie, golden carrot, golden apple. Food comes out in the barrel at the bottom middle.</p>
+
+<h2>Setup after building (Litematica can't put items or animals in)</h2>
+<ol>
+<li><b>Pie crafter:</b> disable the bottom 6 slots and put 1 pumpkin, 1 sugar and 1 egg in the top 3.</li>
+<li><b>Gold crafters:</b> put 1 gold nugget or gold ingot in each of the 8 outer slots, and carrots or apples in the middle. Fill both gold barrels with gold.</li>
+<li><b>Sugar crafter</b> (behind the pie): disable every slot except the top-left one.</li>
+<li><b>Chicken farm</b> (on top): put 2–4 chickens in the small glass box and fill the cauldron with a lava bucket. In the sorter hopper, put 18 cooked chicken plus 1 stick, 1 dirt, 1 sand and 1 cobblestone.</li>
+<li><b>Egg pen</b> (behind the pie button): put 2 chickens in it.</li>
+<li><b>Plants:</b> plant pumpkin seeds on the farmland and sugar cane on the mud next to the water.</li>
+<li><b>Honey:</b> put bees in the beehive and plant flowers nearby. Fill the dispenser under the hive with glass bottles, leaving 1 slot empty. In the honey sorter hopper, put 4 honey bottles plus 1 stick, 1 dirt, 1 sand and 1 cobblestone.</li>
+<li><b>Berries:</b> plant 2 sweet berry bushes on the mud in the left glass box and lead a fox in. This one is slow.</li>
+<li><b>Cake and gold:</b> you stock these by hand. Machines can't milk cows, and gold needs a Nether farm.</li>
+</ol>
+<p>Farms only grow while you are nearby, like every Minecraft farm.</p>
+</main>
+</body>
+</html>
