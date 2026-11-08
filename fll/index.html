@@ -1,0 +1,1060 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07211f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pit Crew">
+<title>FLL Pit Crew</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700&display=swap">
+<style>
+/* Layout: a pit-lane console for a night-time rainforest. Team bar on top, four tabs (Match, Runs, Plan, Team), tab bar at the bottom like a phone app. Deliberately dark only: the season glows. */
+:root{
+  --night:#07211f; --panel:#0d302c; --panel-hi:#134139; --line:#1f5a4f; --ink:#e9fbf3; --mute:#93c1b3;
+  --glow:#5cf2b4; --leaf:#c3e88d; --amber:#ffc857; --coral:#ff7a6b; --sky:#7cc7ff;
+  --display:'Fredoka', ui-rounded, system-ui, sans-serif; --body:'Nunito', system-ui, sans-serif;
+  color-scheme:dark;
+  padding-top:env(safe-area-inset-top,0px);
+}
+[hidden]{display:none!important}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+html{scroll-padding-top:calc(70px + env(safe-area-inset-top,0px));scroll-padding-bottom:calc(90px + env(safe-area-inset-bottom,0px))}
+body{margin:0;background:radial-gradient(ellipse at 80% -10%,#0f4a3f 0%,var(--night) 55%) fixed,var(--night);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;
+  padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+button,input,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.wrap{max-width:1100px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);font-weight:600;margin:0;line-height:1.15;text-wrap:balance}
+h2{font-size:26px}
+h3{font-size:19px}
+.mute{color:var(--mute)}
+.small{font-size:14px}
+header{padding-block:16px 10px}
+header .wrap{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+.brand img{width:38px;height:38px;border-radius:10px}
+.brand h1{font-size:22px}
+.brand p{margin:0;font-size:13px;color:var(--mute)}
+.teambtn{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:7px 14px;cursor:pointer;font-weight:700;font-size:14px}
+.teambtn i{width:9px;height:9px;border-radius:50%;background:var(--mute)}
+.teambtn.on i{background:var(--glow);box-shadow:0 0 8px var(--glow)}
+main{padding-block:8px 24px}
+.tabpage{display:flex;flex-direction:column;gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{border:0;border-radius:12px;padding:11px 18px;font-weight:700;cursor:pointer;background:var(--glow);color:#032019;font-family:var(--display);font-size:17px;letter-spacing:.01em}
+.btn:hover{filter:brightness(1.07)}
+.btn.quiet{background:var(--panel-hi);color:var(--ink);border:1px solid var(--line)}
+.btn.warn{background:var(--coral);color:#2a0905}
+.btn.small{padding:7px 12px;font-size:14px;border-radius:9px}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+input[type=text],input[type=number],textarea,select{background:var(--night);border:1px solid var(--line);border-radius:10px;padding:9px 11px;width:100%}
+textarea{min-height:90px;resize:vertical}
+label.field{display:flex;flex-direction:column;gap:4px;font-size:14px;font-weight:700;color:var(--mute)}
+label.field input,label.field textarea,label.field select{font-weight:400;color:var(--ink);font-size:16px}
+
+/* match */
+.match{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:16px;align-items:start}
+@media (max-width:860px){.match{grid-template-columns:1fr}.match .timer{position:static}}
+.mini{position:fixed;left:0;right:0;top:0;z-index:15;background:rgba(7,33,31,.96);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);
+  padding-top:env(safe-area-inset-top,0px);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.mini .in{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:14px;height:56px}
+.mini .t{font-family:var(--display);font-size:30px;font-variant-numeric:tabular-nums;color:var(--glow)}
+.mini .t.soon{color:var(--amber)}.mini .t.end{color:var(--coral)}
+.mini .s{font-family:var(--display);font-size:22px;color:var(--leaf);font-variant-numeric:tabular-nums}
+.mini .s small{font-family:var(--body);font-size:12px;color:var(--mute);margin-right:4px}
+.mini .btn{margin-left:auto}
+.timer{position:sticky;top:calc(8px + env(safe-area-inset-top,0px));z-index:5}
+.clock{font-family:var(--display);font-weight:700;font-size:clamp(72px,16vw,132px);line-height:1;text-align:center;font-variant-numeric:tabular-nums;letter-spacing:.02em;
+  text-shadow:0 0 28px rgba(92,242,180,.35);color:var(--glow);transition:color .2s}
+.clock.soon{color:var(--amber);text-shadow:0 0 28px rgba(255,200,87,.4)}
+.clock.end{color:var(--coral);text-shadow:0 0 28px rgba(255,122,107,.45)}
+.bar{height:8px;background:var(--night);border-radius:999px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--glow),var(--leaf));border-radius:999px;transition:width .25s linear}
+.total{display:flex;align-items:baseline;justify-content:space-between;gap:10px;background:var(--night);border-radius:12px;padding:12px 14px}
+.total b{font-family:var(--display);font-size:44px;line-height:1;font-variant-numeric:tabular-nums;color:var(--leaf)}
+.total span{color:var(--mute);font-size:14px}
+.mission{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.mission h3{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--panel-hi);font-size:17px}
+.mission h3 .no{font-family:var(--display);background:var(--leaf);color:#0c2a12;border-radius:8px;padding:1px 8px;font-size:14px}
+.mission h3 .pts{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--leaf)}
+.item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-top:1px solid var(--line)}
+.item:first-of-type{border-top:0}
+.item .lbl{flex:1;min-width:0}
+.item .lbl small{display:block;color:var(--mute);font-size:13px}
+.step{display:flex;align-items:center;gap:4px;flex:none}
+.step button{width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:var(--night);font-size:22px;font-weight:700;cursor:pointer;touch-action:manipulation}
+.step output{min-width:34px;text-align:center;font-family:var(--display);font-size:22px;font-variant-numeric:tabular-nums}
+.yn{display:flex;border:1px solid var(--line);border-radius:12px;overflow:hidden;flex:none}
+.yn button{border:0;background:var(--night);padding:10px 14px;cursor:pointer;font-weight:700;touch-action:manipulation}
+.yn button[aria-pressed="true"]{background:var(--glow);color:#032019}
+.yn button.no[aria-pressed="true"]{background:var(--panel-hi);color:var(--ink)}
+.item.locked{opacity:.5}
+.pens{display:flex;gap:6px;flex-wrap:wrap}
+.pens button{border:1px solid var(--line);background:var(--night);border-radius:10px;padding:8px 12px;cursor:pointer;font-weight:700}
+.pens button[aria-pressed="true"]{background:var(--coral);color:#2a0905;border-color:var(--coral)}
+.pens button.zero[aria-pressed="true"]{background:var(--panel-hi);color:var(--ink);border-color:var(--line)}
+.gp{display:flex;gap:6px;flex-wrap:wrap}
+.gp button{flex:1;min-width:90px;border:1px solid var(--line);background:var(--night);border-radius:10px;padding:8px;cursor:pointer;font-weight:700}
+.gp button[aria-pressed="true"]{background:var(--sky);color:#04203a;border-color:var(--sky)}
+.zeroed{color:var(--coral);font-weight:700}
+
+/* runs */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.stat{background:var(--night);border-radius:12px;padding:12px}
+.stat i{font-style:normal;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);font-weight:700}
+.stat b{display:block;font-family:var(--display);font-size:32px;font-variant-numeric:tabular-nums;color:var(--leaf);line-height:1.1}
+.chart{width:100%;height:auto;display:block}
+.mrow{display:grid;grid-template-columns:minmax(0,1fr) 110px 60px;gap:10px;align-items:center;font-size:14px}
+.mrow .track{height:10px;background:var(--night);border-radius:999px;overflow:hidden}
+.mrow .track i{display:block;height:100%;background:var(--glow)}
+.mrow b{text-align:right;font-variant-numeric:tabular-nums}
+.runlist{display:flex;flex-direction:column;gap:8px}
+.run{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;background:var(--night);border-radius:12px;padding:10px 12px}
+.run .sc{font-family:var(--display);font-size:26px;font-variant-numeric:tabular-nums;color:var(--leaf);min-width:56px;text-align:center}
+.run small{display:block;color:var(--mute);font-size:13px}
+.run .del{background:none;border:0;color:var(--mute);cursor:pointer;font-size:13px;padding:6px}
+.run .del:hover{color:var(--coral)}
+.empty{border:1px dashed var(--line);border-radius:12px;padding:16px;color:var(--mute)}
+
+/* plan */
+.plans{display:flex;flex-direction:column;gap:12px}
+.plan .head{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.plan .head input{flex:1;min-width:160px;font-family:var(--display);font-size:18px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--night);border-radius:999px;padding:6px 12px;cursor:pointer;font-size:14px;font-weight:700}
+.chip[aria-pressed="true"]{background:var(--leaf);color:#0c2a12;border-color:var(--leaf)}
+.planmax{font-variant-numeric:tabular-nums;color:var(--leaf);font-weight:700}
+
+/* team */
+.check{display:flex;flex-direction:column;gap:6px}
+.check label{display:flex;gap:10px;align-items:center;background:var(--night);border-radius:10px;padding:9px 12px;cursor:pointer}
+.check label.done span{text-decoration:line-through;color:var(--mute)}
+.check input[type=checkbox]{width:20px;height:20px;accent-color:var(--glow);flex:none}
+.check .x{margin-left:auto;background:none;border:0;color:var(--mute);cursor:pointer}
+.q{font-family:var(--display);font-size:22px;line-height:1.3;background:var(--night);border-radius:12px;padding:16px;min-height:90px}
+.qtabs{display:flex;gap:6px;flex-wrap:wrap}
+
+/* tab bar */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(7,33,31,.94);backdrop-filter:blur(8px);border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+nav.tabs .wrap{display:grid;grid-template-columns:repeat(6,1fr);gap:2px;padding-block:6px}
+nav.tabs button{background:none;border:0;border-radius:12px;padding:6px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--mute);font-weight:700;font-size:13px}
+nav.tabs button svg{width:24px;height:24px}
+nav.tabs button[aria-selected="true"]{color:var(--glow);background:var(--panel)}
+
+/* team sheet */
+.sheet{position:fixed;inset:0;z-index:30;background:var(--night);overflow:auto;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.sheet .top{position:sticky;top:0;background:var(--night);border-bottom:1px solid var(--line);z-index:2}
+.sheet .top .wrap{display:flex;align-items:center;height:56px}
+.back{background:none;border:0;color:var(--amber);font-weight:700;cursor:pointer;padding:8px 4px}
+.sheetbody{padding-block:20px 40px;display:flex;flex-direction:column;gap:14px;max-width:720px}
+.codebox{font-family:ui-monospace,Menlo,monospace;font-size:clamp(15px,3.6vw,20px);letter-spacing:.06em;background:var(--panel);border-radius:10px;padding:12px 14px;word-break:break-all}
+.err{color:var(--coral);margin:0;font-size:14px}
+.toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--leaf);color:#0c2a12;font-weight:700;padding:10px 16px;border-radius:12px;z-index:40;box-shadow:0 6px 20px rgba(0,0,0,.35)}
+footer{color:var(--mute);font-size:12px;padding-block:8px 16px}
+.ro .edit-only{display:none!important}
+.teacher-only{display:none!important}
+.is-teacher .teacher-only{display:flex!important}
+.hero .eyebrow{margin:0;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--leaf);font-weight:700}
+.hero h2{font-size:clamp(28px,6vw,40px);color:var(--glow)}
+.four{display:flex;flex-wrap:wrap;gap:8px}
+.four span{background:var(--night);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:700;font-size:14px}
+ul.facts{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.links{display:flex;flex-wrap:wrap;gap:8px}
+.flink{display:inline-flex;align-items:center;gap:8px;text-decoration:none;background:var(--night);border:1px solid var(--line);border-radius:10px;padding:7px 12px;font-weight:700;font-size:14px;color:var(--ink)}
+.flink:hover{border-color:var(--glow)}
+.flink span{font-size:11px;background:var(--leaf);color:#0c2a12;border-radius:5px;padding:1px 5px}
+.roles{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
+.rolecard{background:var(--night);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:6px}
+.rolecard h4{font-family:var(--display);font-size:20px;margin:0;color:var(--glow)}
+.rolecard p{margin:0;font-size:14px}
+.rolecard .rmis{color:var(--leaf);font-weight:700}
+.rolecard .tip{color:var(--mute)}
+.rolecard .links{margin-top:auto;padding-top:4px}
+.journeys{display:flex;flex-direction:column;gap:8px}
+.jrow{display:grid;grid-template-columns:90px minmax(0,1fr) auto;gap:10px;align-items:center;background:var(--night);border-radius:10px;padding:10px 12px;font-size:14px}
+.jrow>b{color:var(--glow)}
+@media (max-width:640px){.jrow{grid-template-columns:1fr}}
+.jtable{display:flex;flex-direction:column;gap:4px}
+.jtable div{display:flex;justify-content:space-between;background:var(--night);border-radius:8px;padding:8px 12px}
+.jtable b{color:var(--leaf);font-variant-numeric:tabular-nums}
+.awards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.awards h4{margin:0 0 6px;font-family:var(--display);color:var(--amber)}
+.awards ul{margin:0;padding-left:18px;font-size:14px;display:flex;flex-direction:column;gap:4px}
+.jclock{font-family:var(--display);font-size:64px;line-height:1;text-align:center;color:var(--glow);font-variant-numeric:tabular-nums}
+.jpart{text-align:center;display:flex;flex-direction:column;gap:2px}
+.jpart b{font-family:var(--display);font-size:20px}
+.jpart span{color:var(--mute);font-size:14px}
+.jsteps{display:flex;gap:4px}
+.jsteps i{flex:1;height:8px;border-radius:999px;background:var(--night)}
+.jsteps i.on{background:var(--glow)}.jsteps i.done{background:var(--leaf);opacity:.6}
+.posts{display:flex;flex-direction:column;gap:10px}
+.post{background:var(--night);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px;border-left:4px solid var(--line)}
+.post.due-soon{border-left-color:var(--amber)}.post.overdue{border-left-color:var(--coral)}.post.isdone{border-left-color:var(--glow)}
+.post h3{font-size:18px}
+.post .meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;color:var(--mute)}
+.pill{font-size:12px;font-weight:700;border-radius:999px;padding:2px 9px;background:var(--panel-hi);color:var(--ink)}
+.pill.amber{background:var(--amber);color:#2a1d00}.pill.coral{background:var(--coral);color:#2a0905}.pill.glow{background:var(--glow);color:#032019}
+.post .body{white-space:pre-wrap;margin:0}
+.filepick{position:relative;overflow:hidden;display:inline-flex}
+.filepick input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.filelist{display:flex;flex-direction:column;gap:6px}
+.filelist:empty{display:none}
+.fchip{display:flex;align-items:center;gap:10px;background:var(--night);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:14px}
+.fchip b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.fchip small{color:var(--mute);white-space:nowrap}
+.fchip button{background:none;border:0;color:var(--mute);cursor:pointer;padding:2px 6px}
+.fchip button:hover{color:var(--coral)}
+a.flink.file span{background:var(--sky);color:#04203a}
+button.flink{cursor:pointer;font:inherit;font-weight:700;font-size:14px}
+.qa{display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--line);padding-top:8px}
+.qa .q1{font-size:14px}.qa .q1 b{color:var(--sky)}
+.qa .a1{font-size:14px;margin-left:14px;color:var(--leaf)}
+.ask{display:flex;gap:6px}.ask input{flex:1;min-width:0}
+.who{display:flex;flex-wrap:wrap;gap:6px}
+.who span{font-size:13px;background:var(--panel);border-radius:999px;padding:2px 9px}
+.who span.y{background:var(--glow);color:#032019}
+nav.tabs .badge{position:absolute;margin-left:22px;margin-top:-2px;width:9px;height:9px;border-radius:50%;background:var(--coral)}
+nav.tabs button{position:relative}
+.rolepick{display:flex;gap:8px;flex-wrap:wrap}
+.rolepick label{flex:1;min-width:140px;display:flex;gap:8px;align-items:flex-start;background:var(--night);border:1px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer;font-weight:400;color:var(--ink)}
+.rolepick input{accent-color:var(--glow);margin-top:4px}
+.rolepick small{display:block;color:var(--mute)}
+details summary{cursor:pointer;color:var(--mute);font-size:14px}
+@media (prefers-reduced-motion:reduce){.bar i,.clock{transition:none}}
+
+.upd{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(88px + env(safe-area-inset-bottom,0px));z-index:45;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  background:var(--ink);color:var(--night);border-radius:14px;padding:10px 12px 10px 16px;box-shadow:0 8px 24px rgba(0,0,0,.3);max-width:calc(100% - 32px);font-weight:700;font-size:15px}
+.upd button{border:0;border-radius:10px;padding:8px 14px;font:inherit;font-weight:800;cursor:pointer}
+.upd .now{background:var(--glow);color:var(--night)}
+.upd .later{background:transparent;color:inherit;opacity:.75}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="brand"><img src="icons/icon-192.png" alt=""><div><h1>FLL Pit Crew</h1><p>BIOGLOW · 2026–2027 season</p></div></div>
+    <button class="teambtn" id="teamBtn"><i></i><span id="teamLabel">Join or start a group</span></button>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- MATCH -->
+  <section class="tabpage" id="tab-match">
+    <div class="match">
+      <div class="card timer">
+        <div class="clock" id="clock" role="timer" aria-live="off">2:30</div>
+        <div class="bar"><i id="clockBar" style="width:100%"></i></div>
+        <div class="row">
+          <button class="btn" id="tStart" style="flex:2">Start match</button>
+          <button class="btn quiet" id="tReset" style="flex:1">Reset</button>
+        </div>
+        <div class="total"><div><span>Score</span><br><b id="total">0</b></div><span id="totalNote"></span></div>
+        <label class="field">Which run plan is this?<select id="runPlan"></select></label>
+        <label class="field">Notes about this run<input type="text" id="runNote" maxlength="200" placeholder="Arm slipped on mission 03"></label>
+        <div class="row"><button class="btn" id="saveRun" style="flex:2">Save this run</button><button class="btn quiet" id="clearScore" style="flex:1">Clear score</button></div>
+        <p class="small mute" style="margin:0">Match length: <b id="lenLabel">2:30</b>. <button class="btn quiet small" id="lenBtn">Change</button></p>
+      </div>
+      <div class="tabpage" id="missions"></div>
+    </div>
+  </section>
+
+  <!-- RUNS -->
+  <section class="tabpage" id="tab-runs" hidden>
+    <div class="card"><h2>Practice runs</h2><div class="stats" id="stats"></div></div>
+    <div class="card"><h3>Score over time</h3><div id="chart"></div></div>
+    <div class="card"><h3>Points per mission</h3><p class="small mute" style="margin:0">Average points each mission earns in your last 20 runs, and how often it scores at all.</p><div id="perMission" style="display:flex;flex-direction:column;gap:8px"></div></div>
+    <div class="card"><h3>All runs</h3><div class="runlist" id="runList"></div></div>
+  </section>
+
+  <!-- PLAN -->
+  <section class="tabpage" id="tab-plan" hidden>
+    <div class="card"><h2>Robot runs</h2><p class="mute small" style="margin:0">Plan each part of your match: which role does it, which missions, in what order, and which tool or attachment. The points show the most each plan could score.</p>
+      <div class="total"><div><span>Most points if every run works</span><br><b id="planTotal">0</b></div></div></div>
+    <div class="plans" id="plans"></div>
+    <button class="btn edit-only" id="addPlan">Add a run</button>
+  </section>
+
+  <!-- TEAM -->
+  <section class="tabpage" id="tab-team" hidden>
+    <div class="card"><h2>Innovation Project</h2>
+      <label class="field">The problem we found<textarea id="pjProblem" maxlength="2000" placeholder="What problem connected to BIOGLOW did your team choose?"></textarea></label>
+      <label class="field">Our solution<textarea id="pjSolution" maxlength="2000" placeholder="What did you invent or improve?"></textarea></label>
+      <label class="field">Research and experts we talked to<textarea id="pjResearch" maxlength="2000" placeholder="Books, websites, people you interviewed"></textarea></label>
+      <label class="field">How we will share it<textarea id="pjShare" maxlength="2000" placeholder="Who did you show it to, and what did they say?"></textarea></label>
+      <p class="small mute" id="pjSaved" style="margin:0"></p>
+    </div>
+    <div class="card"><h2>Competition day checklist</h2><div class="check" id="checklist"></div>
+      <form class="row edit-only" id="addCheck"><input type="text" id="newCheck" maxlength="120" placeholder="Add something to bring or do" style="flex:1;min-width:180px"><button class="btn small" type="submit">Add</button></form>
+      <div class="row edit-only"><button class="btn quiet small" id="untick">Untick everything</button></div></div>
+    <div class="card" id="judgeCard"><h2>Judging session practice</h2><p class="mute small" style="margin:0">Run through the real 24-minute session, part by part. The timer moves to the next part by itself.</p>
+      <div class="jclock" id="jClock">2:00</div><div class="jpart"><b id="jName">Welcome</b><span id="jWhat"></span></div>
+      <div class="jsteps" id="jSteps"></div>
+      <div class="row"><button class="btn" id="jStart" style="flex:2">Start</button><button class="btn quiet" id="jNext" style="flex:1">Next part</button><button class="btn quiet" id="jReset" style="flex:1">Reset</button></div></div>
+    <div class="card"><h2>Practice for the judges</h2><p class="mute small" style="margin:0">Pick a topic, then answer the question out loud like you're in the judging room. Take turns!</p>
+      <div class="qtabs" id="qTopics"></div>
+      <div class="q" id="question"></div>
+      <div class="row"><button class="btn" id="nextQ">Next question</button></div></div>
+  </section>
+
+  <!-- INFO -->
+  <section class="tabpage" id="tab-info" hidden>
+    <div class="card hero"><p class="eyebrow">FIRST LEGO League Future Edition · Ortaokul / Lise</p><h2>BIOGLOW · 2026–2027</h2>
+      <p>This season is about <b>biodiversity</b>: how every gene, species and ecosystem is connected, and how to protect the web of life in nature. Teams spend 2 to 3 months on four parts, and each one is <b>25%</b> of your tournament result.</p>
+      <div class="four"><span>🤖 Robot Game</span><span>🛠 Engineering Design</span><span>💡 Innovation Project</span><span>🤝 Core Values</span></div>
+      <p class="small mute" style="margin:0">These are short explanations written for this app. The official files from Bilim Kahramanları Derneği always win if anything is different.</p></div>
+
+    <div class="card"><h3>Who can join</h3><ul class="facts">
+      <li><b>4 to 8 team members</b>, aged 9 to 16, born between 1 January 2011 and 31 December 2017.</li>
+      <li>Only <b>middle school and high school</b> students. Primary school students can't join, even if their age fits.</li>
+      <li>A <b>coach aged 18 or older</b>, plus up to 2 advisers aged 17 or older (advisers are optional).</li>
+      <li>Middle and high school teams compete together. If even one member is in high school, the team counts as a high school team.</li>
+      <li>On tournament day only registered members, the coach and advisers can enter the area.</li>
+      <li>Registration is <b>free</b>. Only schools or institutions can register, from <b>1 October 2026, 11:00</b> at kayit.bilimkahramanlari.org.</li>
+      <li>Signed <b>consent forms</b> must reach the organisers <b>1 month before</b> your tournament, or the team can't take part.</li></ul>
+      <div class="links"><a class="flink" href="https://bilimkahramanlari.org/fll-future-edition-ortaokul-lise/dokuman/BKB_Katilim_Sartnamesi_2026_2027.pdf" target="_blank" rel="noopener"><span>PDF</span>Participation rules</a><a class="flink" href="https://www.bilimkahramanlaribulusuyor.org/sezond/2026/BIOGLOW_FIRST_Programlari_Koc-Danisman_Formu.pdf" target="_blank" rel="noopener"><span>PDF</span>Coach / adviser form</a><a class="flink" href="https://www.bilimkahramanlaribulusuyor.org/sezond/2026/BIOGLOW_BKB_Aile_Onay_Formu.pdf" target="_blank" rel="noopener"><span>PDF</span>Family consent form</a></div></div>
+
+    <div class="card"><h3>Tournaments</h3><ul class="facts">
+      <li><b>Local tournaments</b> in Ankara, İstanbul and İzmir (two in each city), on weekends between <b>6 February and 21 March 2027</b>. Your city decides which one you go to.</li>
+      <li>Tournament day: team registration 08:00–09:00, then robot matches from about 09:30 to 16:00.</li>
+      <li>Each team plays <b>3 robot matches of 2.5 minutes</b> and has one <b>24-minute judging session</b>.</li>
+      <li>Everyone gets a <b>medal</b> and a digital certificate.</li>
+      <li>The best teams go to the two-day <b>National Tournament</b>, and some winners there can go to international FLL events.</li></ul></div>
+
+    <div class="card"><h3>The four robot game roles</h3><p class="small mute" style="margin:0">In the Future Edition robot game, your team plays four roles at the table. Each role has its own tool and missions.</p>
+      <div class="roles"><div class="rolecard"><h4>Teknisyen</h4><p class="rmis">Mission 01 · Güçlü Mikrobiyomlar</p><p>Build a launcher with <b>one motor and a colour sensor</b>. Fire kilit türler into the Genç Orman mikrobiyomu.</p><p><b>Scoring:</b> 20 points for each one inside (up to 3). The 4th one aims at the invasive queen on the other side: knock her over too and get a <b>40 point bonus</b>.</p><p class="tip">💡 Aim beats speed: one careful shot is worth more than many quick ones. While practising you can put the forest and the hive on the same side; in a real match they face each other.</p><div class="links"><a class="flink" href="https://bilimkahramanlari.org/fll-future-edition-ortaokul-lise/dokuman/2026/Teknisyen_Rolu.pdf" target="_blank" rel="noopener"><span>PDF</span>Role sheet</a><a class="flink" href="https://www.youtube.com/watch?v=sfmWY0_PiUM&list=PLN4Ga33Nt9wI&index=9" target="_blank" rel="noopener"><span>▶</span>Video</a></div></div><div class="rolecard"><h4>Uzman</h4><p class="rmis">Missions 02 and 03 · Büyük Ağaç</p><p>Use a <b>remote</b> to work the Büyük Ağaç, which has a double motor inside. Lift the kaynak jetonu up to the canopy, then turn the tree.</p><p><b>Scoring:</b> 10 points for the token in the Kanopi Odacığı. Turning the tree so its branch opens the Mağara Şelalesi entrance lets kilit türler go through the waterfall.</p><p class="tip">💡 Small, careful moves. Line the tree up with your teammates so everyone can score more.</p><div class="links"><a class="flink" href="https://bilimkahramanlari.org/fll-future-edition-ortaokul-lise/dokuman/2026/Uzman_Rolu.pdf" target="_blank" rel="noopener"><span>PDF</span>Role sheet</a><a class="flink" href="https://www.youtube.com/watch?v=oiCQPNKU6HU&list=PLN4Ga33Nt9wI&index=6" target="_blank" rel="noopener"><span>▶</span>Video</a></div></div><div class="rolecard"><h4>Operatör</h4><p class="rmis">Mission 02 · Yenilenmenin Kökleri</p><p>Build a <b>mechanical launcher</b> with no motor: turn the crank back to store power, then flick it forward.</p><p><b>Scoring:</b> 5 points for every kaynak jetonu that lands at the roots of the Büyük Ağaç.</p><p class="tip">💡 Change your aim and your power a little each time until the shots land the same way every time.</p><div class="links"><a class="flink" href="https://bilimkahramanlari.org/fll-future-edition-ortaokul-lise/dokuman/2026/Operator_Rolu.pdf" target="_blank" rel="noopener"><span>PDF</span>Role sheet</a><a class="flink" href="https://www.youtube.com/watch?v=k3mS-j4F880&list=PLN4Ga33Nt9wI&index=4" target="_blank" rel="noopener"><span>▶</span>Video</a></div></div><div class="rolecard"><h4>Sürücü</h4><p class="rmis">Mission 05 · Merkez Sığınak</p><p>Drive a <b>two-motor robot with a remote</b>. Its front scoop collects kilit türler and kaynak jetonları from outside the Teknisyen area.</p><p><b>Scoring:</b> 5 points for each piece that ends up completely inside the Merkez Sığınak.</p><p class="tip">💡 Smooth beats fast: drive gently so nothing falls out, then reverse back to the Teknisyen area for the next trip.</p><div class="links"><a class="flink" href="https://bilimkahramanlari.org/fll-future-edition-ortaokul-lise/dokuman/2026/Surucu_Rolu.pdf" target="_blank" rel="noopener"><span>PDF</span>Role sheet</a><a class="flink" href="https://www.youtube.com/watch?v=Vlngofa75Cs&list=PLN4Ga33Nt9wI&index=5" target="_blank" rel="noopener"><span>▶</span>Video</a></div></div></div>
+      <div class="links"><a class="flink" href="https://bilimkahramanlari.org/fll-future-edition-ortaokul-lise/dokuman/2026/Skor_Kagidi.pdf" target="_blank" rel="noopener"><span>PDF</span>Score sheet</a><a class="flink" href="https://www.youtube.com/watch?v=JDJch3tYZok&list=PLN4Ga33Nt9wI&index=1" target="_blank" rel="noopener"><span>▶</span>Robot game missions</a><a class="flink" href="https://www.youtube.com/watch?v=YXyhSA-sfQg&list=PLN4Ga33Nt9wI&index=2" target="_blank" rel="noopener"><span>▶</span>Setting up the field</a><a class="flink" href="https://bilimkahramanlari.org/fll-future-edition-ortaokul-lise/dokuman/2026/Tema_Seti_Yapim_Yonergeleri.zip" target="_blank" rel="noopener"><span>ZIP</span>Theme set build guides</a></div></div>
+
+    <div class="card"><h3>Project journey</h3><p class="small mute" style="margin:0">Each role connects to real scientists who protect rainforests. Learn how they work, then use it in your design and your Innovation Project.</p>
+      <div class="journeys"><div class="jrow"><b>Teknisyen</b><span><b>Wildlife biologists:</b> Motion cameras (fotokapan) and sound recorders let scientists watch endangered animals without disturbing them.</span><a class="flink" href="https://bilimkahramanlari.org/fll-future-edition-ortaokul-lise/dokuman/2026/Proje_Yolculugu_Teknisyen_Rolu.pdf" target="_blank" rel="noopener"><span>PDF</span>Project journey</a></div><div class="jrow"><b>Uzman</b><span><b>Foresters:</b> GPS, mapping technology, sensors and an increment borer help them measure trees and see how forests change.</span><a class="flink" href="https://bilimkahramanlari.org/fll-future-edition-ortaokul-lise/dokuman/2026/Proje_Yolculugu_Uzman_Rolu.pdf" target="_blank" rel="noopener"><span>PDF</span>Project journey</a></div><div class="jrow"><b>Operatör</b><span><b>Plant ecologists:</b> Forceps and nets help them collect seeds without harming plants, which helps reforestation.</span><a class="flink" href="https://bilimkahramanlari.org/fll-future-edition-ortaokul-lise/dokuman/2026/Proje_Yolculugu_Operator_Rolu.pdf" target="_blank" rel="noopener"><span>PDF</span>Project journey</a></div><div class="jrow"><b>Sürücü</b><span><b>Drone pilots:</b> Drones scan big areas from the air, map forests, track animals and even drop seeds.</span><a class="flink" href="https://bilimkahramanlari.org/fll-future-edition-ortaokul-lise/dokuman/2026/Proje_Yolculugu_Surucu_Rolu.pdf" target="_blank" rel="noopener"><span>PDF</span>Project journey</a></div></div></div>
+
+    <div class="card"><h3>The 24-minute judging session</h3>
+      <div class="jtable">
+        <div><span>Welcome</span><b>2 min</b></div><div><span>Project presentation</span><b>5 min</b></div><div><span>Project questions</span><b>3 min</b></div>
+        <div><span>Engineering design presentation</span><b>5 min</b></div><div><span>Engineering design questions</span><b>3 min</b></div><div><span>Core Values questions</span><b>3 min</b></div><div><span>Judges' feedback</span><b>3 min</b></div></div>
+      <p class="small mute" style="margin:0">In the engineering design part, explain how you designed and coded your robot and your strategy for scoring the most in 2.5 minutes. The judges' feedback is always positive and helps you improve.</p>
+      <div class="row"><button class="btn small" id="toJudge">Practise the session</button><a class="flink" href="https://bilimkahramanlari.org/fll-future-edition-ortaokul-lise/dokuman/2026/Takimlar_Icin_Juri_Oturumu.pdf" target="_blank" rel="noopener"><span>PDF</span>Judging session</a></div></div>
+
+    <div class="card"><h3>Core Values</h3><div class="four"><span>🔍 Keşif · Discovery</span><span>✨ Yenilikçilik · Innovation</span><span>🤝 Takım Çalışması · Teamwork</span><span>🌍 Etki · Impact</span><span>🫶 Kapsayıcılık · Inclusion</span><span>🎉 Eğlence · Fun</span></div>
+      <p class="small mute" style="margin:0">Judges look for these during the whole season and on tournament day, at the robot table too. Gracious Professionalism (Duyarlı Profesyonellik) means competing hard while being kind and respectful.</p>
+      <div class="links"><a class="flink" href="https://bilimkahramanlari.org/fll-future-edition-ortaokul-lise/dokuman/2026/Oz_Degerler_Etkinlikleri.pdf" target="_blank" rel="noopener"><span>PDF</span>Core Values activities</a></div></div>
+
+    <div class="card"><h3>Awards</h3><div class="awards">
+      <div><h4>Main awards</h4><ul><li><b>Şampiyonluk:</b> the team that best shows the whole FLL experience</li><li><b>Mühendislik Tasarım:</b> great robot design and coding</li><li><b>Öz Değerler:</b> best Core Values</li><li><b>Robot Performans:</b> highest robot match score</li><li><b>Proje:</b> outstanding Innovation Project</li></ul></div>
+      <div><h4>Extra awards</h4><ul><li><b>Yükselen Yıldız:</b> a team that grew a lot this season</li><li><b>Takım Çalışması:</b> the two teams with the highest score together</li><li><b>İlham Verici Takım:</b> a team that inspires others</li></ul></div>
+      <div><h4>Support awards</h4><ul><li><b>Aslan Koç:</b> an outstanding coach or adviser</li><li><b>Duyarlı Profesyonellik / Akran:</b> chosen by the other teams</li></ul></div></div>
+      <div class="links"><a class="flink" href="https://bilimkahramanlari.org/fll-future-edition-ortaokul-lise/dokuman/2026/Odul_Listesi.pdf" target="_blank" rel="noopener"><span>PDF</span>Award list</a></div></div>
+
+    <div class="card"><h3>All official files</h3><div class="links">
+      <a class="flink" href="https://bilimkahramanlari.org/fll-future-edition-ortaokul-lise/dokuman/BKB_Katilim_Sartnamesi_2026_2027.pdf" target="_blank" rel="noopener"><span>PDF</span>Participation rules</a><a class="flink" href="https://bilimkahramanlari.org/fll-future-edition-ortaokul-lise/dokuman/2026/Skor_Kagidi.pdf" target="_blank" rel="noopener"><span>PDF</span>Score sheet</a><a class="flink" href="https://bilimkahramanlari.org/fll-future-edition-ortaokul-lise/dokuman/2026/Teknisyen_Rolu.pdf" target="_blank" rel="noopener"><span>PDF</span>Teknisyen role</a><a class="flink" href="https://bilimkahramanlari.org/fll-future-edition-ortaokul-lise/dokuman/2026/Uzman_Rolu.pdf" target="_blank" rel="noopener"><span>PDF</span>Uzman role</a><a class="flink" href="https://bilimkahramanlari.org/fll-future-edition-ortaokul-lise/dokuman/2026/Operator_Rolu.pdf" target="_blank" rel="noopener"><span>PDF</span>Operatör role</a><a class="flink" href="https://bilimkahramanlari.org/fll-future-edition-ortaokul-lise/dokuman/2026/Surucu_Rolu.pdf" target="_blank" rel="noopener"><span>PDF</span>Sürücü role</a><a class="flink" href="https://bilimkahramanlari.org/fll-future-edition-ortaokul-lise/dokuman/2026/Takimlar_Icin_Juri_Oturumu.pdf" target="_blank" rel="noopener"><span>PDF</span>Judging session</a><a class="flink" href="https://bilimkahramanlari.org/fll-future-edition-ortaokul-lise/dokuman/2026/Odul_Listesi.pdf" target="_blank" rel="noopener"><span>PDF</span>Award list</a><a class="flink" href="https://bilimkahramanlari.org/fll-future-edition-ortaokul-lise/dokuman/2026/Oz_Degerler_Etkinlikleri.pdf" target="_blank" rel="noopener"><span>PDF</span>Core Values activities</a><a class="flink" href="https://www.bilimkahramanlari.org/dokuman/2026/2026_2027_Logo_Linkleri_Tshirt_Sablonu.pdf" target="_blank" rel="noopener"><span>PDF</span>Logos and T-shirt template</a><a class="flink" href="https://bilimkahramanlari.org/fll-future-edition-ortaokul-lise/dokuman/2026/Tema_Seti_Yapim_Yonergeleri.zip" target="_blank" rel="noopener"><span>ZIP</span>Theme set build guides</a><a class="flink" href="https://bilimkahramanlari.org/fll-future-edition-ortaokul-lise/sezon-dosyalari" target="_blank" rel="noopener"><span>WEB</span>Season files page</a></div></div>
+  </section>
+
+  <!-- CLASS -->
+  <section class="tabpage" id="tab-class" hidden>
+    <div class="card" id="classIntro"></div>
+    <div class="card teacher-only" id="postCard"><h2 id="postTitle">Post something new</h2>
+      <div class="qtabs" id="postKind"><button class="chip" data-k="hw" aria-pressed="true">Homework</button><button class="chip" data-k="ann" aria-pressed="false">Announcement</button></div>
+      <label class="field">Title<input type="text" id="pTitle" maxlength="100" placeholder="Practise the Sürücü role"></label>
+      <label class="field">Details<textarea id="pBody" maxlength="2000" placeholder="What should everyone do or know?"></textarea></label>
+      <label class="field" id="pDueWrap">Due date<input type="date" id="pDue"></label>
+      <div class="field">Files <span class="small" style="font-weight:400">PDF, Word, PowerPoint, Excel, text or photos. Up to 5 files, 10 MB each.</span>
+        <div class="filelist" id="pFileList"></div>
+        <label class="btn quiet small filepick" style="align-self:flex-start">Choose files<input type="file" id="pFiles" multiple accept=".pdf,.txt,.doc,.docx,.ppt,.pptx,.xls,.xlsx,image/*,application/pdf"></label></div>
+      <div class="field">Links <span class="small" style="font-weight:400">Optional: paste a link to a website or video.</span>
+        <div id="pLinks" style="display:flex;flex-direction:column;gap:6px"></div><button class="btn quiet small" id="pAddLink" type="button" style="align-self:flex-start">Add another link</button></div>
+      <p class="err" id="pErr" hidden></p>
+      <div class="row"><button class="btn" id="pPost">Post</button><button class="btn quiet" id="pCancel" hidden>Cancel editing</button></div></div>
+    <div class="card"><h2>Homework</h2><div class="posts" id="hwList"></div></div>
+    <div class="card"><h2>Announcements</h2><div class="posts" id="annList"></div></div>
+  </section>
+  <footer>Missions and points from the BIOGLOW score sheet published by Bilim Kahramanları Derneği. Always check the official rules. FIRST® and LEGO® are trademarks of their owners; this app is made by your team, not by them. <span id="ver">Version 5</span></footer>
+</main>
+
+<nav class="tabs" aria-label="Sections">
+  <div class="wrap" role="tablist">
+    <button role="tab" data-tab="match" aria-selected="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg>Match</button>
+    <button role="tab" data-tab="runs" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Runs</button>
+    <button role="tab" data-tab="plan" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1.5"/><circle cx="4.5" cy="12" r="1.5"/><circle cx="4.5" cy="18" r="1.5"/></svg>Plan</button>
+    <button role="tab" data-tab="team" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.6c2.8.1 4.8 1.9 5.5 5.4"/></svg>Team</button>
+    <button role="tab" data-tab="info" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>Info</button>
+    <button role="tab" data-tab="class" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5.5C5.5 4 9 4 12 6c3-2 6.5-2 9-.5V19c-2.5-1.5-6-1.5-9 .5-3-2-6.5-2-9-.5z"/><path d="M12 6v13.5"/></svg>Class<i class="badge" id="classBadge" hidden></i></button>
+  </div>
+</nav>
+
+<div class="sheet" id="teamSheet" hidden role="dialog" aria-modal="true" aria-label="Team">
+  <div class="top"><div class="wrap"><button class="back" id="teamBack">‹ Back</button></div></div>
+  <div class="wrap sheetbody" id="teamBody"></div>
+</div>
+<div class="mini" id="mini" hidden><div class="in"><span class="t" id="miniClock">2:30</span><span class="s"><small>Score</small><span id="miniScore">0</span></span><button class="btn small" id="miniBtn">Start</button></div></div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const obj=v=>v&&typeof v==='object'&&!Array.isArray(v)?v:{};
+const now=()=>Date.now();
+const hex=n=>[...crypto.getRandomValues(new Uint8Array(n))].map(x=>x.toString(16).padStart(2,'0')).join('');
+function toast(t){const el=$('toast');el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,1800)}
+
+/* ---------- the BIOGLOW missions (from the season score sheet) ---------- */
+const MISSIONS=[
+  {id:'m01',no:'01',name:'Güçlü Mikrobiyomlar',items:[
+    {k:'m01a',label:'Genç orman',hint:'Kilit türler, 20 puan each',type:'count',pts:20,max:3},
+    {k:'m01b',label:'Büyük ağaç',hint:'Kilit türler, 20 puan each',type:'count',pts:20,max:3},
+    {k:'m01c',label:'Kovuklu ağaç',hint:'Kilit türler, 20 puan each',type:'count',pts:20,max:3},
+    {k:'m01d',label:'Bonus',hint:'At least 3 kilit türler in genç orman, and the invasive queen on the other field knocked over: 40 puan',type:'yes',pts:40,needs:s=>(s.m01a||0)>=3}]},
+  {id:'m02',no:'02',name:'Yenilenmenin Kökleri',items:[
+    {k:'m02a',label:'Büyük ağacın tabanındaki kaynaklar',hint:'5 puan each',type:'count',pts:5,max:40},
+    {k:'m02b',label:'Kanopi odacığındaki kaynaklar',hint:'10 puan each, up to 15',type:'count',pts:10,max:15}]},
+  {id:'m03',no:'03',name:'Mağara Şelalesi',items:[
+    {k:'m03a',label:'Mağara Şelalesinden geçirilen kilit türler',hint:'5 puan each, up to 50',type:'count',pts:5,max:50}]},
+  {id:'m04',no:'04',name:'Yağmur Ormanının Uyanışı',items:[
+    {k:'m04a',label:'Yuvadaki tüm kilit türler serbest',hint:'30 puan',type:'yes',pts:30},
+    {k:'m04b',label:'Kovuklu ağaçtaki tüm kaynaklar serbest',hint:'20 puan',type:'yes',pts:20}]},
+  {id:'m05',no:'05',name:'Merkez Sığınak',items:[
+    {k:'m05a',label:'Tamamen Merkez Sığınağın içinde',hint:'Kilit türler or kaynaklar, 5 puan each',type:'count',pts:5,max:40}]},
+  {id:'lvl',no:'★',name:'Seviye Atlama: İstilacı Saldırısı',items:[
+    {k:'lv1',label:'Eklenen istilacı türler',hint:'20 puan each, up to 5',type:'count',pts:20,max:5},
+    {k:'lv2',label:'Karantina bölgesindeki istilacı türler',hint:'10 puan each',type:'count',pts:10,max:30}]},
+];
+const ITEMS=MISSIONS.flatMap(m=>m.items.map(i=>Object.assign({m:m.id},i)));
+const PENALTY=[0,-10,-30];
+function itemPts(i,s){const v=+s[i.k]||0;if(i.type==='yes')return v&&(!i.needs||i.needs(s))?i.pts:0;return Math.min(v,i.max)*i.pts}
+function missionPts(m,s){return m.items.reduce((a,i)=>a+itemPts(i,s),0)}
+function scoreOf(s){const pen=+s.pen||0;if(pen>=3)return 0;return Math.max(0,MISSIONS.reduce((a,m)=>a+missionPts(m,s),0)+(PENALTY[pen]||0))}
+// most a mission can score; open-ended counts use a realistic cap so plans stay readable
+const missionMax=m=>m.items.reduce((a,i)=>a+(i.type==='yes'?i.pts:i.max*i.pts),0);
+
+/* ---------- team data: one record, merged item by item ---------- */
+let data=blank();
+function blank(){return{v:1,teamName:'',matchSec:150,runs:{},plans:{},checks:{},project:{u:0},topic:'robot',hw:{},ann:{},done:{},qs:{},members:{},teacherHash:'',teacherU:0}}
+const MAPS=['runs','plans','checks','hw','ann','done','qs','members'];
+try{const s=JSON.parse(localStorage.getItem('fll:data')||'null');if(s&&s.v===1)data=Object.assign(blank(),s)}catch(e){}
+let team=null;try{team=JSON.parse(localStorage.getItem('fll:team')||'null')}catch(e){}
+// groups from before Supabase used a different code, so they can't be opened any more
+let oldGroup=false;if(team&&!team.gid){team=null;oldGroup=true;try{localStorage.removeItem('fll:team')}catch(e){}}
+const saveLocal=()=>{try{localStorage.setItem('fll:data',JSON.stringify(data))}catch(e){}};
+const saveTeam=()=>{try{team?localStorage.setItem('fll:team',JSON.stringify(team)):localStorage.removeItem('fll:team')}catch(e){}};
+// newest change wins, per run, per plan, per checklist line
+function merge(a,b){
+  a=Object.assign(blank(),obj(a));b=Object.assign(blank(),obj(b));
+  const out=blank();
+  for(const k of MAPS){out[k]={};const A=obj(a[k]),B=obj(b[k]);
+    for(const id of new Set([...Object.keys(A),...Object.keys(B)])){const x=obj(A[id]),y=obj(B[id]);out[k][id]=(+y.u||0)>(+x.u||0)?y:x}}
+  out.project=(+obj(b.project).u||0)>(+obj(a.project).u||0)?obj(b.project):obj(a.project);
+  out.teamName=String(b.teamName||a.teamName||'').slice(0,40);
+  out.matchSec=(+b.setU||0)>(+a.setU||0)?b.matchSec:a.matchSec;out.setU=Math.max(+a.setU||0,+b.setU||0);
+  // the first teacher key set for the group stays
+  const th=[[a.teacherHash,+a.teacherU||0],[b.teacherHash,+b.teacherU||0]].filter(x=>x[0]).sort((x,y)=>x[1]-y[1])[0];
+  out.teacherHash=th?String(th[0]):'';out.teacherU=th?th[1]:0;
+  out.topic=a.topic;out.updatedAt=Math.max(+a.updatedAt||0,+b.updatedAt||0);
+  return out;
+}
+const live=m=>Object.entries(obj(m)).filter(([,x])=>x&&!x.deleted);
+
+/* ---------- sharing: the teacher's Supabase project ---------- */
+const SB_URL='https://ahdidgzraaisooduipkt.supabase.co',SB_KEY='sb_publishable_PMvvVoPQYgi9Awd4kmtz-Q_is5vBUfn';
+const APP_URL='https://kuzeyozer1.github.io/kuzey-arcade2/fll/';
+const sb=window.supabase?window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}):null;
+const KINDS={run:'runs',plan:'plans',check:'checks',hw:'hw',ann:'ann',done:'done',q:'qs'};
+const ERR={offline:'You seem to be offline. Changes are saved on this device and will sync when you\'re back online.',missing:'No group was found with that code. Check the code and try again.',
+  nolib:'Sharing couldn\'t load. Check your internet connection and reload the app.',server:'The group storage didn\'t answer. Changes are kept on this device; try again in a minute.'};
+const errText=e=>{const m=String(e&&e.message||e||'');if(/no group with that code/i.test(m))return ERR.missing;if(/fetch|network|offline|load failed/i.test(m)||!navigator.onLine)return ERR.offline;return ERR[m]||ERR.server};
+const fmtCode=c=>{c=String(c||'').toUpperCase();return c.length===8?c.slice(0,4)+'-'+c.slice(4):c};
+const parseCode=s=>{const m=String(s||'').replace(/^.*#team=/,'').replace(/[^0-9a-z]/gi,'').toUpperCase();return /^[0-9A-F]{8}$/.test(m)?m:null};
+let syncState='',lastSync=0,dirty=false,syncTimer=null,syncing=false;
+// what the group storage last had for each item, so only real changes are sent
+let synced={};try{synced=JSON.parse(localStorage.getItem('fll:synced')||'{}')||{}}catch(e){}
+const saveSynced=()=>{try{localStorage.setItem('fll:synced',JSON.stringify(synced))}catch(e){}};
+const canon=v=>Array.isArray(v)?v.map(canon):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,canon(v[k])])):v;
+const strip=x=>{const o=Object.assign({},obj(x));delete o.u;delete o.deleted;return o};
+const sigOf=(d,del)=>JSON.stringify([canon(d),!!del]);
+function localItems(){
+  const out=[];
+  for(const [kind,key] of Object.entries(KINDS))for(const [id,x] of Object.entries(obj(data[key])))out.push({kind,id,d:strip(x),del:!!obj(x).deleted,u:+obj(x).u||0});
+  out.push({kind:'project',id:'main',d:strip(data.project),del:false,u:+obj(data.project).u||0});
+  out.push({kind:'settings',id:'main',d:{matchSec:data.matchSec},del:false,u:+data.setU||0});
+  return out;
+}
+// mirrors the database rules, so this device only sends what it may change
+function mayWrite(it){
+  const r=team&&team.role;
+  if(r==='teacher')return true;
+  if(r==='computer')return ['run','plan','check','project','settings'].includes(it.kind);
+  if(r==='student')return(it.kind==='done'&&it.id.endsWith('|'+team.mid))||(it.kind==='q'&&it.d.uid===team.mid&&!('ans' in it.d)&&!synced['q/'+it.id]);
+  return false;
+}
+function applyRow(row){
+  const d=obj(row.data),u=Date.parse(row.updated_at)||now();
+  if(row.kind==='project'){data.project=Object.assign({},d,{u});return}
+  if(row.kind==='settings'){if(+d.matchSec)data.matchSec=+d.matchSec;data.setU=u;return}
+  const key=KINDS[row.kind];if(!key)return;
+  data[key][row.id]=row.deleted?{deleted:true,u}:Object.assign({},d,{u});
+}
+async function sync(){
+  if(!team||syncing)return;if(!sb){syncState=ERR.nolib;setTeamBtn();return}
+  syncing=true;setTeamBtn('Syncing…');
+  try{
+    const {data:{session}}=await sb.auth.getSession();
+    if(!session||session.user.id!==team.mid)throw new Error('Please join the group again on this device.');
+    const [g,m]=await Promise.all([sb.from('groups').select('name,code,teacher').eq('id',team.gid).maybeSingle(),sb.from('members').select('user_id,nick,role').eq('group_id',team.gid)]);
+    if(g.error)throw g.error;if(m.error)throw m.error;
+    if(!g.data)throw new Error('This group was deleted, or you were removed from it.');
+    data.teamName=g.data.name;team.code=g.data.code;
+    data.members=Object.fromEntries(m.data.map(x=>[x.user_id,{nick:x.nick,role:x.role}]));
+    const me=data.members[team.mid];if(!me)throw new Error('You were removed from this group. Ask the teacher for the code to join again.');
+    team.role=me.role;team.nick=me.nick;saveTeam();
+    // 1. read everything the group has
+    const server={};
+    for(let from=0;;from+=1000){
+      const {data:rows,error}=await sb.from('items').select('kind,id,data,deleted,updated_at').eq('group_id',team.gid).order('kind').order('id').range(from,from+999);
+      if(error)throw error;rows.forEach(r=>server[r.kind+'/'+r.id]=r);if(rows.length<1000)break;
+    }
+    // 2. send this device's changes, unless someone saved a newer version
+    const out=localItems().filter(it=>{const k=it.kind+'/'+it.id,srv=server[k];
+      return sigOf(it.d,it.del)!==synced[k]&&mayWrite(it)&&!(srv&&Date.parse(srv.updated_at)>=it.u)&&!(srv&&sigOf(obj(srv.data),srv.deleted)===sigOf(it.d,it.del))});
+    const sent=new Set();
+    for(let i=0;i<out.length;i+=200){
+      const part=out.slice(i,i+200);
+      const {error}=await sb.from('items').upsert(part.map(it=>({group_id:team.gid,kind:it.kind,id:it.id,data:it.d,deleted:it.del,updated_by:team.mid,updated_at:new Date(it.u||now()).toISOString()})),{onConflict:'group_id,kind,id'});
+      if(error)throw error;part.forEach(it=>{const k=it.kind+'/'+it.id;synced[k]=sigOf(it.d,it.del);sent.add(k)});
+    }
+    // 3. take everyone else's changes
+    for(const [k,row] of Object.entries(server)){if(sent.has(k))continue;applyRow(row);synced[k]=sigOf(obj(row.data),row.deleted)}
+    saveSynced();saveLocal();dirty=false;lastSync=now();syncState='';
+  }catch(e){syncState=errText(e);if(/join the group again|removed|deleted/.test(String(e.message)))syncState=e.message}
+  syncing=false;await applyRoles();setTeamBtn();renderAll();
+}
+// wait a moment after changes so several taps share one sync
+function changed(){data.updatedAt=now();saveLocal();if(!team)return;dirty=true;setTeamBtn();clearTimeout(syncTimer);syncTimer=setTimeout(sync,2500)}
+function setTeamBtn(busy){
+  const b=$('teamBtn');b.classList.toggle('on',!!team);
+  $('teamLabel').textContent=team?(busy||(syncState?'Not synced':dirty?'Saving…':(data.teamName||'Group')+' · '+ROLE_NAME[role()])):'Join or start a group';
+}
+
+/* ---------- who can do what ---------- */
+// teacher: posts homework; computer: runs matches and edits; student: looks, ticks homework, asks questions
+let teacherOK=false;
+const role=()=>team?(team.role||'computer'):'solo';
+const isTeacher=()=>role()==='teacher'&&teacherOK;
+const canEdit=()=>!team||role()==='computer'||isTeacher();
+const ROLE_NAME={teacher:'Teacher',computer:'Computer',student:'Student'};
+// the database decides roles; this only shows the right buttons
+async function applyRoles(){teacherOK=!!(team&&team.role==='teacher');paintRoles()}
+function paintRoles(){
+  const ro=!canEdit();
+  document.body.classList.toggle('ro',ro);document.body.classList.toggle('is-teacher',isTeacher());
+  document.querySelectorAll('#tab-plan input,#tab-plan select,#tab-team textarea,#checklist input').forEach(x=>x.disabled=ro);
+  const mb=document.querySelector('nav.tabs [data-tab="match"]');mb.hidden=ro;
+  const n=[...document.querySelectorAll('nav.tabs button')].filter(b=>!b.hidden).length;
+  document.querySelector('nav.tabs .wrap').style.gridTemplateColumns=`repeat(${n},1fr)`;
+  if(ro&&!$('tab-match').hidden)showTab('class');
+}
+const guard=()=>{if(canEdit())return true;toast('Only the teacher or the team computer can change this');return false};
+
+/* ---------- match: timer ---------- */
+let tLeft=data.matchSec,tRun=false,tEnd=0,tick=null,countdown=0,wake=null;
+let AC=null;
+function beep(f,d=.15,vol=.08,type='square'){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain(),t=AC.currentTime;o.type=type;o.frequency.value=f;g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(AC.destination);o.start(t);o.stop(t+d+.02)}catch(e){}}
+const fmt=s=>Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
+function drawClock(){
+  const s=Math.max(0,Math.ceil(tLeft));
+  $('clock').textContent=countdown?String(countdown):fmt(s);
+  $('clock').className='clock'+(countdown?' soon':s===0?' end':s<=30?' soon':'');
+  $('clockBar').style.width=(100*Math.max(0,tLeft)/data.matchSec)+'%';
+  $('tStart').textContent=countdown?'Get ready…':tRun?'Pause':tLeft<data.matchSec&&tLeft>0?'Resume':tLeft<=0?'Match over':'Start match';
+  $('tStart').disabled=tLeft<=0||!!countdown;
+  $('lenLabel').textContent=fmt(data.matchSec);
+  $('miniClock').textContent=$('clock').textContent;$('miniClock').className='t'+($('clock').className.includes('end')?' end':$('clock').className.includes('soon')?' soon':'');
+  $('miniBtn').textContent=countdown?'…':tRun?'Pause':tLeft<=0?'Over':tLeft<data.matchSec?'Resume':'Start';$('miniBtn').disabled=$('tStart').disabled;
+}
+let lastWhole=null;
+function step(){
+  tLeft=(tEnd-performance.now())/1000;
+  const w=Math.ceil(tLeft);
+  if(w!==lastWhole){lastWhole=w;if(w===30)beep(660,.25);if(w<=10&&w>0)beep(880,.08,.06);}
+  if(tLeft<=0){tLeft=0;tRun=false;clearInterval(tick);beep(220,.9,.12,'sawtooth');releaseWake();toast('Match over! Score it and save the run.')}
+  drawClock();
+}
+async function holdWake(){try{wake=await navigator.wakeLock?.request('screen')}catch(e){wake=null}}
+function releaseWake(){try{wake&&wake.release()}catch(e){}wake=null}
+$('tStart').onclick=()=>{
+  if(!guard())return;
+  if(tRun){tRun=false;clearInterval(tick);tLeft=(tEnd-performance.now())/1000;releaseWake();drawClock();return}
+  const go=()=>{tRun=true;tEnd=performance.now()+tLeft*1000;lastWhole=null;tick=setInterval(step,100);beep(1046,.4,.1);holdWake();drawClock()};
+  if(tLeft>=data.matchSec){countdown=3;drawClock();beep(523,.15);
+    const c=setInterval(()=>{countdown--;if(countdown>0){beep(523,.15);drawClock()}else{clearInterval(c);countdown=0;go()}},1000);}
+  else go();
+};
+$('tReset').onclick=()=>{tRun=false;clearInterval(tick);countdown=0;tLeft=data.matchSec;releaseWake();drawClock()};
+$('lenBtn').onclick=()=>{
+  if(!guard())return;
+  const opts=[120,150,180];const i=opts.indexOf(data.matchSec);data.matchSec=opts[(i+1)%opts.length];data.setU=now();
+  if(!tRun){tLeft=data.matchSec}changed();drawClock();toast('Match length: '+fmt(data.matchSec));
+};
+
+/* ---------- match: scorer ---------- */
+let sheet={};try{sheet=JSON.parse(localStorage.getItem('fll:sheet')||'{}')||{}}catch(e){}
+const saveSheet=()=>{try{localStorage.setItem('fll:sheet',JSON.stringify(sheet))}catch(e){}};
+function renderMissions(){
+  const box=$('missions');box.innerHTML='';
+  for(const m of MISSIONS){
+    const el=document.createElement('div');el.className='mission';
+    el.innerHTML=`<h3><span class="no">${m.no}</span>${esc(m.name)}<span class="pts" data-mp="${m.id}">0</span></h3>`+m.items.map(i=>`<div class="item" data-k="${i.k}">
+      <div class="lbl">${esc(i.label)}<small>${esc(i.hint)}</small></div>
+      ${i.type==='count'?`<div class="step"><button data-d="-1" aria-label="One less">−</button><output>0</output><button data-d="1" aria-label="One more">+</button></div>`
+        :`<div class="yn"><button class="no" data-v="0">No</button><button data-v="1">Yes</button></div>`}</div>`).join('');
+    box.appendChild(el);
+  }
+  const pen=document.createElement('div');pen.className='mission';
+  pen.innerHTML=`<h3><span class="no" style="background:var(--coral);color:#2a0905">!</span>Cezalar (penalties)</h3><div class="item"><div class="pens" id="pens">${['0','1 (−10)','2 (−30)','3+ (score 0)'].map((t,i)=>`<button data-p="${i}" class="${i?'':'zero'}">${t}</button>`).join('')}</div></div>`;
+  box.appendChild(pen);
+  const gp=document.createElement('div');gp.className='mission';
+  gp.innerHTML=`<h3><span class="no" style="background:var(--sky);color:#04203a">GP</span>Duyarlı Profesyonellik</h3><div class="item"><div class="lbl"><small>How the referee might rate your team's Gracious Professionalism at the table. It doesn't change the score.</small></div></div><div class="item"><div class="gp" id="gp">${[['2','Gelişiyor'],['3','Ustaca'],['4','Örnek olacak']].map(([v,t])=>`<button data-g="${v}">${v} · ${t}</button>`).join('')}</div></div>`;
+  box.appendChild(gp);
+  box.onclick=e=>{
+    const it=e.target.closest('.item[data-k]');
+    if(it&&e.target.dataset.d){const i=ITEMS.find(x=>x.k===it.dataset.k);sheet[i.k]=Math.max(0,Math.min(i.max,(+sheet[i.k]||0)+(+e.target.dataset.d)));tapped()}
+    else if(it&&e.target.dataset.v!==undefined){const i=ITEMS.find(x=>x.k===it.dataset.k);if(i.needs&&!i.needs(sheet)&&e.target.dataset.v==='1'){toast('Needs at least 3 kilit türler in genç orman first');return}sheet[i.k]=+e.target.dataset.v;tapped()}
+    else if(e.target.dataset.p!==undefined){sheet.pen=+e.target.dataset.p;tapped()}
+    else if(e.target.dataset.g){sheet.gp=sheet.gp===e.target.dataset.g?null:e.target.dataset.g;tapped()}
+  };
+  paintSheet();
+}
+function tapped(){try{navigator.vibrate&&navigator.vibrate(8)}catch(e){}saveSheet();paintSheet()}
+function paintSheet(){
+  for(const i of ITEMS){const el=document.querySelector(`.item[data-k="${i.k}"]`);if(!el)continue;
+    const v=+sheet[i.k]||0;
+    if(i.type==='count'){el.querySelector('output').textContent=v;el.querySelector('[data-d="-1"]').disabled=v<=0;el.querySelector('[data-d="1"]').disabled=v>=i.max}
+    else{const ok=!i.needs||i.needs(sheet);if(!ok&&v){sheet[i.k]=0}el.classList.toggle('locked',!ok);el.querySelectorAll('[data-v]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.v===(+sheet[i.k]||0))))}}
+  for(const m of MISSIONS)document.querySelector(`[data-mp="${m.id}"]`).textContent=missionPts(m,sheet);
+  document.querySelectorAll('#pens button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.p===(+sheet.pen||0))));
+  document.querySelectorAll('#gp button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.g===sheet.gp)));
+  const tot=scoreOf(sheet);$('total').textContent=tot;$('miniScore').textContent=tot;
+  $('totalNote').innerHTML=(+sheet.pen||0)>=3?'<span class="zeroed">3+ penalties: score is 0</span>':(+sheet.pen?`includes ${PENALTY[+sheet.pen]} for penalties`:'');
+}
+$('clearScore').onclick=()=>{let armed=$('clearScore').dataset.armed;if(!armed){$('clearScore').dataset.armed='1';$('clearScore').textContent='Tap again';setTimeout(()=>{delete $('clearScore').dataset.armed;$('clearScore').textContent='Clear score'},2500);return}
+  delete $('clearScore').dataset.armed;$('clearScore').textContent='Clear score';sheet={};saveSheet();paintSheet()};
+$('saveRun').onclick=()=>{
+  if(!guard())return;
+  const id='r'+now().toString(36)+hex(2);
+  data.runs[id]={t:now(),u:now(),score:scoreOf(sheet),parts:Object.fromEntries(ITEMS.map(i=>[i.k,+sheet[i.k]||0]).filter(([,v])=>v)),pen:+sheet.pen||0,gp:sheet.gp||null,
+    left:Math.round(Math.max(0,tLeft)),plan:$('runPlan').value||null,note:$('runNote').value.trim().slice(0,200),by:team?team.nick:''};
+  changed();toast('Run saved: '+data.runs[id].score+' points');
+  sheet={};saveSheet();paintSheet();$('runNote').value='';$('tReset').click();renderRuns();
+};
+function renderPlanSelect(){
+  const sel=$('runPlan'),cur=sel.value;
+  const plans=live(data.plans).sort((a,b)=>(a[1].order||0)-(b[1].order||0));
+  sel.innerHTML='<option value="">Full match (all runs)</option>'+plans.map(([id,p])=>`<option value="${esc(id)}">${esc(p.name||'Run')}</option>`).join('');
+  if([...sel.options].some(o=>o.value===cur))sel.value=cur;
+}
+
+// slim timer bar when the big one scrolls out of view (phones)
+let timerVisible=true;
+new IntersectionObserver(es=>{timerVisible=es[0].isIntersecting;showMini()},{threshold:0}).observe(document.querySelector('.timer'));
+function showMini(){$('mini').hidden=timerVisible||$('tab-match').hidden||getComputedStyle(document.querySelector('.timer')).position==='sticky'}
+$('miniBtn').onclick=()=>$('tStart').click();
+
+/* ---------- runs ---------- */
+function renderRuns(){
+  const runs=live(data.runs).map(([id,r])=>Object.assign({id},r)).filter(r=>Number.isFinite(+r.score)).sort((a,b)=>b.t-a.t);
+  const scores=runs.map(r=>+r.score);
+  const last10=scores.slice(0,10);
+  const avg=a=>a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length):0;
+  const today=runs.filter(r=>new Date(r.t).toDateString()===new Date().toDateString()).length;
+  $('stats').innerHTML=[['Best score',scores.length?Math.max(...scores):'–'],['Average, last 10',scores.length?avg(last10):'–'],['Runs saved',runs.length],['Runs today',today]]
+    .map(([k,v])=>`<div class="stat"><i>${k}</i><b>${v}</b></div>`).join('');
+  // chart, oldest to newest, last 30
+  const pts=runs.slice(0,30).reverse();
+  if(pts.length<2){$('chart').innerHTML='<div class="empty">Save at least two runs to see your progress.</div>'}
+  else{
+    const W=640,H=200,P={l:36,r:12,t:12,b:24},max=Math.max(50,Math.ceil(Math.max(...pts.map(r=>+r.score))/50)*50);
+    const x=i=>P.l+i*(W-P.l-P.r)/(pts.length-1),y=v=>H-P.b-(v/max)*(H-P.t-P.b);
+    let g='';for(let v=0;v<=max;v+=max/4){g+=`<line x1="${P.l}" x2="${W-P.r}" y1="${y(v)}" y2="${y(v)}" stroke="#1f5a4f"/><text x="${P.l-6}" y="${y(v)+4}" text-anchor="end" font-size="11" fill="#93c1b3">${Math.round(v)}</text>`}
+    const line=pts.map((r,i)=>`${i?'L':'M'}${x(i).toFixed(1)},${y(+r.score).toFixed(1)}`).join('');
+    const area=line+`L${x(pts.length-1)},${y(0)}L${x(0)},${y(0)}Z`;
+    $('chart').innerHTML=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Scores of your last ${pts.length} runs">${g}<path d="${area}" fill="rgba(92,242,180,.14)"/><path d="${line}" fill="none" stroke="#5cf2b4" stroke-width="3" stroke-linejoin="round"/>${pts.map((r,i)=>`<circle cx="${x(i)}" cy="${y(+r.score)}" r="${i===pts.length-1?5:3}" fill="${i===pts.length-1?'#ffc857':'#5cf2b4'}"/>`).join('')}<text x="${P.l}" y="${H-6}" font-size="11" fill="#93c1b3">older</text><text x="${W-P.r}" y="${H-6}" font-size="11" fill="#93c1b3" text-anchor="end">newest</text></svg>`;
+  }
+  // per mission
+  const recent=runs.slice(0,20);
+  $('perMission').innerHTML=recent.length?MISSIONS.map(m=>{
+    const got=recent.map(r=>missionPts(m,Object.assign({},r.parts)));const a=got.reduce((x,y)=>x+y,0)/recent.length;const hit=got.filter(v=>v>0).length;const mx=missionMax(m);
+    return `<div class="mrow"><span>${m.no} ${esc(m.name)}</span><div class="track"><i style="width:${Math.min(100,100*a/mx)}%"></i></div><b>${Math.round(a)} · ${Math.round(100*hit/recent.length)}%</b></div>`}).join(''):'<div class="empty">No runs yet.</div>';
+  // list
+  const planName=id=>{const p=obj(data.plans[id]);return p.name&&!p.deleted?p.name:'Full match'};
+  $('runList').innerHTML=runs.length?runs.slice(0,60).map(r=>`<div class="run"><span class="sc">${+r.score}</span><div>${esc(planName(r.plan))}${r.note?' · '+esc(r.note):''}<small>${new Date(r.t).toLocaleString([], {weekday:'short',hour:'2-digit',minute:'2-digit'})}${r.by?' · '+esc(r.by):''}${r.left?' · '+fmt(r.left)+' left':''}${r.pen?' · '+r.pen+' penalt'+(r.pen>1?'ies':'y'):''}</small></div><button class="del edit-only" data-id="${esc(r.id)}">Delete</button></div>`).join('')
+    :'<div class="empty">No runs yet. Score a match on the Match tab, then tap "Save this run".</div>';
+  $('runList').onclick=e=>{const id=e.target.dataset.id;if(!id||!guard())return;if(!e.target.dataset.armed){e.target.dataset.armed='1';e.target.textContent='Sure?';setTimeout(()=>{if(e.target.isConnected){delete e.target.dataset.armed;e.target.textContent='Delete'}},2500);return}
+    data.runs[id]={deleted:true,u:now()};changed();renderRuns()};
+}
+
+/* ---------- plan ---------- */
+function renderPlans(){
+  const plans=live(data.plans).sort((a,b)=>(a[1].order||0)-(b[1].order||0));
+  const box=$('plans');
+  if(!plans.length){box.innerHTML='<div class="empty">No runs planned yet. Tap "Add a run" to plan your robot\'s first trip.</div>';$('planTotal').textContent=0;renderPlanSelect();return}
+  const used=new Set();plans.forEach(([,p])=>(p.missions||[]).forEach(m=>used.add(m)));
+  $('planTotal').textContent=MISSIONS.filter(m=>used.has(m.id)).reduce((a,m)=>a+missionMax(m),0);
+  box.innerHTML=plans.map(([id,p],i)=>`<div class="card plan" data-id="${esc(id)}">
+    <div class="head"><span class="no" style="font-family:var(--display);background:var(--amber);color:#2a1d00;border-radius:8px;padding:2px 10px">${i+1}</span>
+      <input type="text" data-f="name" maxlength="40" value="${esc(p.name||'')}" aria-label="Run name" placeholder="Run ${i+1}">
+      <button class="btn quiet small edit-only" data-a="up" ${i?'':'disabled'} aria-label="Move up">↑</button><button class="btn quiet small edit-only" data-a="down" ${i<plans.length-1?'':'disabled'} aria-label="Move down">↓</button></div>
+    <div class="chips">${MISSIONS.map(m=>`<button class="chip" data-m="${m.id}" aria-pressed="${(p.missions||[]).includes(m.id)}">${m.no} ${esc(m.name)}</button>`).join('')}</div>
+    <div class="row"><label class="field" style="flex:1;min-width:150px">Role<select data-f="role">${['','Teknisyen','Uzman','Operatör','Sürücü'].map(r=>`<option value="${r}" ${p.role===r?'selected':''}>${r||'Choose a role'}</option>`).join('')}</select></label>
+      <label class="field" style="flex:1;min-width:180px">Tool or attachment<input type="text" data-f="attach" maxlength="60" value="${esc(p.attach||'')}" placeholder="Front scoop"></label>
+      <label class="field" style="flex:1;min-width:180px">Starts from<input type="text" data-f="start" maxlength="40" value="${esc(p.start||'')}" placeholder="Left home, 3 squares in"></label></div>
+    <label class="field">Notes<input type="text" data-f="note" maxlength="200" value="${esc(p.note||'')}" placeholder="Drive slowly before the waterfall"></label>
+    <div class="row"><span class="small mute">Up to <span class="planmax">${MISSIONS.filter(m=>(p.missions||[]).includes(m.id)).reduce((a,m)=>a+missionMax(m),0)}</span> points</span><span style="flex:1"></span><button class="btn quiet small edit-only" data-a="del">Delete run</button></div></div>`).join('');
+  renderPlanSelect();paintRoles();
+}
+$('plans').addEventListener('click',e=>{
+  const card=e.target.closest('.plan');if(!card||!canEdit())return;const id=card.dataset.id,p=data.plans[id];
+  if(e.target.dataset.m){const set=new Set(p.missions||[]);set.has(e.target.dataset.m)?set.delete(e.target.dataset.m):set.add(e.target.dataset.m);p.missions=MISSIONS.map(m=>m.id).filter(x=>set.has(x));p.u=now();changed();renderPlans()}
+  const a=e.target.dataset.a;
+  if(a==='del'){if(!e.target.dataset.armed){e.target.dataset.armed='1';e.target.textContent='Tap again to delete';setTimeout(()=>{if(e.target.isConnected){delete e.target.dataset.armed;e.target.textContent='Delete run'}},2500);return}
+    data.plans[id]={deleted:true,u:now()};changed();renderPlans()}
+  if(a==='up'||a==='down'){const list=live(data.plans).sort((x,y)=>(x[1].order||0)-(y[1].order||0)).map(x=>x[0]);const i=list.indexOf(id),j=a==='up'?i-1:i+1;
+    if(j<0||j>=list.length)return;[list[i],list[j]]=[list[j],list[i]];list.forEach((pid,k)=>{data.plans[pid].order=k;data.plans[pid].u=now()});changed();renderPlans()}
+});
+$('plans').addEventListener('input',e=>{const f=e.target.dataset.f;if(!f||!canEdit())return;const id=e.target.closest('.plan').dataset.id;data.plans[id][f]=e.target.value;data.plans[id].u=now();changed();if(f==='name')renderPlanSelect()});
+$('addPlan').onclick=()=>{if(!guard())return;const n=live(data.plans).length;const id='p'+now().toString(36)+hex(2);data.plans[id]={name:'Run '+(n+1),missions:[],order:n,u:now()};changed();renderPlans();
+  setTimeout(()=>document.querySelector(`.plan[data-id="${id}"] input`)?.focus(),50)};
+
+/* ---------- team helper ---------- */
+const PJ=[['pjProblem','problem'],['pjSolution','solution'],['pjResearch','research'],['pjShare','share']];
+let pjT=null;
+PJ.forEach(([el,f])=>$(el).addEventListener('input',()=>{if(!canEdit())return;clearTimeout(pjT);$('pjSaved').textContent='';pjT=setTimeout(()=>{
+  data.project=Object.assign({},data.project,Object.fromEntries(PJ.map(([e,k])=>[k,$(e).value.slice(0,2000)])),{u:now()});changed();$('pjSaved').textContent=team?'Saved, and shared with your team':'Saved on this device'},700)}));
+function renderProject(){for(const [el,f] of PJ)if(document.activeElement!==$(el))$(el).value=String(obj(data.project)[f]||'')}
+const DEFAULT_CHECKS=['Robot fully charged, plus a spare battery','All attachments in the team box','Programs downloaded and named Run 1, Run 2…','Engineering notebook','Innovation Project poster or model','Team T-shirts','Water and snacks','Spare LEGO parts and a brick separator','Practice the robot game one last time','Arrive early and find our pit table'];
+function seedChecks(){if(Object.keys(data.checks).length)return;DEFAULT_CHECKS.forEach((t,i)=>data.checks['c'+i]={text:t,done:false,order:i,u:1})}
+function renderChecks(){
+  const list=live(data.checks).sort((a,b)=>(a[1].order||0)-(b[1].order||0));
+  setTimeout(paintRoles);
+  $('checklist').innerHTML=list.length?list.map(([id,c])=>`<label class="${c.done?'done':''}"><input type="checkbox" data-id="${esc(id)}" ${c.done?'checked':''}><span>${esc(c.text)}</span><button type="button" class="x edit-only" data-x="${esc(id)}" aria-label="Remove">✕</button></label>`).join(''):'<div class="empty">Nothing on the list.</div>';
+}
+$('checklist').addEventListener('change',e=>{const id=e.target.dataset.id;if(!id||!guard()){renderChecks();return}data.checks[id].done=e.target.checked;data.checks[id].u=now();changed();renderChecks()});
+$('checklist').addEventListener('click',e=>{const id=e.target.dataset.x;if(!id||!canEdit())return;e.preventDefault();data.checks[id]={deleted:true,u:now()};changed();renderChecks()});
+$('addCheck').onsubmit=e=>{e.preventDefault();if(!guard())return;const t=$('newCheck').value.trim();if(!t)return;const n=live(data.checks).length;data.checks['c'+now().toString(36)+hex(2)]={text:t.slice(0,120),done:false,order:n+100,u:now()};$('newCheck').value='';changed();renderChecks()};
+$('untick').onclick=()=>{if(!guard())return;live(data.checks).forEach(([id])=>{data.checks[id].done=false;data.checks[id].u=now()});changed();renderChecks()};
+const QUESTIONS={
+  robot:['Walk us through your robot. Why did you choose this drive base?','Which attachment are you proudest of, and how many versions did it take?','How does your robot drive straight and turn accurately?','Which sensor helps you most, and how do you use it in your code?','Tell us about a mission that kept failing. How did you fix it?','How did you decide the order of your robot runs?','How does your team test changes to the code?','If you had two more weeks, what would you improve on the robot?','Who on the team does the programming, and how do you share that work?','Show us one part of your code and explain what it does.'],
+  project:['What problem did you choose, and why does it matter?','How is your problem connected to this season\'s BIOGLOW theme?','Which experts did you talk to, and what did you learn from them?','How did your solution change after you got feedback?','How would you know if your solution actually works?','Who would use your solution, and how would it help them?','What would it cost to make your solution real?','What was the hardest part of the project?','How did you share your project with people outside your team?','What other solutions did you think about before choosing this one?'],
+  values:['Tell us about a time your team disagreed. How did you decide?','How did you help another team this season?','What has each person on the team learned?','How do you make sure everyone gets a turn to speak and to build?','What does Gracious Professionalism mean to your team?','What was the most fun moment of the season?','How do you divide the jobs on your team?','What would you tell a new team that is just starting FLL?','How did your team stay positive after a bad practice run?','What surprised you most about working as a team?'],
+};
+const TOPICS=[['robot','Robot design'],['project','Innovation Project'],['values','Core Values']];
+let qOrder={};
+function nextQuestion(){const t=data.topic||'robot',qs=QUESTIONS[t];if(!qOrder[t]||!qOrder[t].length)qOrder[t]=qs.map((_,i)=>i).sort(()=>Math.random()-.5);$('question').textContent=qs[qOrder[t].pop()]}
+function renderTopics(){$('qTopics').innerHTML=TOPICS.map(([k,l])=>`<button class="chip" data-t="${k}" aria-pressed="${(data.topic||'robot')===k}">${l}</button>`).join('')}
+$('qTopics').onclick=e=>{const t=e.target.dataset.t;if(!t)return;data.topic=t;saveLocal();renderTopics();nextQuestion()};
+$('nextQ').onclick=nextQuestion;
+
+/* ---------- judging session practice ---------- */
+const JUDGE=[['Welcome','The judges introduce themselves while you set up your materials.',2],['Project presentation','Present your Innovation Project.',5],['Project questions','The judges ask about your project. Answer together.',3],
+  ['Engineering design presentation','Explain how you designed and coded your robot, and your robot game strategy.',5],['Engineering design questions','Answer the judges\' questions about your design.',3],
+  ['Core Values questions','The judges ask about your teamwork and Core Values.',3],['Judges\' feedback','Listen to what went well and what to improve.',3]];
+let jI=0,jLeft=JUDGE[0][2]*60,jRun=false,jEnd=0,jTick=null;
+function drawJudge(){
+  $('jClock').textContent=fmt(Math.max(0,Math.ceil(jLeft)));$('jName').textContent=(jI+1)+'. '+JUDGE[jI][0];$('jWhat').textContent=JUDGE[jI][1];
+  $('jSteps').innerHTML=JUDGE.map((_,i)=>`<i class="${i<jI?'done':i===jI?'on':''}"></i>`).join('');
+  $('jStart').textContent=jRun?'Pause':jLeft<JUDGE[jI][2]*60?'Resume':'Start';$('jNext').disabled=jI>=JUDGE.length-1;
+}
+function jGo(i){jI=Math.min(i,JUDGE.length-1);jLeft=JUDGE[jI][2]*60;if(jRun)jEnd=performance.now()+jLeft*1000;drawJudge()}
+$('jStart').onclick=()=>{if(jRun){jRun=false;clearInterval(jTick);jLeft=(jEnd-performance.now())/1000;drawJudge();return}
+  jRun=true;jEnd=performance.now()+jLeft*1000;beep(784,.15);
+  jTick=setInterval(()=>{jLeft=(jEnd-performance.now())/1000;if(jLeft<=0){beep(523,.4,.1);if(jI<JUDGE.length-1){jGo(jI+1)}else{jRun=false;clearInterval(jTick);jLeft=0;toast('Judging session practice finished!')}}drawJudge()},250);drawJudge()};
+$('jNext').onclick=()=>{beep(523,.15);jGo(jI+1)};
+$('jReset').onclick=()=>{jRun=false;clearInterval(jTick);jGo(0)};
+drawJudge();
+$('toJudge').onclick=()=>{showTab('team');setTimeout(()=>$('judgeCard').scrollIntoView({behavior:'smooth'}),60)};
+
+/* ---------- class: homework and announcements ---------- */
+const safeUrl=u=>{try{const x=new URL(String(u).trim());return /^https?:$/.test(x.protocol)?x.href:null}catch(e){return null}};
+const host=u=>{try{return new URL(u).hostname.replace(/^www\./,'')}catch(e){return ''}};
+function dueInfo(d){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(d||''))return null;
+  const days=Math.round((new Date(d+'T12:00:00')-new Date().setHours(12,0,0,0))/864e5);
+  return{days,text:days>1?`Due in ${days} days`:days===1?'Due tomorrow':days===0?'Due today':`Overdue by ${-days} day${days===-1?'':'s'}`};
+}
+const students=()=>live(data.members).filter(([,m])=>m.role==='student').map(([mid,m])=>({mid,nick:String(m.nick||'Someone').slice(0,20)}));
+const isDone=(hw,mid)=>!!obj(data.done[hw+'|'+mid]).v;
+let editing=null,postKind='hw';
+function linkRows(list){$('pLinks').innerHTML=(list.length?list:[{t:'',url:''}]).map(l=>`<div class="row" style="flex-wrap:nowrap"><input type="text" class="pl-t" maxlength="40" placeholder="Name (optional)" value="${esc(l.t||'')}" style="flex:1"><input type="text" class="pl-u" maxlength="500" inputmode="url" placeholder="https://drive.google.com/…" value="${esc(l.url||'')}" style="flex:2"></div>`).join('')}
+function resetPost(){editing=null;newFiles=[];keptFiles=[];droppedFiles=[];if($('pFileList'))paintFiles();$('pTitle').value='';$('pBody').value='';$('pDue').value='';linkRows([]);$('pErr').hidden=true;$('pCancel').hidden=true;$('pPost').textContent='Post';$('postTitle').textContent='Post something new';$('postKind').hidden=false}
+function setKind(k){postKind=k;$('postKind').querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',String(c.dataset.k===k)));$('pDueWrap').hidden=k!=='hw'}
+$('postKind').onclick=e=>{if(e.target.dataset.k)setKind(e.target.dataset.k)};
+$('pAddLink').onclick=()=>{const rows=[...$('pLinks').children];if(rows.length>=5)return toast('Up to 5 links');const d=document.createElement('div');d.innerHTML=`<div class="row" style="flex-wrap:nowrap"><input type="text" class="pl-t" maxlength="40" placeholder="Name (optional)" style="flex:1"><input type="text" class="pl-u" maxlength="500" inputmode="url" placeholder="https://drive.google.com/…" style="flex:2"></div>`;$('pLinks').appendChild(d.firstChild)};
+$('pCancel').onclick=resetPost;
+const BUCKET='class-files',MAXF=5,MAXB=10*1024*1024;
+const MIME={pdf:'application/pdf',txt:'text/plain',jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',gif:'image/gif',webp:'image/webp',heic:'image/heic',heif:'image/heif',
+  doc:'application/msword',docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',ppt:'application/vnd.ms-powerpoint',
+  pptx:'application/vnd.openxmlformats-officedocument.presentationml.presentation',xls:'application/vnd.ms-excel',xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'};
+const extOf=n=>(String(n).toLowerCase().match(/\.([a-z0-9]{1,5})$/)||[])[1]||'';
+const mimeOf=f=>MIME[extOf(f.name)]||(Object.values(MIME).includes(f.type)?f.type:'');
+const kb=n=>n<1024*1024?Math.max(1,Math.round(n/1024))+' KB':(n/1048576).toFixed(1)+' MB';
+let newFiles=[],keptFiles=[],droppedFiles=[];
+function paintFiles(){
+  $('pFileList').innerHTML=[...keptFiles.map((f,i)=>`<div class="fchip"><b>${esc(f.name)}</b><small>${kb(+f.size||0)}</small><button type="button" data-kept="${i}" aria-label="Remove ${esc(f.name)}">✕</button></div>`),
+    ...newFiles.map((f,i)=>`<div class="fchip"><b>${esc(f.name)}</b><small>${kb(f.size)} · new</small><button type="button" data-new="${i}" aria-label="Remove ${esc(f.name)}">✕</button></div>`)].join('');
+}
+$('pFileList').onclick=e=>{const k=e.target.dataset.kept,n=e.target.dataset.new;if(k!==undefined){droppedFiles.push(keptFiles[+k]);keptFiles.splice(+k,1)}else if(n!==undefined)newFiles.splice(+n,1);else return;paintFiles()};
+$('pFiles').onchange=()=>{const fail=m=>{$('pErr').hidden=false;$('pErr').textContent=m};$('pErr').hidden=true;
+  for(const f of $('pFiles').files){
+    if(keptFiles.length+newFiles.length>=MAXF){fail('Up to '+MAXF+' files per post.');break}
+    if(!mimeOf(f)){fail(f.name+" can't be added. Use a PDF, Word, PowerPoint, Excel, text file or a photo.");continue}
+    if(f.size>MAXB){fail(f.name+' is '+kb(f.size)+'. Files can be up to 10 MB.');continue}
+    newFiles.push(f)}
+  $('pFiles').value='';paintFiles()};
+// a safe, readable file name for storage
+const safeName=n=>String(n).normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Za-z0-9._-]+/g,'-').replace(/^-+|-+$/g,'').slice(-80)||'file';
+async function removeStored(files){const paths=(files||[]).map(f=>obj(f).path).filter(Boolean);if(paths.length&&sb)try{await sb.storage.from(BUCKET).remove(paths)}catch(e){}}
+$('pPost').onclick=async()=>{
+  if(!isTeacher())return;
+  const title=$('pTitle').value.trim().slice(0,100),body=$('pBody').value.trim().slice(0,2000);
+  const fail=m=>{$('pErr').hidden=false;$('pErr').textContent=m};
+  if(!title)return fail('Give it a title first.');
+  const links=[];for(const r of $('pLinks').children){const u=r.querySelector('.pl-u').value.trim();if(!u)continue;const s=safeUrl(u);if(!s)return fail('This link doesn\'t look right: '+u.slice(0,60)+'. Links start with https://');links.push({t:r.querySelector('.pl-t').value.trim().slice(0,40),url:s})}
+  const kind=editing?editing.kind:postKind,id=editing?editing.id:(kind==='hw'?'h':'a')+now().toString(36)+hex(2);
+  const prev=obj(data[kind][id]);
+  // upload new files first, so the post never points at a file that isn't there
+  const files=keptFiles.slice();
+  if(newFiles.length){
+    if(!sb||!navigator.onLine)return fail('Uploading files needs the internet. Connect and try again.');
+    $('pPost').disabled=true;
+    try{for(let i=0;i<newFiles.length;i++){const f=newFiles[i];$('pPost').textContent=`Uploading ${i+1} of ${newFiles.length}…`;
+        const path=`${team.gid}/${kind}-${id}/${now().toString(36)}-${safeName(f.name)}`;
+        const {error}=await sb.storage.from(BUCKET).upload(path,f,{contentType:mimeOf(f),upsert:false});
+        if(error)throw error;files.push({path,name:String(f.name).slice(0,120),size:f.size,type:mimeOf(f)})}}
+    catch(e){$('pPost').disabled=false;$('pPost').textContent=editing?'Save changes':'Post';await removeStored(files.slice(keptFiles.length));
+      const m=String(e&&e.message||'');return fail(/size|large|413/i.test(m)?'A file is too big. Files can be up to 10 MB.':/mime|type/i.test(m)?"That kind of file can't be uploaded.":/row-level|policy|403|unauthor/i.test(m)?'Only the teacher can upload files.':errText(e))}
+    $('pPost').disabled=false;
+  }
+  removeStored(droppedFiles);
+  data[kind][id]=Object.assign({},prev,{title,body,links,files,due:kind==='hw'?($('pDue').value||''):'',by:team.nick,t:prev.t||now(),u:now()});
+  changed();resetPost();renderClass();toast(kind==='hw'?'Homework posted':'Announcement posted');
+};
+function postHTML(kind,id,p){
+  const me=team&&team.mid,stud=role()==='student',teach=isTeacher();
+  const due=kind==='hw'?dueInfo(p.due):null,done=kind==='hw'&&stud&&isDone(id,me);
+  const cls=done?'isdone':due&&due.days<0?'overdue':due&&due.days<=2?'due-soon':'';
+  const links=(Array.isArray(p.links)?p.links:[]).map(l=>({t:String(obj(l).t||''),url:safeUrl(obj(l).url)})).filter(l=>l.url).slice(0,5);
+  // only files inside this group's own folder are shown
+  const files=(Array.isArray(p.files)?p.files:[]).map(f=>({path:String(obj(f).path||''),name:String(obj(f).name||'file').slice(0,120),size:+obj(f).size||0})).filter(f=>team&&f.path.startsWith(team.gid+'/')).slice(0,MAXF);
+  const qs=live(data.qs).filter(([,q])=>q.on===id).sort((a,b)=>(a[1].t||0)-(b[1].t||0));
+  let who='';
+  if(kind==='hw'&&teach){const st=students(),dn=st.filter(s=>isDone(id,s.mid));
+    who=`<div class="meta"><span class="pill glow">${dn.length} of ${st.length} students done</span></div>${st.length?`<div class="who">${st.map(s=>`<span class="${isDone(id,s.mid)?'y':''}">${isDone(id,s.mid)?'✓ ':''}${esc(s.nick)}</span>`).join('')}</div>`:'<p class="small mute" style="margin:0">No students have joined yet.</p>'}`}
+  return `<article class="post ${cls}" data-kind="${kind}" data-id="${esc(id)}">
+    <div class="meta">${due?`<span class="pill ${due.days<0?'coral':due.days<=2?'amber':''}">${esc(due.text)}</span>`:''}${done?'<span class="pill glow">Done ✓</span>':''}<span>${esc(p.by||'Teacher')} · ${new Date(+p.t||now()).toLocaleDateString()}</span></div>
+    <h3>${esc(String(p.title||'').slice(0,100))}</h3>${p.body?`<p class="body">${esc(String(p.body).slice(0,2000))}</p>`:''}
+    ${files.length?`<div class="links">${files.map(f=>`<button class="flink file" data-act="open" data-path="${esc(f.path)}"><span>${esc((extOf(f.name)||'file').toUpperCase())}</span>${esc(f.name)} <small class="mute">${kb(+f.size||0)}</small></button>`).join('')}</div>`:''}
+    ${links.length?`<div class="links">${links.map(l=>`<a class="flink" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer"><span>LINK</span>${esc(l.t||host(l.url))}</a>`).join('')}</div>`:''}
+    ${kind==='hw'&&stud?`<div class="row"><button class="btn small ${done?'quiet':''}" data-act="done">${done?'Mark as not done':'Mark as done'}</button></div>`:''}
+    ${who}
+    ${teach?`<div class="row"><button class="btn quiet small" data-act="edit">Edit</button><button class="btn quiet small" data-act="del">Delete</button></div>`:''}
+    <div class="qa">${qs.map(([qid,q])=>`<div class="q1"><b>${esc(String(q.nick||'Someone').slice(0,20))}:</b> ${esc(String(q.text||'').slice(0,500))}</div>${q.ans?`<div class="a1">↳ <b>Teacher:</b> ${esc(String(q.ans).slice(0,1000))}</div>`:teach?`<div class="ask" style="margin-left:14px"><input type="text" maxlength="1000" placeholder="Answer ${esc(String(q.nick||'').slice(0,20))}" data-ans="${esc(qid)}"><button class="btn small" data-act="answer" data-q="${esc(qid)}">Answer</button></div>`:''}`).join('')}
+      ${stud?`<div class="ask"><input type="text" maxlength="500" placeholder="Ask the teacher a question" data-askin="1"><button class="btn quiet small" data-act="ask">Ask</button></div>`:''}
+      ${!qs.length&&!stud?'<span class="small mute">No questions yet.</span>':''}</div></article>`;
+}
+function renderClass(){
+  const intro=$('classIntro');
+  if(!team){intro.innerHTML='<h2>Class</h2><p class="mute" style="margin:0">Homework and announcements from your teacher appear here once you join your group.</p><div class="row"><button class="btn" id="classJoin">Join your group</button></div>';
+    $('classJoin').onclick=openTeam;$('hwList').innerHTML='<div class="empty">Join your group to see homework.</div>';$('annList').innerHTML='<div class="empty">Join your group to see announcements.</div>';badge();return}
+  const r=role();
+  intro.innerHTML=`<h2>Class</h2><p class="mute" style="margin:0">${r==='teacher'?(teacherOK?'You\'re the teacher. Post homework and announcements below, see who\'s done, and answer questions.':'Your teacher key doesn\'t match this group, so you can\'t post. Check the key on the team page.'):r==='student'?'Homework and announcements from your teacher. Tick homework when it\'s done, and ask if anything is unclear.':'This is the team computer, so homework and announcements are read only here.'}</p>`;
+  const hw=live(data.hw).sort((a,b)=>{const da=a[1].due||'9999',db=b[1].due||'9999';return da<db?-1:da>db?1:(b[1].t||0)-(a[1].t||0)});
+  const ann=live(data.ann).sort((a,b)=>(b[1].t||0)-(a[1].t||0));
+  $('hwList').innerHTML=hw.length?hw.map(([id,p])=>postHTML('hw',id,p)).join(''):'<div class="empty">No homework yet.</div>';
+  $('annList').innerHTML=ann.length?ann.map(([id,p])=>postHTML('ann',id,p)).join(''):'<div class="empty">No announcements yet.</div>';
+  badge();
+}
+function badge(){const st=role()==='student'&&team;const n=st?live(data.hw).filter(([id,p])=>{const d=dueInfo(p.due);return !isDone(id,team.mid)&&(!d||d.days<=2)}).length:0;$('classBadge').hidden=!n}
+$('tab-class').addEventListener('click',e=>{
+  const act=e.target.dataset.act;if(!act)return;const post=e.target.closest('.post');if(!post||!team)return;const kind=post.dataset.kind,id=post.dataset.id;
+  if(act==='done'&&role()==='student'){const k=id+'|'+team.mid;data.done[k]={v:!isDone(id,team.mid),u:now()};changed();renderClass();if(data.done[k].v)toast('Nice work! ✓')}
+  if(act==='ask'&&role()==='student'){const inp=post.querySelector('[data-askin]'),q=inp.value.trim().slice(0,500);if(!q)return;data.qs['q'+now().toString(36)+hex(2)]={on:id,text:q,nick:team.nick,mid:team.mid,uid:team.mid,t:now(),u:now()};changed();renderClass();toast('Question sent to your teacher')}
+  if(act==='answer'&&isTeacher()){const qid=e.target.dataset.q,inp=post.querySelector(`[data-ans="${CSS.escape(qid)}"]`),a=inp.value.trim().slice(0,1000);if(!a)return;data.qs[qid]=Object.assign({},data.qs[qid],{ans:a,u:now()});changed();renderClass()}
+  if(act==='open'){const path=e.target.closest('[data-path]').dataset.path;
+    // open the tab straight away so the browser allows it, then point it at the file
+    const w=window.open('','_blank');
+    sb.storage.from(BUCKET).createSignedUrl(path,3600).then(({data:s,error})=>{if(error||!s)throw error||new Error('no link');if(w)w.location.href=s.signedUrl;else location.href=s.signedUrl})
+      .catch(err=>{if(w)w.close();toast(navigator.onLine?'This file couldn\'t be opened. It may have been removed.':'Opening files needs the internet.')});return}
+  if(act==='edit'&&isTeacher()){const p=data[kind][id];editing={kind,id};keptFiles=(Array.isArray(p.files)?p.files:[]).slice();newFiles=[];droppedFiles=[];paintFiles();setKind(kind);$('postKind').hidden=true;$('pTitle').value=p.title||'';$('pBody').value=p.body||'';$('pDue').value=p.due||'';linkRows(Array.isArray(p.links)?p.links:[]);
+    $('pCancel').hidden=false;$('pPost').textContent='Save changes';$('postTitle').textContent='Edit '+(kind==='hw'?'homework':'announcement');$('postCard').scrollIntoView({behavior:'smooth'})}
+  if(act==='del'&&isTeacher()){if(!e.target.dataset.armed){e.target.dataset.armed='1';e.target.textContent='Tap again to delete';setTimeout(()=>{if(e.target.isConnected){delete e.target.dataset.armed;e.target.textContent='Delete'}},2500);return}
+    removeStored(obj(data[kind][id]).files);data[kind][id]={deleted:true,u:now()};changed();renderClass()}
+});
+$('tab-class').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.matches('.ask input')){e.preventDefault();e.target.parentElement.querySelector('button').click()}});
+resetPost();setKind('hw');
+
+/* ---------- team code ---------- */
+function authMsg(e){const m=String(e&&e.message||e||'');
+  if(/invalid login/i.test(m))return'Wrong email or password.';if(/not confirmed/i.test(m))return'Confirm your email first: open the link we sent you, then sign in.';
+  if(/already registered|already been registered/i.test(m))return'This email already has an account. Tap "Sign in" instead.';
+  if(/password/i.test(m)&&/6|short|least/i.test(m))return'Use a password with at least 6 characters.';if(/rate limit|too many/i.test(m))return'Too many tries. Wait a few minutes and try again.';
+  if(/anonymous/i.test(m))return'Joining without email is turned off in the group storage. The teacher needs to turn on "Allow anonymous sign-ins" in Supabase.';
+  return errText(e)}
+async function currentUser(){if(!sb)return null;const {data:{session}}=await sb.auth.getSession();return session?session.user:null}
+async function ensureUser(){let u=await currentUser();if(u)return u;const {data,error}=await sb.auth.signInAnonymously();if(error)throw error;return data.user}
+async function enterGroup(gid,code,nick,uid,r,fresh){
+  team={gid,code,nick,mid:uid,role:r};saveTeam();synced={};saveSynced();
+  if(fresh){data=blank();saveLocal()}
+  await sync();await applyRoles();setTeamBtn();renderAll();renderTeamSheet();
+}
+function renderTeamSheet(){
+  const b=$('teamBody');
+  if(!sb){b.innerHTML=`<div><h2>Your group</h2><p class="err">${ERR.nolib}</p></div>`;return}
+  if(!team){
+    const nick=String(localStorage.getItem('fll:nick')||'');
+    b.innerHTML=`<div><h2>Your group</h2><p class="mute">The teacher starts the group and shares its code. Students join to see everything and do their homework. The team computer joins with the same code to run matches and edit.</p></div>
+      ${oldGroup?'<p class="err">Groups moved to a new, safer storage, so your old group code no longer works. Ask your teacher for the new code.</p>':''}
+      <div class="card"><h3>Join your group</h3>
+        <label class="field">Group code<input type="text" id="jCode" autocomplete="off" autocapitalize="characters" maxlength="60" placeholder="ABCD-1234, or paste the invite link" value="${esc(prefill)}"></label>
+        <label class="field">Your name or nickname<input type="text" id="jNick" maxlength="20" value="${esc(nick)}"></label>
+        <div class="field">This device is…<div class="rolepick">
+          <label><input type="radio" name="jRole" value="student" checked><span><b>A student</b><small>See everything, do homework, ask questions</small></span></label>
+          <label><input type="radio" name="jRole" value="computer"><span><b>The team computer</b><small>Run matches and edit runs, plans and notes</small></span></label></div></div>
+        <button class="btn" id="jGo">Join the group</button>
+        <p class="err" id="jErr" hidden></p></div>
+      <div class="card" id="teachBox"><h3>Teachers</h3><p class="small mute" style="margin:0">Loading…</p></div>
+      <p class="small mute">Group data is kept in the teacher's Supabase project. Only people who join with the code can see it.</p>`;
+    $('jGo').onclick=async()=>{const fail=m=>{$('jErr').hidden=false;$('jErr').textContent=m};
+      const code=parseCode($('jCode').value),nick=$('jNick').value.trim().slice(0,20),r=(document.querySelector('input[name="jRole"]:checked')||{}).value||'student';
+      if(!code)return fail('Type the 8-letter group code, like ABCD-1234, or paste the invite link.');if(!nick)return fail('Type your name or nickname.');
+      try{localStorage.setItem('fll:nick',nick)}catch(e){}
+      $('jGo').disabled=true;$('jGo').textContent='Joining…';
+      try{const u=await ensureUser();const {data:gid,error}=await sb.rpc('join_group',{join_code:code,nickname:nick,wanted:r});if(error)throw error;
+        prefill='';await enterGroup(gid,code,nick,u.id,r,r==='student');toast('You joined '+(data.teamName||'the group'))}
+      catch(e){fail(authMsg(e));$('jGo').disabled=false;$('jGo').textContent='Join the group'}};
+    renderTeacherBox();
+    return;
+  }
+  const mem=live(data.members).sort((a,b)=>(a[1].role===b[1].role?String(a[1].nick).localeCompare(String(b[1].nick)):a[1].role==='teacher'?-1:b[1].role==='teacher'?1:a[1].role==='computer'?-1:1));
+  const r=role();
+  b.innerHTML=`<div><h2>${esc(data.teamName||'Your group')}</h2><p class="mute">You're in the group as <b>${esc(team.nick)}</b> · <b>${ROLE_NAME[r]}</b>. ${syncState?esc(syncState):lastSync?'Synced '+ago(lastSync)+'.':''}</p></div>
+    <div class="card"><h3>Invite your class</h3><div class="codebox">${esc(fmtCode(team.code))}</div>
+      <div class="row"><button class="btn small" id="cpLink">Copy invite link</button><button class="btn quiet small" id="cpCode">Copy code</button></div>
+      <p class="small mute" style="margin:0">Students open the link, type their name and choose "A student". On the team computer, choose "The team computer". The code never changes, and each device remembers it.</p></div>
+    <div class="card"><h3>Members (${mem.length})</h3><div class="who">${mem.map(([mid,m])=>`<span class="${mid===team.mid?'y':''}">${esc(String(m.nick||'Someone').slice(0,20))} · ${ROLE_NAME[m.role]||'Member'}</span>`).join('')||'<span>Nobody yet</span>'}</div></div>
+    <div class="row"><button class="btn quiet" id="syncNow">Sync now</button><button class="btn quiet" id="leave">Leave this group on this device</button>${r==='teacher'?'<button class="btn quiet" id="signOut">Sign out</button>':''}</div>
+    <p class="small mute">The app syncs when you open it, every half minute while it's open, and right after you change something.${r==='teacher'?' To post from another device, sign in there with the same email and password.':''}</p>`;
+  $('cpLink').onclick=e=>copy(APP_URL+'#team='+team.code,e.target);$('cpCode').onclick=e=>copy(fmtCode(team.code),e.target);
+  $('syncNow').onclick=()=>sync().then(renderTeamSheet);
+  const leave=()=>{team=null;saveTeam();synced={};saveSynced();applyRoles();setTeamBtn();renderAll();renderTeamSheet()};
+  $('leave').onclick=e=>{if(!e.target.dataset.armed){e.target.dataset.armed='1';e.target.textContent='Tap again to leave';setTimeout(()=>{if(e.target.isConnected){delete e.target.dataset.armed;e.target.textContent='Leave this group on this device'}},3000);return}leave()};
+  if($('signOut'))$('signOut').onclick=async()=>{await sb.auth.signOut();leave()};
+}
+async function renderTeacherBox(){
+  const box=$('teachBox');if(!box)return;
+  const u=await currentUser();if(!$('teachBox'))return;
+  if(!u||u.is_anonymous){
+    box.innerHTML=`<h3>Teachers</h3><p class="small mute" style="margin:0">Sign in with your email to start a group, or to open your group on another device. Only your account can post homework and announcements.</p>
+      <label class="field">Email<input type="email" id="tEmail" autocomplete="email" autocapitalize="off"></label>
+      <label class="field">Password<input type="password" id="tPass" autocomplete="current-password" minlength="6"></label>
+      <div class="row"><button class="btn" id="tIn">Sign in</button><button class="btn quiet" id="tUp">Create teacher account</button></div><p class="err" id="tErr" hidden></p><p class="ok" id="tOk" hidden></p>`;
+    const go=async create=>{const fail=m=>{$('tErr').hidden=false;$('tErr').textContent=m;$('tOk').hidden=true};
+      const email=$('tEmail').value.trim(),pw=$('tPass').value;if(!email||!pw)return fail('Type your email and a password.');
+      const btn=create?$('tUp'):$('tIn'),label=btn.textContent;btn.disabled=true;btn.textContent=create?'Creating…':'Signing in…';
+      try{
+        if(create){const {data:r,error}=await sb.auth.signUp({email,password:pw,options:{emailRedirectTo:APP_URL}});if(error)throw error;
+          if(!r.session){$('tErr').hidden=true;$('tOk').hidden=false;$('tOk').textContent='Account created! We sent a link to '+email+'. Open it to confirm your email, and this app opens again.';btn.disabled=false;btn.textContent=label;return}}
+        else{const {error}=await sb.auth.signInWithPassword({email,password:pw});if(error)throw error}
+        renderTeacherBox();
+      }catch(e){fail(authMsg(e));btn.disabled=false;btn.textContent=label}};
+    $('tIn').onclick=()=>go(false);$('tUp').onclick=()=>go(true);
+    return;
+  }
+  const {data:groups,error}=await sb.from('groups').select('id,code,name').eq('teacher',u.id).order('created_at');
+  if(!$('teachBox'))return;
+  const nick=String(localStorage.getItem('fll:nick')||'');
+  box.innerHTML=`<h3>Teachers</h3><p class="small mute" style="margin:0">Signed in as <b>${esc(u.email||'teacher')}</b>.</p>
+    ${error?`<p class="err">${esc(errText(error))}</p>`:groups.length?`<div class="field">Your groups<div class="rolepick">${groups.map(g=>`<button class="btn quiet" data-open="${esc(g.id)}" data-code="${esc(g.code)}">${esc(g.name)} · ${esc(fmtCode(g.code))}</button>`).join('')}</div></div>`:''}
+    <label class="field">New group name<input type="text" id="cName" maxlength="40" placeholder="Our FLL team"></label>
+    <label class="field">Your name<input type="text" id="cNick" maxlength="20" value="${esc(nick)}" placeholder="How the class sees you"></label>
+    <p class="small mute" style="margin:0">Runs, plans and notes already on this device go into the new group.</p>
+    <div class="row"><button class="btn" id="cGo">Start the group</button><button class="btn quiet" id="tOut">Sign out</button></div><p class="err" id="cErr" hidden></p>`;
+  const fail=m=>{$('cErr').hidden=false;$('cErr').textContent=m};
+  box.querySelectorAll('[data-open]').forEach(x=>x.onclick=async()=>{x.disabled=true;
+    try{const mine=await sb.from('members').select('nick').eq('group_id',x.dataset.open).eq('user_id',u.id).maybeSingle();
+      const nk=$('cNick').value.trim().slice(0,20)||(mine.data&&mine.data.nick)||'Teacher';await sb.rpc('join_group',{join_code:x.dataset.code,nickname:nk,wanted:'teacher'});await enterGroup(x.dataset.open,x.dataset.code,nk,u.id,'teacher',false);toast('Opened '+(data.teamName||'your group'))}
+    catch(e){fail(errText(e));x.disabled=false}});
+  $('cGo').onclick=async()=>{const name=$('cName').value.trim().slice(0,40)||'Our FLL team',nk=$('cNick').value.trim().slice(0,20)||'Teacher';
+    try{localStorage.setItem('fll:nick',nk)}catch(e){}
+    $('cGo').disabled=true;$('cGo').textContent='Starting…';
+    try{const {data:g,error}=await sb.from('groups').insert({name,teacher:u.id}).select('id,code').single();if(error)throw error;
+      const j=await sb.rpc('join_group',{join_code:g.code,nickname:nk,wanted:'teacher'});if(j.error)throw j.error;
+      await enterGroup(g.id,g.code,nk,u.id,'teacher',false);toast('Group started! Share the code with your class.')}
+    catch(e){fail(errText(e));$('cGo').disabled=false;$('cGo').textContent='Start the group'}};
+  $('tOut').onclick=async()=>{await sb.auth.signOut();renderTeacherBox()};
+}
+function ago(t){const s=(now()-t)/1000;if(s<60)return'just now';if(s<3600)return Math.floor(s/60)+' min ago';return Math.floor(s/3600)+' h ago'}
+function copy(text,btn){const done=()=>{const o=btn.textContent;btn.textContent='Copied';setTimeout(()=>btn.textContent=o,1300)};try{navigator.clipboard.writeText(text).then(done,()=>prompt('Copy this:',text))}catch(e){prompt('Copy this:',text)}}
+let prefill='';
+function openTeam(){renderTeamSheet();$('teamSheet').hidden=false;document.body.style.overflow='hidden';$('teamBack').focus()}
+function closeTeam(){$('teamSheet').hidden=true;document.body.style.overflow=''}
+$('teamBtn').onclick=openTeam;$('teamBack').onclick=closeTeam;
+function checkInvite(){const c=location.hash.startsWith('#team=')?parseCode(location.hash):null;if(!c)return;history.replaceState(null,'',location.pathname);
+  if(team&&team.code===c){openTeam();return}if(team){toast('Leave your current group first to join another one');openTeam();return}prefill=fmtCode(c);openTeam()}
+addEventListener('hashchange',checkInvite);
+
+/* ---------- tabs ---------- */
+function showTab(t){if(t==='match'&&!canEdit())t='class';if(t==='class')renderClass();document.querySelectorAll('.tabpage[id^="tab-"]').forEach(s=>s.hidden=s.id!=='tab-'+t);document.querySelectorAll('nav.tabs button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===t)));
+  try{localStorage.setItem('fll:tab',t)}catch(e){}scrollTo(0,0);if(t==='runs')renderRuns();showMini()}
+document.querySelectorAll('nav.tabs button').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('teamSheet').hidden)closeTeam()});
+
+/* ---------- start ---------- */
+function renderAll(){if(!tRun&&!countdown&&tLeft>data.matchSec)tLeft=data.matchSec;drawClock();renderPlans();renderRuns();renderProject();renderChecks();renderTopics();renderClass();paintRoles();if(!$('teamSheet').hidden)renderTeamSheet()}
+seedChecks();renderMissions();renderAll();nextQuestion();setTeamBtn();
+applyRoles().then(()=>{renderAll();setTeamBtn()});
+if(oldGroup)setTimeout(()=>toast('Groups moved to a safer storage. Ask your teacher for the new group code.'),800);
+// back from the email confirmation link: open the group page so the teacher can start a group
+if(sb)sb.auth.onAuthStateChange((ev,s)=>{if(ev==='SIGNED_IN'&&s&&!s.user.is_anonymous&&!team&&/type=signup|access_token/.test(location.hash+location.search)){setTimeout(()=>{openTeam();toast('Email confirmed! Now start your group.')},300)}});
+// keep in step with the group while the app is open
+setInterval(()=>{if(team&&document.visibilityState==='visible'&&!syncing)sync()},30000);
+try{const t=localStorage.getItem('fll:tab');if(t&&$('tab-'+t))showTab(t)}catch(e){}
+checkInvite();
+if(team)sync();
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){if(team&&now()-lastSync>15000)sync()}else if(dirty){clearTimeout(syncTimer);sync()}});
+/* ---------- updates: wait for a calm moment and keep what's on screen ---------- */
+const UI_KEY='fll:ui';
+let interacted=false,updateReady=false;
+['pointerdown','keydown'].forEach(ev=>addEventListener(ev,()=>{interacted=true},{once:true,capture:true}));
+const busyNow=()=>tRun||jRun||!!countdown||(typeof newFiles!=='undefined'&&newFiles.length>0);
+function saveUI(){try{sessionStorage.setItem(UI_KEY,JSON.stringify(Object.assign({scroll:scrollY,at:Date.now()},(()=>{const links=[...document.querySelectorAll('#pLinks .row')].map(r=>({t:r.querySelector('.pl-t').value,url:r.querySelector('.pl-u').value})).filter(l=>l.t||l.url);return{team:!$('teamSheet').hidden,post:{kind:postKind,editing,title:$('pTitle').value,body:$('pBody').value,due:$('pDue').value,links,kept:keptFiles},project:Object.fromEntries(PJ.map(([el])=>[el,$(el).value])),note:$('runNote').value}})())))}catch(e){}}
+function applyUpdate(){if(busyNow()){toast('Finish the timer first, then tap Update.');return}saveUI();location.reload()}
+function showUpdate(){
+  if(document.getElementById('upd'))return;
+  const d=document.createElement('div');d.className='upd';d.id='upd';d.setAttribute('role','status');
+  d.innerHTML='<span>A new version of the app is ready.</span><button class="now">Update now</button><button class="later">Later</button>';
+  d.querySelector('.now').onclick=applyUpdate;d.querySelector('.later').onclick=()=>d.remove();document.body.appendChild(d);
+}
+// put back what was on screen before an update
+(()=>{let s=null;try{s=JSON.parse(sessionStorage.getItem(UI_KEY)||'null');sessionStorage.removeItem(UI_KEY)}catch(e){}
+  if(!s||Date.now()-s.at>10*60*1000)return;
+  setTimeout(()=>{try{if(s.post&&(s.post.title||s.post.body||s.post.links.length||s.post.editing)){editing=s.post.editing;setKind(s.post.kind||'hw');$('pTitle').value=s.post.title||'';$('pBody').value=s.post.body||'';$('pDue').value=s.post.due||'';linkRows(s.post.links||[]);keptFiles=Array.isArray(s.post.kept)?s.post.kept:[];paintFiles();if(editing){$('postKind').hidden=true;$('pCancel').hidden=false;$('pPost').textContent='Save changes';$('postTitle').textContent='Edit '+(editing.kind==='hw'?'homework':'announcement')}}if(s.project)for(const [el,v] of Object.entries(s.project))if($(el)&&$(el).value!==v&&canEdit()){$(el).value=v;$(el).dispatchEvent(new Event('input'))}if(s.note)$('runNote').value=s.note;if(s.team)openTeam();}catch(e){}requestAnimationFrame(()=>scrollTo(0,+s.scroll||0));toast('Updated to the newest version')},150)})();
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&updateReady&&!busyNow()){saveUI();location.reload()}});
+if('serviceWorker' in navigator){
+  const had=!!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!had||updateReady)return;updateReady=true;
+    // right after opening, nothing is in progress yet: update straight away
+    if(!interacted&&performance.now()<5000&&!busyNow()){saveUI();location.reload()}else showUpdate()});
+  navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});
+}
+})();
+</script>
+</body>
+</html>
