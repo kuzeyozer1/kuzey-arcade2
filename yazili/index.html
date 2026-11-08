@@ -178,6 +178,107 @@ header{padding-block:16px 6px;display:flex;align-items:center;gap:12px;flex-wrap
 .clock .mh{stroke:#e2553f;stroke-width:4;stroke-linecap:round}
 .clock .pin{fill:#2a2340}
 .digital{font-family:var(--display);font-size:64px;font-weight:700;color:var(--c);font-variant-numeric:tabular-nums;padding:10px 0}
+.tabs button{position:relative;font-size:15px;padding:9px 2px}
+.tabs button.dot::after{content:"";position:absolute;top:6px;right:8px;width:9px;height:9px;border-radius:50%;background:var(--bad);box-shadow:0 0 0 2px var(--panel)}
+.petmini{font-size:22px;line-height:1}
+.lesson{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px 20px;display:flex;flex-direction:column;gap:10px}
+.lesson h2{font-size:24px;color:var(--c)}
+.lesson p,.lesson ul,.lesson ol{margin:0}
+.lesson ul,.lesson ol{padding-left:22px;display:flex;flex-direction:column;gap:5px}
+.lesson .ex{color:var(--mute);font-style:italic}
+.lesson blockquote{margin:0;border-left:4px solid var(--c);padding:8px 14px;background:var(--panel-hi);border-radius:0 12px 12px 0;font-size:18px}
+.two-col{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
+.cards4{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.box{background:var(--panel-hi);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.box b:first-child{font-family:var(--display);font-weight:600;font-size:17px;color:var(--c)}
+.box ul{padding-left:18px}
+.tblwrap{overflow-x:auto}
+.tbl{border-collapse:collapse;width:100%;font-size:15px}
+.tbl th,.tbl td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+.tbl th{background:var(--panel-hi);font-family:var(--display);font-weight:600;color:var(--c)}
+.tip{background:#3d3410;border:1px solid #6b5a14;border-radius:12px;padding:10px 14px;color:#ffe8a3;margin:0}
+.steps li::marker{color:var(--c);font-weight:800}
+.big-mnemonic{font-family:var(--display);font-size:26px;font-weight:600;text-align:center;color:var(--gold);margin:8px 0}
+.teeth{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.teeth div{background:var(--panel-hi);border-radius:12px;padding:10px 6px;font-size:14px}
+.teeth span{display:block;font-size:30px}
+.cycle{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;text-align:center;font-family:var(--display);font-weight:600;font-size:18px}
+.cycle .arr{font-size:13px;color:var(--c);font-family:var(--body);font-weight:700;line-height:1.5}
+.chips.static span{border:1px solid var(--c);border-radius:99px;padding:5px 12px;font-size:15px}
+.dots{display:flex;align-items:center;gap:6px;margin-bottom:10px;font-size:13px;color:var(--mute)}
+.dots i{width:26px;height:6px;border-radius:99px;background:var(--panel-hi)}
+.dots i.past{background:var(--c);opacity:.5}.dots i.now{background:var(--c)}
+.dots span{margin-left:6px}
+.widget{background:var(--night);border:2px solid var(--c);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.wtitle{font-family:var(--display);font-weight:600;color:var(--c);font-size:17px}
+.widget canvas{width:100%;height:auto;background:#0d0a26;border-radius:10px}
+.btn.small{padding:7px 12px;font-size:15px;border-radius:10px}
+.deda{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed var(--line)}
+.deda .s{font-weight:800;min-width:150px}
+.good{color:var(--good)}.badc{color:var(--tr)}
+.journey{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px}
+.journey li{display:grid;grid-template-columns:34px 1fr;align-items:center;gap:2px 8px;padding:6px 10px;border-radius:10px;opacity:.45}
+.journey li .ic{font-size:22px;grid-row:span 2}
+.journey li p{grid-column:2;margin:0;font-size:15px}
+.journey li.past{opacity:.7}
+.journey li.now{opacity:1;background:var(--panel-hi);outline:2px solid var(--c)}
+.platebox{display:grid;grid-template-columns:minmax(0,220px) 1fr;gap:14px;align-items:center}
+.plate{width:100%;max-width:220px}
+.plate path{cursor:pointer;stroke:var(--night);stroke-width:2;transition:opacity .2s}
+.plate path.dim{opacity:.35}
+.plateinfo p{margin:4px 0 0}
+.wq{font-size:19px;text-align:center;margin:4px 0}
+.wans{font-size:18px;text-align:center;border-radius:12px;padding:10px}
+.wans.w{background:#163652}.wans.g{background:#1c4a3d}
+.tline{width:100%;height:auto}
+.tline .axis{stroke:var(--mute);stroke-width:3}
+.tline .long{fill:var(--en);opacity:.85}
+.tline .short{stroke:var(--gold);stroke-width:5;stroke-linecap:round}
+.tline text{fill:var(--ink);font:15px var(--body)}
+.tline .lab{font-weight:800}
+.tline .lab2{fill:var(--gold);font-weight:800}
+.phrase{text-align:center;font-size:22px;font-family:var(--display);margin:0}
+.verse{display:grid;grid-template-columns:32px 1fr;gap:4px 10px;text-align:left;background:var(--panel-hi);border:1px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer;font-size:17px}
+.verse .n{grid-row:span 2;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--c);color:#141033;font-weight:800}
+.verse .m{color:var(--gold)}
+.verse.open{border-color:var(--c)}
+.checkq{margin-top:16px;background:var(--panel);border:2px dashed var(--c);border-radius:18px;padding:16px}
+.eyebrow{font-size:12px;font-weight:800;letter-spacing:.08em;color:var(--c);margin-bottom:6px}
+.lessonnav{margin-top:16px;justify-content:flex-end}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.lessoncard.done{opacity:.75}
+.petcard{display:flex;gap:18px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px 18px;margin-bottom:12px}
+.petcard .pet{font-size:76px;line-height:1;animation:bob 2.4s ease-in-out infinite}
+.petcard h2{font-size:24px;color:var(--gold)}
+.petcard p{margin:2px 0}
+.bar.wide{max-width:none;margin:6px 0}
+.bar.wide i{width:0}
+@keyframes bob{50%{transform:translateY(-6px)}}
+.chestrow{margin-bottom:18px}
+.chest{display:flex;flex-direction:column;align-items:center;gap:4px;width:100%;background:linear-gradient(180deg,#3d2a63,#2a2263);border:2px solid var(--gold);border-radius:18px;padding:16px;cursor:pointer;color:var(--ink);font-size:17px}
+.chest .ce{font-size:54px;animation:bob 1.2s ease-in-out infinite}
+.chest.off{border-style:dashed;border-color:var(--line);background:var(--panel);cursor:default;text-align:center}
+.chest.off .ce{animation:none;filter:grayscale(1);opacity:.5}
+.sech{font-size:21px;margin:6px 0 10px}
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:18px}
+.badge{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center;display:flex;flex-direction:column;gap:2px;opacity:.55}
+.badge span{font-size:34px}
+.badge b{font-family:var(--display);font-weight:600}
+.badge small{color:var(--mute);font-size:12px}
+.badge.got{opacity:1;border-color:var(--gold);background:var(--panel-hi)}
+.album{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:8px}
+.stk{aspect-ratio:1;max-width:100%;display:grid;place-items:center;font-size:34px;background:var(--panel);border:2px dashed var(--line);border-radius:14px;color:var(--mute);position:relative}
+.stk.got{border-style:solid;border-color:var(--line);background:var(--panel-hi);color:var(--ink)}
+.stk.rare.got{border-color:var(--gold);box-shadow:0 0 14px #ffd16666}
+.stk small{position:absolute;right:4px;bottom:2px;font-size:11px;font-weight:800;color:var(--gold)}
+.chestopen{text-align:center;padding-top:20px}
+.bigchest{font-size:110px;cursor:pointer;display:inline-block;user-select:none}
+.reveal{display:grid;grid-template-columns:repeat(3,minmax(0,110px));justify-content:center;gap:12px;margin-top:10px}
+.reveal .stk{font-size:56px}
+.pop{animation:pop .5s backwards}
+@keyframes pop{0%{transform:scale(0) rotate(-30deg)}70%{transform:scale(1.2)}100%{transform:scale(1)}}
+@media (max-width:520px){.platebox{grid-template-columns:1fr;justify-items:center}.petcard .pet{font-size:60px}.tabs button{font-size:13px}}
+@media (prefers-reduced-motion:reduce){.petcard .pet,.chest .ce,.pop{animation:none}}
 @media (prefers-reduced-motion:reduce){.shake{animation:none}.flip{transition:none}}
 @media (max-width:520px){
   .task{flex-wrap:wrap}
@@ -200,7 +301,9 @@ header{padding-block:16px 6px;display:flex;align-items:center;gap:12px;flex-wrap
 
   <div class="tabs" role="tablist">
     <button role="tab" data-tab="plan" aria-selected="true">Plan</button>
+    <button role="tab" data-tab="lessons" aria-selected="false">Konu</button>
     <button role="tab" data-tab="practice" aria-selected="false">Practice</button>
+    <button role="tab" data-tab="rewards" aria-selected="false">Rewards</button>
     <button role="tab" data-tab="exams" aria-selected="false">Exams</button>
   </div>
 
@@ -211,7 +314,9 @@ header{padding-block:16px 6px;display:flex;align-items:center;gap:12px;flex-wrap
     <div class="tasks" id="tasks"></div>
   </section>
 
+  <section id="tab-lessons" hidden></section>
   <section id="tab-practice" hidden></section>
+  <section id="tab-rewards" hidden></section>
   <section id="tab-exams" hidden></section>
 </div>
 
@@ -765,6 +870,220 @@ notes:`<h3>Telling the time</h3><p>Minutes 1–30 → <b>past</b> this hour. Min
 ]}
 });
 
+// ---------- konu anlatımı: step-by-step lessons with mini checks and interactive widgets ----------
+const LESSONS={
+"L-tr-yazim":{s:"tr",title:"Yazım kuralları",sub:"de/da, ki, mi, büyük harf, kesme işareti",practice:["tr-yazim","tr-de-sort","tr-speed"],pages:[
+ {h:"de / da: ayrı mı, bitişik mi?",html:`<p>Türkçede iki farklı “de” var ve ikisi çok karışır:</p>
+<div class="two-col"><div class="box"><b>Bağlaç “de/da” → AYRI</b><p>“de, dahi, bile” anlamı katar.</p><p class="ex">Ben <u>de</u> geldim. · Sen <u>de</u> gel.</p></div>
+<div class="box"><b>Bulunma eki “-de/-da/-te/-ta” → BİTİŞİK</b><p>“Nerede? Ne zaman?” sorusuna cevap verir.</p><p class="ex">Ev<u>de</u> kaldım. · Kitap<u>ta</u> yazıyor. · Saat beş<u>te</u></p></div></div>
+<p><b>Çıkar testi:</b> “de”yi cümleden çıkar. Cümle hâlâ düzgünse <b>bağlaçtır</b> → ayrı yaz. Bozuluyorsa <b>ektir</b> → bitişik yaz. Aşağıda dene:</p>`,widget:"deda",
+ tip:"Altın ipucu: “te / ta” şeklinde yazılıyorsa (kitapta, beşte) kesinlikle EKTİR. Bağlaç hiçbir zaman “te/ta” olmaz.",
+ check:{q:"Hangisinde “de” bağlaçtır ve ayrı yazılmalıdır?",o:["Annem ___ bizimle gelecek.","Okul___ tören var.","Kitabı masa___ unuttum.","Saat dokuz___ başlıyor."],e:"“Annem de bizimle gelecek.” Çıkarınca “Annem bizimle gelecek.” → anlam bozulmuyor."}},
+ {h:"ki: ayrı mı, bitişik mi?",html:`<div class="two-col"><div class="box"><b>Bağlaç “ki” → AYRI</b><p>İki cümleyi bağlar.</p><p class="ex">Öyle yoruldum <u>ki</u> hemen uyudum. · Duydum <u>ki</u> yarın tatilmiş.</p></div>
+<div class="box"><b>“-ki” eki → BİTİŞİK</b><p>“-deki” ya da “ait olan” anlamı verir.</p><p class="ex">masa<u>daki</u> kitap · yarın<u>ki</u> sınav · senin<u>ki</u></p></div></div>
+<p><b>Ezber:</b> Şu kelimelerde “ki” hep <b>bitişik</b> yazılır: <b>belki, çünkü, sanki, oysaki, mademki, hâlbuki</b>.</p>`,
+ check:{q:"Hangisinde “ki” yanlış yazılmıştır?",o:["O kadar güzel konuştuki herkes dinledi.","Bahçedeki çiçekler açtı.","Belki yarın yağmur yağar.","Bence o haklı, çünkü çok çalıştı."],e:"Bağlaç “ki” ayrı yazılır: “konuştu ki”."}},
+ {h:"Soru eki: mı, mi, mu, mü",html:`<ul><li>Soru eki <b>her zaman ayrı</b> yazılır: Geldin <u>mi</u>? · Okula <u>mı</u> gittin?</li>
+<li>Kendinden önceki kelimeye uyar: kalem <b>mi</b>, kitap <b>mı</b>, okul <b>mu</b>, göz <b>mü</b>.</li>
+<li>Kendisinden sonra gelen ekler soru ekine <b>bitişik</b> yazılır: Geliyor <u>musun</u>? · Hazır <u>mısınız</u>?</li>
+<li>Soru eki varsa cümlenin sonuna genellikle <b>soru işareti (?)</b> konur.</li></ul>`,
+ check:{q:"Hangisi doğru yazılmıştır?",o:["Yarın bize geliyor musun?","Yarın bize geliyormusun?","Yarın bize geliyor mu sun?","Yarın bize geliyormu sun?"],e:"mi ayrı, sonra gelen “-sun” ise soru ekine bitişik: “musun”."}},
+ {h:"Büyük harfler",html:`<p>Büyük harfle başlayanlar:</p><ul>
+<li><b>Cümlenin ilk kelimesi.</b></li>
+<li><b>Kişi adları ve soyadları:</b> Ayşe Yılmaz, Atatürk</li>
+<li><b>Hayvanlara verilen özel adlar:</b> Pamuk, Karabaş</li>
+<li><b>Ülke, şehir, semt, dağ, göl, nehir adları:</b> Türkiye, Ankara, Ağrı Dağı, Van Gölü</li>
+<li><b>Dil ve millet adları:</b> Türkçe, İngilizce, Türk, Alman</li>
+<li><b>Kurum ve kuruluş adları:</b> Türkiye Büyük Millet Meclisi</li></ul>
+<p><b>Dikkat:</b> Gün ve ay adları <b>belirli bir tarih</b> bildiriyorsa büyük yazılır: “29 Ekim 1923 Pazartesi”. Yoksa küçük yazılır: “Her pazartesi yüzmeye giderim.”</p>`,
+ check:{q:"Hangisinde büyük harf yanlış kullanılmıştır?",o:["Kardeşim Okula yeni başladı.","Kedimin adı Minnoş.","Yazın Muğla’ya gittik.","Annem İngilizce öğretmenidir."],e:"“okul” özel isim değildir, küçük harfle yazılır."}},
+ {h:"Kesme işareti ( ’ ) ve sık yapılan yanlışlar",html:`<p><b>Kesme işareti</b>, özel isimlere gelen ekleri ayırır: Ankara<b>’</b>da, Ali<b>’</b>nin, Türkiye<b>’</b>ye. Sayılara gelen eklerde de kullanılır: 5<b>’</b>inci, 2026<b>’</b>da.</p>
+<p>Cins isimlerde (okul, kitap, şehir) kesme işareti <b>kullanılmaz</b>: okula, kitabı, şehirde.</p>
+<div class="tblwrap"><table class="tbl"><tr><th>Yanlış ✗</th><th>Doğru ✓</th></tr>
+<tr><td>herkez</td><td>herkes</td></tr><tr><td>yanlız</td><td>yalnız</td></tr><tr><td>yalnış</td><td>yanlış</td></tr>
+<tr><td>hiç bir · bir kaç</td><td>hiçbir · birkaç</td></tr><tr><td>herşey · birşey</td><td>her şey · bir şey</td></tr>
+<tr><td>şöför · orjinal · süpriz</td><td>şoför · orijinal · sürpriz</td></tr></table></div>`,
+ check:{q:"Hangisinde kesme işareti doğru kullanılmıştır?",o:["Tatilde Bursa’ya gittik.","Okul’dan geç çıktık.","Kitap’ı okudun mu?","Türkiyenin en büyük gölü Van Gölüdür."],e:"Bursa özel isim → Bursa’ya."}}
+]},
+"L-tr-nokta":{s:"tr",title:"Noktalama işaretleri",sub:"nokta, virgül, ünlem, iki nokta, üç nokta, tırnak",practice:["tr-yazim"],pages:[
+ {h:"Cümle sonu işaretleri",html:`<div class="tblwrap"><table class="tbl"><tr><th>İşaret</th><th>Nerede?</th><th>Örnek</th></tr>
+<tr><td><b>.</b> Nokta</td><td>Tamamlanmış cümlenin sonuna</td><td>Bugün hava güneşli<b>.</b></td></tr>
+<tr><td><b>?</b> Soru işareti</td><td>Soru cümlesinin sonuna</td><td>Ödevini yaptın mı<b>?</b></td></tr>
+<tr><td><b>!</b> Ünlem</td><td>Sevinç, korku, şaşırma, acı, seslenme, emir</td><td>Eyvah, geç kaldık<b>!</b> · Dikkat<b>!</b></td></tr>
+<tr><td><b>...</b> Üç nokta</td><td>Yarım bırakılan cümlenin sonuna</td><td>Bir varmış, bir yokmuş<b>...</b></td></tr></table></div>`,
+ check:{q:"“Yaşasın, takımımız kazandı__” Boşluğa hangi işaret gelmelidir?",o:["!","?","...",":"],e:"Sevinç bildiren cümle → ünlem."}},
+ {h:"Virgül ( , )",html:`<ul><li><b>Sıralanan kelimeler arasına:</b> Elma<b>,</b> armut<b>,</b> muz ve çilek aldık. <span class="ex">(Son ikisi “ve” ile bağlanır.)</span></li>
+<li><b>Hitap ve seslenmelerden sonra:</b> Ali<b>,</b> buraya gelir misin?</li>
+<li><b>“Evet, hayır, peki” gibi cevaplardan sonra:</b> Evet<b>,</b> geliyorum.</li>
+<li><b>Sıralı cümleleri ayırmak için:</b> Eve geldim<b>,</b> ellerimi yıkadım<b>,</b> yemeğimi yedim.</li></ul>`,
+ check:{q:"Hangisinde virgül doğru kullanılmıştır?",o:["Öğretmenim, bir soru sorabilir miyim?","Öğretmenim bir, soru sorabilir miyim?","Öğretmenim bir soru, sorabilir miyim?","Öğretmenim bir soru sorabilir, miyim?"],e:"Hitaptan (öğretmenim) sonra virgül konur."}},
+ {h:"İki nokta, tırnak ve kısa çizgi",html:`<ul><li><b>İki nokta ( : )</b> Açıklama veya örnek verilecekse: Çantamda şunlar var<b>:</b> kalem, defter, silgi.</li>
+<li><b>Tırnak işareti ( “ ” )</b> Birinin sözünü aynen aktarırken: Atatürk <b>“</b>Hayatta en hakiki mürşit ilimdir.<b>”</b> demiştir.</li>
+<li><b>Kısa çizgi ( - )</b> Satır sonunda bölünen kelimede ve “arası” anlamında: Ankara<b>-</b>İstanbul yolu</li>
+<li><b>Konuşma çizgisi ( — )</b> Karşılıklı konuşmalarda: <b>—</b> Nasılsın? <b>—</b> İyiyim, teşekkürler.</li></ul>`,
+ check:{q:"“Öğretmen __Yarın gezi var.__ dedi.” Boşluklara hangi işaret gelir?",o:["Tırnak işareti","Virgül","Üç nokta","Kısa çizgi"],e:"Aynen aktarılan söz tırnak içine alınır."}}
+]},
+"L-tr-okuma":{s:"tr",title:"Okuma ve dinleme becerileri",sub:"kelime tahmini, yüzey anlam, anahtar kelime, görsel",practice:["tr-okuma","tr-okuma2","tr-dinle"],pages:[
+ {h:"Bilmediğin kelimenin anlamını tahmin et",html:`<p>4 adımda dedektif ol 🔎:</p><ol class="steps"><li><b>Cümlenin tamamını oku</b>, önceki ve sonraki cümleye de bak.</li>
+<li><b>İpucu kelimeyi bul:</b> “ama, çünkü, gibi, yani” ya da zıt/eş anlamlı bir kelime.</li><li><b>Tahminini kelimenin yerine koy.</b></li><li><b>Cümle mantıklı mı?</b> Mantıklıysa doğru bulmuşsundur!</li></ol>
+<p class="ex">Örnek: “Ali çok <b>titiz</b> biridir; odasında tek bir eşya bile dağınık durmaz.” → İpucu: “dağınık durmaz” → titiz = düzenli, temizliğe çok dikkat eden.</p>`,
+ check:{q:"“Hava o kadar <b>bunaltıcıydı</b> ki herkes gölgeye kaçtı ve buz gibi su içti.” “bunaltıcı” ne demektir?",o:["Çok sıcak, insanı yoran","Çok soğuk","Yağmurlu","Rüzgârlı"],e:"İpuçları: gölgeye kaçmak, buz gibi su → çok sıcak."}},
+ {h:"Yüzey anlam: cevap metinde yazar!",html:`<ul><li>Yüzey anlam soruları, metinde <b>açıkça yazan</b> bilgiyi sorar. Kendi bildiğini değil, <b>metni</b> kullan.</li>
+<li>Önce <b>soruyu</b> oku, sonra metinde o bilgiyi ara. Cevabı bulunca altını çiz.</li>
+<li><b>Tuzağa dikkat:</b> Soruda “<b>değildir</b>, <b>yoktur</b>, <b>ulaşılamaz</b>” varsa metinde OLMAYANI arıyorsun. Bu kelimenin altını çiz!</li></ul>`,
+ check:{q:"“Leyleklerin uzun bacakları ve uzun gagaları vardır. Sonbaharda sıcak ülkelere göç ederler.” Bu metne göre hangisi <b>söylenemez</b>?",o:["Leylekler kışı soğuk ülkelerde geçirir.","Leyleklerin bacakları uzundur.","Leylekler göç eder.","Leyleklerin gagası uzundur."],e:"Metne göre sıcak ülkelere göç ederler; “soğuk ülkelerde kalırlar” söylenemez."}},
+ {h:"Anahtar kelime, konu ve ana fikir",html:`<div class="two-col"><div class="box"><b>🔑 Anahtar kelimeler</b><p>Metnin konusunu en iyi anlatan, çoğu zaman <b>tekrar eden</b> önemli kelimelerdir.</p><p class="ex">Test: Sadece bu kelimeleri duysan metnin neyi anlattığını tahmin edebilir misin?</p></div>
+<div class="box"><b>📌 Konu ve ana fikir</b><p><b>Konu:</b> Metin <i>neyi</i> anlatıyor? (kısa: “arıların önemi”)</p><p><b>Ana fikir:</b> Yazar bize <i>ne söylemek</i> istiyor? (cümle: “Doğayı korumalıyız.”)</p></div></div>`,
+ check:{q:"“Ormanlar bize temiz hava verir. Ormanlarda pek çok hayvan yaşar. Ormanları korumak için ağaç dikmeli, ateş yakmamalıyız.” Anahtar kelimeler hangileridir?",o:["orman, ağaç, korumak","hava, hayvan, ateş","temiz, pek çok, dikmek","bize, için, yakmak"],e:"Metin ormanları ve onları korumayı anlatıyor."}},
+ {h:"Görseli okumak ve dinleme sınavı",html:`<div class="two-col"><div class="box"><b>🖼️ Görsel okuma</b><ul><li>Sembollere bak: 🚫 yasak, ✅ doğru, ♻️ geri dönüşüm.</li><li>Yazılara, renklere ve yüz ifadelerine dikkat et.</li><li>Mesajı <b>tek cümleyle</b> söyle: “Bu görsel bize … anlatıyor.”</li></ul></div>
+<div class="box"><b>🎧 Dinleme sınavı</b><ul><li>Dinlerken kâğıda kısa notlar al: <b>Kim? Nerede? Ne zaman? Ne oldu? Sayılar?</b></li><li>İlk dinlemede genel konuyu, ikincide ayrıntıları yakala.</li><li>Son cümleye çok dikkat et; ana fikir çoğu zaman oradadır.</li></ul></div></div>`,
+ check:{q:"Dinleme sınavında not alırken en çok neye dikkat etmelisin?",o:["Kişi, yer, zaman ve sayılara","Sadece ilk cümleye","Kelimelerin yazımına","Hiçbir şeye, sadece dinlemeye"],e:"5N1K soruları (kim, ne, nerede, ne zaman…) ve sayılar sık sorulur."}}
+]},
+"L-fen-matter":{s:"fen",title:"States of matter & gases",sub:"particles, properties of gases, changes of state",practice:["fen-gas","fen-states-sort","fen-tf"],pages:[
+ {h:"Everything is made of particles",html:`<p>All matter is made of tiny <b>particles</b> <span class="ex">(tanecik)</span>. How they are arranged and how they move decides if something is a <b>solid</b>, a <b>liquid</b> or a <b>gas</b>. Tap the buttons and watch the particles:</p>`,widget:"states",
+ check:{q:"In which state do particles move fastest and are furthest apart?",o:["Gas","Solid","Liquid","They are all the same"],e:"Gas particles are far apart and move quickly in all directions."}},
+ {h:"Solid, liquid, gas: compare",html:`<div class="tblwrap"><table class="tbl"><tr><th></th><th>Solid 🧊</th><th>Liquid 💧</th><th>Gas 💨</th></tr>
+<tr><td>Shape</td><td>fixed</td><td>takes the container's shape</td><td>fills the whole container</td></tr>
+<tr><td>Volume</td><td>fixed</td><td>fixed</td><td>not fixed</td></tr>
+<tr><td>Can it flow?</td><td>no</td><td>yes</td><td>yes</td></tr>
+<tr><td>Can it be squashed?</td><td>no</td><td>no</td><td><b>yes!</b></td></tr>
+<tr><td>Particles</td><td>packed tightly, vibrate</td><td>close, slide past each other</td><td>far apart, move fast</td></tr></table></div>`,
+ check:{q:"Why can we pump lots of air into a bicycle tyre?",o:["Gases can be squashed because their particles are far apart.","Air is a solid.","Air has no mass.","The tyre makes the air disappear."],e:"Gas particles can be pushed closer together (compressed)."}},
+ {h:"Special facts about gases",html:`<ul><li><b>Gases have mass.</b> A pumped-up football is heavier than a flat one.</li>
+<li><b>Gases spread out (diffusion).</b> Smells travel across a room because gas particles move everywhere.</li>
+<li><b>Gases can be compressed.</b> Divers carry lots of air squashed into a small tank.</li>
+<li><b>Examples:</b> oxygen (we breathe it in), carbon dioxide (we breathe it out), water vapour, helium (balloons). <b>Air</b> is a <i>mixture</i> of gases.</li></ul>`,
+ check:{q:"Mum is baking a cake in the kitchen. You can smell it in your bedroom. What is this called?",o:["Diffusion","Condensation","Freezing","Melting"],e:"Gas particles spread from the kitchen to your room."}},
+ {h:"Changes of state",html:`<div class="cycle"><span>🧊 solid</span><span class="arr">— melting →<br>← freezing —</span><span>💧 liquid</span><span class="arr">— evaporation →<br>← condensation —</span><span>💨 gas</span></div>
+<ul><li><b>Evaporation:</b> liquid → gas (puddles dry in the sun).</li><li><b>Condensation:</b> gas → liquid (drops on a cold glass or a bathroom mirror).</li>
+<li><b>Melting:</b> solid → liquid. <b>Freezing:</b> liquid → solid.</li></ul>`,
+ check:{q:"Water drops appear on the outside of a cold glass of juice. What happened?",o:["Water vapour in the air condensed.","The glass melted.","The juice evaporated through the glass.","The ice froze."],e:"Gas (water vapour) cooled and turned into liquid → condensation."}}
+]},
+"L-fen-digest":{s:"fen",title:"The digestive system",sub:"teeth, organs and the journey of food",practice:["fen-digest","fen-order","fen-match"],pages:[
+ {h:"What is digestion?",html:`<p><b>Digestion</b> <span class="ex">(sindirim)</span> means breaking food down into very small pieces so that the body can <b>absorb</b> them into the blood. The blood then carries the <b>nutrients</b> to every part of the body.</p>
+<p>It starts in your mouth, with your <b>teeth</b>:</p><div class="teeth"><div><span>🔪</span><b>Incisors</b><br>front teeth, <b>cut</b></div><div><span>🐺</span><b>Canines</b><br>pointed, <b>tear</b></div><div><span>⚙️</span><b>Molars</b><br>back teeth, <b>grind</b> and chew</div></div>
+<p><b>Saliva</b> makes food soft and wet so it is easy to swallow, and starts digestion.</p>`,
+ check:{q:"Which teeth grind and chew food?",o:["Molars","Incisors","Canines","Milk teeth"],e:"Molars are the big flat teeth at the back."}},
+ {h:"Follow the food!",html:`<p>Press <b>Next stop</b> to follow a bite of food through the body:</p>`,widget:"journey",
+ check:{q:"Where are most nutrients absorbed into the blood?",o:["Small intestine","Large intestine","Stomach","Oesophagus"],e:"The small intestine is long and absorbs digested food."}},
+ {h:"Remember it!",html:`<p class="big-mnemonic">My Old Sister Sings Loud Rock Anthems</p><p class="ex" style="text-align:center">Mouth · Oesophagus · Stomach · Small intestine · Large intestine · Rectum · Anus</p>
+<p><b>Helpers:</b> the <b>liver</b> and <b>pancreas</b> make juices that help break food down, but food does not pass through them.</p>`,
+ check:{q:"What is the main job of the large intestine?",o:["Absorbing water","Chewing food","Making saliva","Killing germs with acid"],e:"Water is taken back into the body in the large intestine."}}
+]},
+"L-fen-diet":{s:"fen",title:"A balanced diet",sub:"nutrient groups and the healthy plate",practice:["fen-diet","fen-food-sort","fen-all"],pages:[
+ {h:"The healthy plate",html:`<p>Tap each part of the plate to see what it gives your body. The size shows roughly how much of your food should come from each group.</p>`,widget:"plate",
+ check:{q:"Which group should be the biggest part of our food?",o:["Fruit and vegetables","Fats and oils","Sweets","Only protein"],e:"Fruit and vegetables fill about a third or more of a healthy plate."}},
+ {h:"Nutrients and their jobs",html:`<div class="tblwrap"><table class="tbl"><tr><th>Nutrient</th><th>Job</th><th>Foods</th></tr>
+<tr><td><b>Carbohydrates</b></td><td>give <b>energy</b> ⚡</td><td>bread, rice, pasta, potatoes</td></tr>
+<tr><td><b>Proteins</b></td><td><b>growth and repair</b> 💪</td><td>meat, fish, eggs, beans, lentils</td></tr>
+<tr><td><b>Fats</b></td><td>store energy, keep us warm</td><td>butter, oil, nuts (small amounts)</td></tr>
+<tr><td><b>Vitamins & minerals</b></td><td>keep us <b>healthy</b>; calcium for bones and teeth</td><td>fruit, vegetables, milk</td></tr>
+<tr><td><b>Fibre</b></td><td>helps food move through the <b>intestines</b></td><td>wholegrain bread, fruit, vegetables</td></tr>
+<tr><td><b>Water</b></td><td>every cell needs it 💧</td><td>water!</td></tr></table></div>`,
+ check:{q:"Kerem broke his arm. Which nutrient helps his body repair it?",o:["Protein","Fat","Fibre","Sugar"],e:"Proteins are for growth and repair."}},
+ {h:"Healthy habits",html:`<ul><li>A <b>balanced diet</b> = all the groups, in the <b>right amounts</b>.</li><li>Too much <b>sugar</b> → tooth decay 🦷 and weight gain.</li><li>Too much <b>fat and salt</b> → heart problems later in life.</li>
+<li>Not enough <b>fibre</b> → digestion problems.</li><li>Drink water, eat 5 portions of fruit and vegetables a day, and exercise!</li></ul>`,
+ check:{q:"Which lunch is the most balanced?",o:["Fish, rice, salad and an apple","Chips and cola","Cake and juice","Only bread and butter"],e:"Protein + carbohydrate + vitamins + fibre."}}
+]},
+"L-en-will":{s:"en",title:"Will or be going to?",sub:"plans, predictions, promises and decisions",practice:["en-will","en-will-sort","en-will-type","en-will-speed"],pages:[
+ {h:"will + verb",html:`<p>Use <b>will</b> for:</p><div class="cards4">
+<div class="box"><b>🔮 Predictions / opinions</b><p class="ex">I think it <b>will</b> snow tomorrow.<br>Maybe robots <b>will</b> teach us.</p><p>Clue words: <i>I think, I'm sure, maybe, probably, I hope</i></p></div>
+<div class="box"><b>⚡ Decisions made NOW</b><p class="ex">“The phone is ringing!” “I<b>'ll</b> answer it.”</p></div>
+<div class="box"><b>🤝 Promises & offers</b><p class="ex">I <b>won't</b> tell anyone. · I<b>'ll</b> carry your bag.</p></div>
+<div class="box"><b>📅 Future facts</b><p class="ex">I <b>will</b> be 11 next year.</p></div></div>`,
+ check:{q:"“It's so hot in here!” “I ___ open the window.”",o:["'ll","'m going to","am","going to"],e:"You decide at this moment → will."}},
+ {h:"be going to + verb",html:`<p>Use <b>be going to</b> for:</p><div class="two-col">
+<div class="box"><b>📝 Plans already made</b><p class="ex">We<b>'re going to</b> visit Antalya in July. We've booked the hotel.</p><p>You decided <i>before</i> speaking.</p></div>
+<div class="box"><b>👀 Predictions with proof</b><p class="ex">Look at those black clouds! It<b>'s going to</b> rain.</p><p>You can <i>see</i> it is about to happen.</p></div></div>`,
+ check:{q:"Look! That glass is at the edge of the table. It ___ fall!",o:["is going to","will","going to","is will"],e:"You can see the proof → going to."}},
+ {h:"How to build the sentences",html:`<div class="tblwrap"><table class="tbl"><tr><th></th><th>will</th><th>be going to</th></tr>
+<tr><td>✅ Positive</td><td>I / You / She <b>will</b> go<br>(I'll, she'll)</td><td>I <b>am</b> going to go<br>She <b>is</b> going to go<br>We / They <b>are</b> going to go</td></tr>
+<tr><td>❌ Negative</td><td>She <b>won't</b> go<br>(= will not)</td><td>I'm <b>not</b> going to go<br>She <b>isn't</b> going to go</td></tr>
+<tr><td>❓ Question</td><td><b>Will</b> you go?</td><td><b>Are</b> you going to go?<br><b>Is</b> she going to go?</td></tr></table></div>
+<p><b>Common mistakes:</b> ✗ <s>I will going to</s> · ✗ <s>She going to</s> (needs <b>is</b>) · ✗ <s>He will goes</s> → ✓ He will <b>go</b></p>`,
+ check:{q:"Which sentence is correct?",o:["They are going to play tennis.","They going to play tennis.","They will going to play tennis.","They are going play tennis."],e:"are + going to + base verb."}},
+ {h:"The decision machine",html:`<p>Not sure? Answer the questions and the machine will tell you:</p>`,widget:"willtree",
+ check:{q:"Mum has bought paint. “We ___ paint my room this weekend.”",o:["are going to","will","going to","are will"],e:"A plan (she already bought the paint) → going to."}}
+]},
+"L-en-past":{s:"en",title:"Past simple & past continuous",sub:"was reading when the phone rang",practice:["en-past"],pages:[
+ {h:"Two past tenses",html:`<div class="two-col"><div class="box"><b>Past simple</b><p>A <b>finished</b> action. Short.</p><p class="ex">I <b>visited</b> my grandma yesterday.<br>She <b>didn't watch</b> TV.<br><b>Did</b> you <b>see</b> it?</p></div>
+<div class="box"><b>Past continuous</b><p>An action <b>in progress</b> in the past. Long.</p><p class="ex">At 8 pm I <b>was reading</b>.<br>They <b>were playing</b> football.</p><p><b>was</b> (I/he/she/it) · <b>were</b> (you/we/they) + -ing</p></div></div>`,widget:"timeline",
+ check:{q:"At 7 o'clock yesterday, we ___ dinner.",o:["were having","had","was having","have"],e:"In progress at a time in the past, we → were."}},
+ {h:"when & while",html:`<ul><li><b>when</b> + short action (past simple): I was sleeping <b>when</b> the alarm <b>rang</b>.</li>
+<li><b>while</b> + long action (past continuous): <b>While</b> I <b>was walking</b> home, I saw a cat.</li></ul>
+<p><b>Irregular verbs to know:</b></p><div class="chips static"><span>go → went</span><span>see → saw</span><span>have → had</span><span>come → came</span><span>ring → rang</span><span>eat → ate</span><span>take → took</span><span>make → made</span><span>buy → bought</span><span>write → wrote</span><span>find → found</span><span>fall → fell</span></div>`,
+ check:{q:"While I ___ my homework, the lights went out.",o:["was doing","did","were doing","do"],e:"while + long action → was doing."}}
+]},
+"L-en-grammar":{s:"en",title:"Stative verbs & conditionals",sub:"know vs is knowing · if + will / would",practice:["en-verbs","en-cond"],pages:[
+ {h:"Stative verbs don't like -ing",html:`<p><b>Action verbs</b> are things we do (run, cook, play). They can be continuous: <i>I'm cooking.</i></p>
+<p><b>Stative verbs</b> are about thoughts, feelings, senses and owning. We usually don't use them with -ing:</p>
+<div class="chips static"><span>know</span><span>like</span><span>love</span><span>hate</span><span>want</span><span>need</span><span>believe</span><span>understand</span><span>think (opinion)</span><span>own</span><span>seem</span><span>taste</span><span>smell</span></div>
+<p>✓ I <b>know</b> the answer. ✗ <s>I'm knowing the answer.</s></p>`,
+ check:{q:"This pizza ___ amazing!",o:["tastes","is tasting","tasting","taste"],e:"taste (= has a flavour) is stative."}},
+ {h:"First vs second conditional",html:`<div class="tblwrap"><table class="tbl"><tr><th>First conditional</th><th>Second conditional</th></tr>
+<tr><td>Real, possible future</td><td>Imaginary, unlikely</td></tr>
+<tr><td><b>If</b> + present simple, <b>will</b> + verb</td><td><b>If</b> + past simple, <b>would</b> + verb</td></tr>
+<tr><td class="ex">If it <b>rains</b>, we <b>will stay</b> at home.</td><td class="ex">If I <b>had</b> wings, I <b>would fly</b>.</td></tr>
+<tr><td class="ex">If you <b>study</b>, you<b>'ll pass</b>.</td><td class="ex">If I <b>were</b> a millionaire, I<b>'d buy</b> a farm.</td></tr></table></div>`,
+ check:{q:"If I ___ a superhero, I would save the world.",o:["were","am","will be","would be"],e:"Imaginary → second conditional: If I were…"}}
+]},
+"L-en-school":{s:"en",title:"School life, likes & telling the time",sub:"have to · mustn't · love doing · quarter past",practice:["en-school","en-time","en-school-match"],pages:[
+ {h:"Rules: have to, must, mustn't, don't have to",html:`<div class="tblwrap"><table class="tbl"><tr><th></th><th>Meaning</th><th>Example</th></tr>
+<tr><td>✅ <b>have to / must</b></td><td>It's necessary.</td><td class="ex">We <b>have to</b> wear a uniform.</td></tr>
+<tr><td>🚫 <b>mustn't</b></td><td>It's not allowed!</td><td class="ex">You <b>mustn't</b> run in the corridor.</td></tr>
+<tr><td>😌 <b>don't have to</b></td><td>It's not necessary (you can if you want).</td><td class="ex">We <b>don't have to</b> bring lunch.</td></tr></table></div>
+<p><b>Likes:</b> love ❤️ → like / enjoy 🙂 → don't mind 😐 → don't like 🙁 → hate / can't stand 😖 <b>+ -ing</b>: <i>I enjoy <b>reading</b>.</i></p>`,
+ check:{q:"Tomorrow is Saturday. We ___ get up early.",o:["don't have to","mustn't","have to","must"],e:"Not necessary → don't have to."}},
+ {h:"Telling the time: try the clock!",html:`<p>Minutes 1–30 are <b>past</b> the hour. Minutes 31–59 are <b>to</b> the next hour. Use the buttons to move the clock and read the time:</p>`,widget:"clock",
+ check:{q:"It's 6:45. How do you say it?",o:["It's quarter to seven.","It's quarter past six.","It's quarter to six.","It's six forty-five past."],e:"15 minutes before seven → quarter to seven."}}
+]},
+"L-din-duzen":{s:"din",title:"Evrendeki düzen ve Allah’ın birliği",sub:"akıl yürütme ve tevhid",practice:["din-duzen","din-tf"],pages:[
+ {h:"Evrende mükemmel bir düzen var",html:`<div class="cards4"><div class="box"><b>☀️ Gece ve gündüz</b><p>Dünya kendi etrafında döner; güneş her gün doğar ve batar.</p></div>
+<div class="box"><b>🍂 Mevsimler</b><p>İlkbahar, yaz, sonbahar ve kış hep aynı sırayla gelir.</p></div>
+<div class="box"><b>🌍 Doğru uzaklık</b><p>Dünya Güneş’e ne çok yakın ne çok uzak; tam yaşamaya uygun.</p></div>
+<div class="box"><b>❤️ Vücudumuz</b><p>Kalp hiç durmadan çalışır; her organın bir görevi var.</p></div></div>`,
+ check:{q:"Hangisi evrendeki düzene örnektir?",o:["Ay’ın evrelerinin her ay aynı sırayla tekrarlanması","Odanın dağınık olması","Bir oyunda kaybetmek","Kalemin kırılması"],e:"Ay’ın evreleri düzenli olarak tekrarlanır."}},
+ {h:"Akıl yürütme: Düzen, düzenleyeni gösterir",html:`<p><b>Akıl yürütme</b>, gördüğümüz şeylerden yola çıkarak bir sonuca ulaşmaktır.</p>
+<ul><li>Kumda ayak izi gördüm → Buradan biri geçmiş. 👣</li><li>Güzel bir resim gördüm → Onu bir ressam yapmış. 🎨</li><li>Bir bina gördüm → Onu bir mimar tasarlamış. 🏛️</li></ul>
+<p>Evrendeki bu muhteşem düzen de kendiliğinden oluşamaz. Bu düzen, onu yaratan ve yöneten <b>Allah</b>’ın varlığını gösterir.</p>`,
+ check:{q:"“Bir saat, saatçinin varlığını gösterir.” Bu örnekle ne anlatılmak istenir?",o:["Düzenli bir şeyin onu yapan birinin olduğunu gösterdiği","Saatlerin pahalı olduğu","Zamanın önemli olduğu","Herkesin saati olması gerektiği"],e:"Düzen ve sanat, yapanı gösterir."}},
+ {h:"Tevhid: Allah birdir",html:`<p>Evrendeki düzenin hiç bozulmadan sürmesi, onu yaratanın <b>bir</b> olduğunu gösterir. Kur’an’da şöyle buyrulur:</p>
+<blockquote>“Eğer yerde ve gökte Allah’tan başka ilahlar olsaydı, ikisinin de düzeni bozulurdu.”<br><span class="ex">(Enbiyâ suresi, 22. ayet)</span></blockquote>
+<p>Allah’ın bir ve tek olduğuna inanmaya <b>tevhid</b> denir. İslam’ın temeli tevhid inancıdır.</p>`,
+ check:{q:"Tevhid ne demektir?",o:["Allah’ın bir ve tek olduğuna inanmak","Namaz kılmak","Kur’an okumak","Oruç tutmak"],e:"Tevhid = Allah’ı bir bilmek."}}
+]},
+"L-din-esma":{s:"din",title:"Allah’ın güzel isimleri",sub:"Esmaü’l-Hüsna ve bağlamına uygun kullanma",practice:["din-esma","din-esma-match","din-esmaq"],pages:[
+ {h:"Esmaü’l-Hüsna nedir?",html:`<p><b>Esmaü’l-Hüsna</b>, “en güzel isimler” demektir. Allah kendini Kur’an’da güzel isimleriyle tanıtır. Bu isimler bize Allah’ın sıfatlarını öğretir.</p>
+<p>Sınavda bir <b>durum</b> verilir, sen de o duruma uygun ismi bulursun. Örneğin “Allah dualarımızı duyar” → <b>Es-Semî</b>.</p>`,
+ check:{q:"“Esmaü’l-Hüsna” ne demektir?",o:["En güzel isimler","Kutsal kitaplar","Peygamberler","Melekler"],e:"Esma = isimler, hüsna = en güzel."}},
+ {h:"İsimler ve kullanıldıkları durumlar",html:`<div class="tblwrap"><table class="tbl"><tr><th>İsim</th><th>Anlamı</th><th>Hangi durumda?</th></tr>
+<tr><td><b>Er-Rahmân</b></td><td>Dünyada bütün canlılara merhamet eden</td><td>Yağmur herkese yağar</td></tr>
+<tr><td><b>Er-Rahîm</b></td><td>Çok merhametli</td><td>Kullarına şefkat gösterir</td></tr>
+<tr><td><b>El-Hâlık</b></td><td>Yaratan</td><td>Her şeyi yoktan var eder</td></tr>
+<tr><td><b>El-Musavvir</b></td><td>Şekil veren</td><td>Her yüz, her çiçek farklı</td></tr>
+<tr><td><b>El-Alîm</b></td><td>Her şeyi bilen</td><td>İçimizden geçeni bilir</td></tr>
+<tr><td><b>El-Hakîm</b></td><td>Her işi hikmetli olan</td><td>Hiçbir şey boşuna yaratılmadı</td></tr>
+<tr><td><b>El-Kadîr</b></td><td>Her şeye gücü yeten</td><td>Gücünün yetmediği şey yok</td></tr>
+<tr><td><b>Er-Rezzâk</b></td><td>Rızık veren</td><td>Bütün canlıları besler</td></tr>
+<tr><td><b>Es-Semî</b></td><td>Her şeyi işiten</td><td>Dualarımızı duyar</td></tr>
+<tr><td><b>El-Basîr</b></td><td>Her şeyi gören</td><td>Karanlıktaki karıncayı görür</td></tr>
+<tr><td><b>El-Vedûd</b></td><td>Kullarını çok seven</td><td>Sevgisi sonsuzdur</td></tr>
+<tr><td><b>El-Gafûr</b></td><td>Günahları çok bağışlayan</td><td>Pişman olanı affeder</td></tr>
+<tr><td><b>El-Hafîz</b></td><td>Koruyan</td><td>Her şeyi korur, gözetir</td></tr>
+<tr><td><b>El-Ehad / El-Vâhid</b></td><td>Bir ve tek olan</td><td>Eşi, benzeri yoktur</td></tr>
+<tr><td><b>Es-Samed</b></td><td>Hiçbir şeye muhtaç olmayan</td><td>Her şey O’na muhtaç</td></tr></table></div>`,
+ check:{q:"“Ali yaptığı hatadan pişman oldu ve Allah’tan af diledi.” Bu durum hangi isimle ilgilidir?",o:["El-Gafûr","Er-Rezzâk","El-Musavvir","El-Basîr"],e:"Gafûr = günahları çok bağışlayan."}}
+]},
+"L-din-ihlas":{s:"din",title:"İhlas suresi",sub:"okunuşu, anlamı ve mesajı",practice:["din-ihlas","din-ihlas-order"],pages:[
+ {h:"Ayet ayet İhlas suresi",html:`<p>Her ayete dokun, anlamını gör:</p>`,widget:"ihlas",
+ check:{q:"“Lem yelid ve lem yûled” ayetinin anlamı nedir?",o:["O, doğurmamış ve doğurulmamıştır.","De ki: O Allah birdir.","Allah sameddir.","Hiçbir şey O’na denk değildir."],e:"3. ayet."}},
+ {h:"İhlas suresini tanıyalım",html:`<div class="cards4"><div class="box"><b>📖 Sırası</b><p>Kur’an’ın <b>112.</b> suresi</p></div><div class="box"><b>🔢 Ayet sayısı</b><p><b>4</b> ayet</p></div>
+<div class="box"><b>🕋 Nerede indi?</b><p><b>Mekke</b>’de</p></div><div class="box"><b>💬 Adının anlamı</b><p>“İhlas” = <b>samimiyet, içtenlik</b></p></div></div>
+<p><b>Ana mesajı:</b> Allah <b>bir</b>dir (tevhid), hiçbir şeye muhtaç değildir, doğmamış ve doğurmamıştır, hiçbir şey O’na denk değildir. Peygamberimiz bu surenin Kur’an’ın üçte birine denk olduğunu söylemiştir.</p>`,
+ check:{q:"İhlas suresinin ana konusu nedir?",o:["Allah’ın birliği (tevhid)","Peygamberlerin hayatı","Namazın kılınışı","Cennet ve cehennem"],e:"Sure baştan sona tevhidi anlatır."}}
+]}
+};
+
 // ---------- the plan: about an hour a day ----------
 const DAYS=[
  {d:"2026-11-08",note:"Türkçe is on Tuesday, so start with it. Finished fast? Do the bonus games below and collect XP!",tasks:[
@@ -776,25 +1095,32 @@ const DAYS=[
   {set:"tr-de-sort",min:5,desc:"Bonus: sort each “de/da” — joined or separate?"},
   {set:"tr-speed",min:3,desc:"Bonus: 60-second spelling race. Beat your score!"},
   {set:"tr-deyim-match",min:5,desc:"Bonus: match the idioms to their meanings"},
-  {set:"en-will-sort",min:5,desc:"Bonus: a first try at will vs going to"}]},
+  {set:"en-will-sort",min:5,desc:"Bonus: a first try at will vs going to"},
+  {lesson:"L-tr-yazim",min:8,desc:"Bonus: the full spelling lesson, with a quick check on every page"},
+  {lesson:"L-tr-nokta",min:6,desc:"Bonus: punctuation explained"}]},
  {d:"2026-11-09",note:"Tomorrow: Türkçe 09.20 and the listening exam 10.15. Türkçe first, then a bit of science.",tasks:[
+  {lesson:"L-tr-okuma",min:8,desc:"How to answer reading and listening questions"},
   {set:"tr-okuma",min:10,desc:"Reading, key words and pictures"},
   {set:"tr-okuma2",min:10,desc:"A new text about polar bears"},
   {set:"tr-dinle",min:8,desc:"Listen carefully, like the real listening exam"},
   {set:"tr-dinle2",min:8,desc:"A second listening: the science fair"},
   {set:"tr-speed",min:3,desc:"Spelling race again. Can you beat yesterday?"},
   {brk:1,min:5},
+  {lesson:"L-fen-matter",min:8,desc:"Watch the particles move!"},
   {set:"fen-gas",min:10,desc:"Cambridge Science: read the notes, then the quiz"},
   {set:"fen-states-sort",min:5,desc:"Solid, liquid or gas? Sort them"},
+  {lesson:"L-fen-digest",min:6,desc:"Follow a bite of food through the body"},
   {set:"fen-digest",min:10,desc:"The digestive system quiz"},
   {set:"fen-order",min:5,desc:"Put the journey of food in order"}]},
  {d:"2026-11-10",note:"Türkçe is done today. Tomorrow at 11.10: Cambridge Science. (Kültür ve Medeniyetimize Yön Verenler at 09.20 is skipped.)",tasks:[
   {set:"fen-match",min:5,desc:"Match the science words, as fast as you can"},
+  {lesson:"L-fen-diet",min:6,desc:"Tap the healthy plate"},
   {set:"fen-diet",min:10,desc:"Nutrients and their jobs"},
   {set:"fen-food-sort",min:5,desc:"Which nutrient group is each food?"},
   {set:"fen-tf",min:3,desc:"60-second true or false"},
   {set:"fen-all",min:10,desc:"A mixed test from all three topics"},
   {brk:1,min:5},
+  {lesson:"L-en-will",min:10,desc:"Rules, forms and the decision machine"},
   {set:"en-will",min:12,desc:"Will or be going to: notes and quiz"},
   {set:"en-will-sort",min:5,desc:"Sort the sentences: will or going to?"},
   {set:"en-nature-match",min:5,desc:"Unit 1 nature words"}]},
@@ -802,20 +1128,26 @@ const DAYS=[
   {set:"en-will-type",min:10,desc:"Type the answers yourself"},
   {set:"en-will-speed",min:3,desc:"60-second will vs going to challenge"},
   {set:"en-will-dinle",min:8,desc:"Listening: Deniz's summer plans"},
+  {lesson:"L-en-grammar",min:6,desc:"Stative verbs and if-sentences"},
   {set:"en-verbs",min:8,desc:"Stative and action verbs"},
+  {lesson:"L-en-past",min:6,desc:"The timeline of past tenses"},
   {set:"en-past",min:10,desc:"Was reading when … rang"},
   {set:"en-cond",min:10,desc:"If …, will / would"},
   {brk:1,min:5},
   {set:"en-dinle",min:6,desc:"Listening: Emma's trip"},
+  {lesson:"L-din-duzen",min:6,desc:"Düzen, akıl yürütme ve tevhid"},
   {set:"din-duzen",min:10,desc:"Start Din Kültürü for Friday"}]},
  {d:"2026-11-12",note:"Last study day! Tomorrow: Cambridge English 09.20 and Din Kültürü 10.15.",tasks:[
+  {lesson:"L-en-school",min:6,desc:"Rules, likes and the interactive clock"},
   {set:"en-school",min:12,desc:"Cambridge English: rules, likes and the time"},
   {set:"en-time",min:8,desc:"Clock game: read the clock in English"},
   {set:"en-school-match",min:5,desc:"School and classroom words"},
   {set:"en-will-speed",min:3,desc:"Will vs going to: beat your best score"},
   {brk:1,min:5},
+  {lesson:"L-din-esma",min:8,desc:"İsimler ve hangi durumda kullanıldıkları"},
   {set:"din-esma-match",min:5,desc:"Match the names and meanings"},
   {set:"din-esmaq",min:10,desc:"Which name fits the sentence?"},
+  {lesson:"L-din-ihlas",min:6,desc:"Ayet ayet anlamı"},
   {set:"din-ihlas",min:10,desc:"İhlas: reading, meaning and facts"},
   {set:"din-ihlas-order",min:5,desc:"Put the verses in order"},
   {set:"din-tf",min:3,desc:"60-second true or false"}]},
@@ -829,6 +1161,7 @@ DAYS.forEach(day=>day.tasks.forEach((t,i)=>t.id=day.d+"#"+i));
 const KEY="yazili:v1";
 let S={done:{},best:{},breakEnd:0};
 try{const x=JSON.parse(localStorage.getItem(KEY)||"null");if(x&&x.done)S=Object.assign(S,x)}catch(e){}
+S=Object.assign({lessons:{},badges:{},stickers:{},dayChest:{},chests:0,xp:0,bestTime:{}},S);S.stats=Object.assign({perfect:0,maxStreak:0,streak:0},S.stats||{});
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
 
 // ---------- helpers ----------
@@ -859,6 +1192,7 @@ function renderNext(){
 // ---------- plan tab ----------
 function taskInfo(t){
   if(t.brk)return{s:"brk",title:"Fun break",desc:"Play a game, stretch or have a snack"};
+  if(t.lesson){const L=LESSONS[t.lesson];return{s:L.s,title:"📖 Konu: "+L.title,desc:t.desc||L.sub}}
   const set=SETS[t.set];return{s:set.s,title:set.title,desc:t.desc||""};
 }
 function dayStats(day){const n=day.tasks.length,k=day.tasks.filter(t=>S.done[t.id]).length;return{n,k}}
@@ -882,7 +1216,16 @@ function renderPlan(){
     return `<div class="task${done?" done":""}" style="--c:${SUBJ[i.s].c}">
       <button class="chk" data-check="${t.id}" aria-label="${done?"Mark not done":"Mark done"}"></button>
       <div class="body"><div class="sub">${SUBJ[i.s].name} · ${t.min} min${best}</div><h3>${esc(i.title)}</h3><p>${esc(i.desc)}</p></div>
-      <button class="go" data-open="${t.brk?"break":t.set}" data-task="${t.id}">${t.brk?"Break":done?"Again":"Start"}</button></div>`}).join("");
+      <button class="go" data-open="${t.brk?"break":t.lesson?"lesson:"+t.lesson:t.set}" data-task="${t.id}">${t.brk?"Break":t.lesson?(done?"Read again":"Learn"):done?"Again":"Start"}</button></div>`}).join("");
+}
+
+// ---------- lessons tab ----------
+function renderLessons(){
+  const order=["tr","fen","en","din"],n=Object.keys(LESSONS).length,k=Object.keys(LESSONS).filter(id=>S.lessons[id]).length;
+  $("#tab-lessons").innerHTML=`<p class="mute">Konu anlatımı: short lessons with examples, interactive models and a quick check on every page. ${k} of ${n} finished. Each new lesson gives +50 XP.</p>`+order.map(s=>{
+    const ids=Object.keys(LESSONS).filter(id=>LESSONS[id].s===s);
+    return `<div class="group" style="--c:${SUBJ[s].c}"><h2>${SUBJ[s].name}</h2><div class="sets">${ids.map(id=>{const L=LESSONS[id];
+      return `<button class="set lessoncard${S.lessons[id]?" done":""}" style="--c:${SUBJ[s].c}" data-open="lesson:${id}"><b>📖 ${esc(L.title)}</b><span>${esc(L.sub)} · ${L.pages.length} pages${S.lessons[id]?" · ✓ done":""}</span></button>`}).join("")}</div></div>`}).join("");
 }
 
 // ---------- practice tab ----------
@@ -909,13 +1252,15 @@ function renderExams(){
 document.querySelector(".tabs").addEventListener("click",e=>{
   const b=e.target.closest("[data-tab]");if(!b)return;
   document.querySelectorAll(".tabs button").forEach(x=>x.setAttribute("aria-selected",x===b));
-  ["plan","practice","exams"].forEach(n=>$("#tab-"+n).hidden=n!==b.dataset.tab);
+  ["plan","lessons","practice","rewards","exams"].forEach(n=>$("#tab-"+n).hidden=n!==b.dataset.tab);
   if(b.dataset.tab==="practice")renderPractice();
+  if(b.dataset.tab==="lessons")renderLessons();
+  if(b.dataset.tab==="rewards")renderRewards();
   if(b.dataset.tab==="exams")renderExams();
 });
 document.addEventListener("click",e=>{
   const d=e.target.closest("[data-day]");if(d){selDay=d.dataset.day;renderPlan();return}
-  const c=e.target.closest("[data-check]");if(c){const id=c.dataset.check;S.done[id]=!S.done[id];if(!S.done[id])delete S.done[id];save();renderPlan();return}
+  const c=e.target.closest("[data-check]");if(c){const id=c.dataset.check;S.done[id]=!S.done[id];if(!S.done[id])delete S.done[id];save();afterProgress();renderPlan();return}
   const o=e.target.closest("[data-open]");if(o){openActivity(o.dataset.open,o.dataset.task||null)}
 });
 
@@ -930,13 +1275,16 @@ function closeSheet(){
   if(cleanup){cleanup();cleanup=null}
   $("#sheet").hidden=true;document.body.style.overflow="";curTask=null;renderPlan();renderNext();
   if(!$("#tab-practice").hidden)renderPractice();
+  if(!$("#tab-lessons").hidden)renderLessons();
+  if(!$("#tab-rewards").hidden)renderRewards();
 }
 $("#sheetClose").onclick=closeSheet;
-function finishTask(){if(curTask){S.done[curTask]=true;save()}}
+function finishTask(){if(curTask){S.done[curTask]=true}save();afterProgress()}
 
 function openActivity(id,taskId){
   curTask=taskId;
   if(id==="break")return openBreak();
+  if(id.startsWith("lesson:"))return runLesson(id.slice(7));
   const set=SETS[id];openSheet(set.title,set.s);
   if(set.kind==="cards")return runCards(id,set);
   if(set.kind==="listen")return runListen(id,set);
@@ -968,7 +1316,7 @@ function runQuiz(id,set,only){
     body().querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
       const k=+b.dataset.k,ok=opts[k].ok;
       body().querySelectorAll(".opt").forEach((x,j)=>{x.disabled=true;if(opts[j].ok)x.classList.add("right")});
-      if(ok){score++;addXP(10)}else{b.classList.add("wrong");wrong.push(q)}
+      hit(ok);if(ok){score++;addXP(10)}else{b.classList.add("wrong");wrong.push(q)}
       $("#fb").innerHTML=`<div class="feedback ${ok?"ok":"no"}">${ok?"✓ Right!":"✗ Not quite."} ${esc(q.e||"")}</div>
         <div class="row" style="margin-top:12px"><button class="btn" id="nx">${i+1<qs.length?"Next →":"See score"}</button></div>`;
       $("#nx").onclick=()=>{i++;show();$("#sheet").scrollTop=0};$("#nx").focus();
@@ -1040,16 +1388,21 @@ function openBreak(){
     const el=$("#tm");if(!el)return;el.textContent=m+":"+pad(s);if(!left){$("#tmh").textContent="Time's up! Back to studying 📚";clearInterval(iv)}};
   const iv=setInterval(tick,500);tick();cleanup=()=>clearInterval(iv);
   body().querySelectorAll(".games a").forEach(a=>a.onclick=()=>{if(task){S.done[task]=true;save()}});
-  $("#bd").onclick=()=>{S.breakEnd=0;if(task){S.done[task]=true}save();closeSheet()};
+  $("#bd").onclick=()=>{S.breakEnd=0;if(task){S.done[task]=true}save();afterProgress();closeSheet()};
 }
 
 // ---------- XP, levels and confetti ----------
 const LV=250;
 function renderXP(){const xp=S.xp||0,lv=Math.floor(xp/LV)+1;
-  $("#xp").innerHTML=`<b>⭐ Level ${lv}</b><span class="xpbar" title="${xp%LV} of ${LV} XP to the next level"><i style="width:${xp%LV/LV*100}%"></i></span><span class="mute">${xp} XP</span>`}
+  $("#xp").innerHTML=`<span class="petmini" title="${petFor(lv)[2]}">${petFor(lv)[1]}</span><b>Level ${lv}</b><span class="xpbar" title="${xp%LV} of ${LV} XP to the next level"><i style="width:${xp%LV/LV*100}%"></i></span><span class="mute">${xp} XP</span>`}
 function addXP(n){const before=Math.floor((S.xp||0)/LV);S.xp=(S.xp||0)+n;save();renderXP();
-  if(Math.floor(S.xp/LV)>before){toast("Level up! ⭐ Level "+(Math.floor(S.xp/LV)+1));confetti()}}
-function toast(t){const el=document.createElement("div");el.className="toast";el.textContent=t;document.body.appendChild(el);setTimeout(()=>el.remove(),2400)}
+  const now=Math.floor(S.xp/LV);
+  if(now>before){const lv=now+1,pet=petFor(lv),grew=petFor(before+1)[1]!==pet[1],st=giveSticker(false);save();
+    toast(grew?`${pet[1]} Your pet grew into ${pet[2]}! Level ${lv} · +1 sticker ${st}`:`⭐ Level ${lv}! +1 sticker ${st}`);confetti()}}
+// messages wait their turn so they never pile on top of each other
+const toastQ=[];let toastOn=false;
+function toast(t){toastQ.push(t);if(!toastOn)nextToast()}
+function nextToast(){const t=toastQ.shift();if(!t){toastOn=false;return}toastOn=true;const el=document.createElement("div");el.className="toast";el.textContent=t;document.body.appendChild(el);setTimeout(()=>{el.remove();nextToast()},2400)}
 const calm=matchMedia("(prefers-reduced-motion: reduce)").matches;
 function confetti(){if(calm)return;const c=document.createElement("canvas");c.className="confetti";document.body.appendChild(c);
   const W=c.width=innerWidth,H=c.height=innerHeight,x=c.getContext("2d"),cols=["#ffd166","#6ee7a8","#7cc7ff","#ff9a76","#f0a6ff"];
@@ -1070,7 +1423,7 @@ function kindLabel(x){return {cards:"Flashcards · "+(x.cards||[]).length,listen
 // shared score screen for quiz, sort and type
 function scoreEnd(id,set,score,total,wrong,only,again,retry){
   const pct=Math.round(score/total*100);
-  if(!only){S.best[id]=Math.max(S.best[id]||0,pct)}
+  if(!only){S.best[id]=Math.max(S.best[id]||0,pct);if(pct===100)S.stats.perfect++}
   finishTask();if(!only&&pct>=80)addXP(pct===100?40:20);save();if(pct===100)confetti();
   const msg=pct===100?"Perfect! 🌟":pct>=80?"Great job! 💪":pct>=50?"Good. Look again at the ones you missed.":"Read the notes again and try once more.";
   body().innerHTML=`<div class="result"><div class="big">${score}/${total}</div><p>${msg}</p>${!only&&pct>=80?`<p class="mute">+${pct===100?40:20} bonus XP</p>`:""}</div>
@@ -1092,7 +1445,7 @@ function runSort(id,set,only){
       ${set.ask?`<p class="hint">${esc(set.ask)}</p>`:""}<div class="sortcard" id="sc">${fmt(it.t)}</div>
       <div class="buckets">${set.buckets.map((b,k)=>`<button class="bucket" data-k="${k}">${esc(b)}</button>`).join("")}</div><div id="fb"></div>`;
     body().querySelectorAll(".bucket").forEach(b=>b.onclick=()=>{
-      const ok=+b.dataset.k===it.k;
+      const ok=+b.dataset.k===it.k;hit(ok);
       body().querySelectorAll(".bucket").forEach(x=>{x.disabled=true;if(+x.dataset.k===it.k)x.classList.add("right")});
       if(ok){score++;streak++;addXP(streak>=3?15:10);$("#sc").classList.add("ok")}
       else{streak=0;b.classList.add("wrong");$("#sc").classList.add("shake");wrong.push(it)}
@@ -1161,7 +1514,7 @@ function runSpeed(id,set){
       $("#sq").innerHTML=fmt(q.q);
       $("#so").innerHTML=opts.map((o,k)=>`<button class="opt big" data-k="${k}">${esc(o.t)}</button>`).join("");
       $("#so").querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
-        if(lock)return;lock=true;const ok=opts[+b.dataset.k].ok;
+        if(lock)return;lock=true;const ok=opts[+b.dataset.k].ok;hit(ok);
         if(ok){right++;combo++;pts+=10*mult();b.classList.add("right");addXP(2)}
         else{wrong++;combo=0;b.classList.add("wrong");$("#so").querySelectorAll(".opt").forEach((x,j)=>{if(opts[j].ok)x.classList.add("right")});misses.set(q.q,q.o[0])}
         hud();setTimeout(()=>{lock=false;if(Date.now()<end)next()},ok?250:900);
@@ -1203,7 +1556,7 @@ function runType(id,set,only){
     const ti=$("#ti");ti.focus();
     if(q.h)$("#hb").onclick=()=>{$("#ht").hidden=false;$("#hb").hidden=true};
     $("#tf").onsubmit=e=>{e.preventDefault();if(!ti.value.trim()||ti.disabled)return;
-      const ok=typeOK(ti.value,q.a);ti.disabled=true;$("#tb2").disabled=true;
+      const ok=typeOK(ti.value,q.a);hit(ok);ti.disabled=true;$("#tb2").disabled=true;
       if(ok){score++;addXP(15)}else wrong.push(q);
       $("#fb").innerHTML=`<div class="feedback ${ok?"ok":"no"}">${ok?"✓ Right!":"✗ The answer is <b>"+esc(q.a[0])+"</b>."} ${esc(q.e||"")}</div>
         <div class="row" style="margin-top:12px"><button class="btn" id="nx">Next →</button></div>`;
@@ -1258,8 +1611,190 @@ function clockQuestions(n){
   return qs;
 }
 
+// ---------- lesson player ----------
+function runLesson(id){
+  const L=LESSONS[id];openSheet(L.title,L.s);let p=0;
+  const show=()=>{
+    if(cleanup){cleanup();cleanup=null}
+    if(p>=L.pages.length)return done();
+    const pg=L.pages[p];
+    body().innerHTML=`<div class="dots">${L.pages.map((_,k)=>`<i class="${k<p?"past":k===p?"now":""}"></i>`).join("")}<span>${p+1} / ${L.pages.length}</span></div>
+      <article class="lesson"><h2>${esc(pg.h)}</h2>${pg.html}${pg.widget?'<div class="widget" id="wg"></div>':""}${pg.tip?`<p class="tip">💡 ${esc(pg.tip)}</p>`:""}</article>
+      ${pg.check?`<div class="checkq"><div class="eyebrow">Quick check · Kendini dene</div><div class="q">${pg.check.q.replace(/___/g,'<span class="gap">___</span>')}</div><div class="opts" id="co"></div><div id="cfb"></div></div>`:""}
+      <div class="row lessonnav">${p?'<button class="btn quiet" id="pv">← Back</button>':""}<button class="btn" id="nx2" ${pg.check?"disabled":""}>${p+1<L.pages.length?"Next →":"Finish the lesson ✓"}</button></div>`;
+    if(pg.widget)WIDGETS[pg.widget]($("#wg"));
+    if(pg.check){
+      const c=pg.check,opts=shuffle(c.o.map((t,k)=>({t,ok:k===0})));
+      $("#co").innerHTML=opts.map((o,k)=>`<button class="opt" data-k="${k}">${fmt(o.t)}</button>`).join("");
+      $("#co").querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
+        const ok=opts[+b.dataset.k].ok;hit(ok);
+        if(ok){$("#co").querySelectorAll(".opt").forEach(x=>x.disabled=true);b.classList.add("right");addXP(10);
+          $("#cfb").innerHTML=`<div class="feedback ok">✓ Right! ${esc(c.e)}</div>`;$("#nx2").disabled=false;$("#nx2").focus()}
+        else{b.classList.add("wrong");b.disabled=true;$("#cfb").innerHTML=`<div class="feedback no">✗ Not quite. Read the explanation above again and try another answer.</div>`}
+      });
+    }
+    if(p)$("#pv").onclick=()=>{p--;show();$("#sheet").scrollTop=0};
+    $("#nx2").onclick=()=>{p++;show();$("#sheet").scrollTop=0};
+  };
+  const done=()=>{
+    const first=!S.lessons[id];S.lessons[id]=true;if(first)addXP(50);finishTask();confetti();
+    body().innerHTML=`<div class="result"><div class="big">🎓</div><p><b>Lesson complete!</b>${first?" +50 XP":""}</p><p class="mute">Now practise what you learned:</p></div>
+      <div class="sets">${L.practice.map(sid=>`<button class="set" style="--c:${SUBJ[SETS[sid].s].c}" data-practice="${sid}"><b>${esc(SETS[sid].title)}</b><span>${kindLabel(SETS[sid])}${bestText(sid)}</span></button>`).join("")}</div>
+      <div class="row center" style="margin-top:16px"><button class="btn quiet" id="ra">Read it again</button><button class="btn" id="cl">Finish</button></div>`;
+    body().querySelectorAll("[data-practice]").forEach(b=>b.onclick=()=>{closeSheet();openActivity(b.dataset.practice,null)});
+    $("#ra").onclick=()=>{p=0;show()};$("#cl").onclick=closeSheet;
+  };
+  show();
+}
+
+// ---------- widgets used inside lessons ----------
+const WIDGETS={
+ deda(el){
+  const items=[["Ben de geldim.","Ben geldim.",true],["Evde kaldım.","Ev kaldım.",false],["Kardeşim de güldü.","Kardeşim güldü.",true],["Okulda oynadık.","Okul oynadık.",false]];
+  el.innerHTML=`<div class="wtitle">✂️ Çıkar testi</div>`+items.map((it,k)=>`<div class="deda"><span class="s">${it[0]}</span><button class="btn small quiet" data-k="${k}">“de/da”yı çıkar</button><span class="r" id="dr${k}"></span></div>`).join("");
+  el.querySelectorAll("button").forEach(b=>b.onclick=()=>{const it=items[+b.dataset.k];b.hidden=true;
+    $("#dr"+b.dataset.k).innerHTML=`→ “${it[1]}” ${it[2]?'<b class="good">Anlam bozulmadı → bağlaç, AYRI ✓</b>':'<b class="badc">Bozuldu → ek, BİTİŞİK ✓</b>'}`});
+ },
+ states(el){
+  el.innerHTML=`<div class="wtitle">🔬 Particle model</div><canvas id="pc" width="640" height="300" aria-label="Moving particles"></canvas>
+    <div class="row center seg"><button class="btn small" data-m="0">🧊 Solid</button><button class="btn small quiet" data-m="1">💧 Liquid</button><button class="btn small quiet" data-m="2">💨 Gas</button></div><p class="hint" id="pcap"></p>`;
+  const c=$("#pc"),x=c.getContext("2d"),W=640,H=300,N=40,r=11,caps=["Solid: particles are packed tightly in rows. They only vibrate on the spot.","Liquid: particles are close together but slide past each other. They stay at the bottom.","Gas: particles are far apart and zoom around in every direction, filling the whole box."];
+  let mode=0;const ps=Array.from({length:N},(_,i)=>({hx:150+(i%10)*34,hy:150+Math.floor(i/10)*30,x:150+(i%10)*34,y:150+Math.floor(i/10)*30,vx:0,vy:0}));
+  const set=m=>{mode=m;el.querySelectorAll("[data-m]").forEach(b=>b.classList.toggle("quiet",+b.dataset.m!==m));$("#pcap").textContent=caps[m];
+    ps.forEach(p=>{const sp=m===2?4.5:m===1?1.2:0;const a=Math.random()*6.28;p.vx=Math.cos(a)*sp;p.vy=Math.sin(a)*sp})};
+  el.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>set(+b.dataset.m));set(0);
+  let raf;const step=()=>{x.clearRect(0,0,W,H);x.strokeStyle="#3a3080";x.lineWidth=4;x.strokeRect(2,2,W-4,H-4);
+    ps.forEach(p=>{
+      if(mode===0){p.x+=(p.hx-p.x)*.2+(Math.random()-.5)*2.4;p.y+=(p.hy-p.y)*.2+(Math.random()-.5)*2.4}
+      else{const top=mode===1?150:r+4;p.x+=p.vx;p.y+=p.vy;if(mode===1){p.vy+=.05;p.vx+=(Math.random()-.5)*.3;p.vx*=.98}
+        if(p.x<r+4){p.x=r+4;p.vx=Math.abs(p.vx)}if(p.x>W-r-4){p.x=W-r-4;p.vx=-Math.abs(p.vx)}
+        if(p.y<top){p.y=top;p.vy=Math.abs(p.vy)}if(p.y>H-r-4){p.y=H-r-4;p.vy=-Math.abs(p.vy)*(mode===1?.5:1)}}
+      x.beginPath();x.arc(p.x,p.y,r,0,6.283);x.fillStyle=mode===0?"#7cc7ff":mode===1?"#4aa3ff":"#6ee7a8";x.fill()});
+    raf=requestAnimationFrame(step)};
+  step();cleanup=()=>cancelAnimationFrame(raf);
+ },
+ journey(el){
+  const stops=[["👄","Mouth","Teeth cut and grind the food. Saliva makes it soft and wet."],["⬇️","Oesophagus","A muscly tube. It squeezes the food down to the stomach."],["🫃","Stomach","A stretchy bag. It churns the food with acid, which kills germs."],["🌀","Small intestine","The longest part (about 6 metres!). Nutrients pass into the blood here."],["🔁","Large intestine","Water is absorbed back into the body."],["📦","Rectum","Waste is stored here."],["🚪","Anus","Waste leaves the body."]];
+  let i=0;
+  const draw=()=>{el.innerHTML=`<div class="wtitle">🍎 The journey of food</div><ol class="journey">${stops.map((s,k)=>`<li class="${k<i?"past":k===i?"now":""}"><span class="ic">${s[0]}</span><b>${s[1]}</b>${k===i?`<p>${s[2]}</p>`:""}</li>`).join("")}</ol>
+    <div class="row center"><button class="btn small quiet" id="jb" ${i?"":"disabled"}>← Back</button><button class="btn small" id="jn" ${i<stops.length-1?"":"disabled"}>Next stop →</button></div>`;
+    $("#jb").onclick=()=>{i--;draw()};$("#jn").onclick=()=>{i++;draw()}};
+  draw();
+ },
+ plate(el){
+  const parts=[["Fruit & vegetables",39,"#6ee7a8","Vitamins, minerals and fibre. Eat at least 5 portions a day!"],["Carbohydrates",37,"#ffd166","Energy: bread, rice, pasta, potatoes. Choose wholegrain for extra fibre."],["Proteins",12,"#ff9a76","Growth and repair: meat, fish, eggs, beans, lentils."],["Milk & dairy",8,"#7cc7ff","Calcium for strong bones and teeth: milk, yoghurt, cheese."],["Fats & oils",4,"#f0a6ff","Only small amounts: butter, oil. They store energy and keep us warm."]];
+  let a=-90,svg="";parts.forEach((p,k)=>{const a2=a+p[1]*3.6,R=v=>v*Math.PI/180,large=p[1]>50?1:0;
+    svg+=`<path d="M110 110 L${110+100*Math.cos(R(a))} ${110+100*Math.sin(R(a))} A100 100 0 ${large} 1 ${110+100*Math.cos(R(a2))} ${110+100*Math.sin(R(a2))}Z" fill="${p[2]}" data-k="${k}" tabindex="0" role="button" aria-label="${p[0]}"/>`;a=a2});
+  el.innerHTML=`<div class="wtitle">🍽️ The healthy plate</div><div class="platebox"><svg viewBox="0 0 220 220" class="plate">${svg}<circle cx="110" cy="110" r="104" fill="none" stroke="#fff8e8" stroke-width="6"/></svg>
+    <div class="plateinfo" id="pi"><b>Tap a part of the plate</b><p class="mute">The bigger the slice, the more of that food you need.</p></div></div>`;
+  el.querySelectorAll("path").forEach(s=>{const go=()=>{const p=parts[+s.dataset.k];el.querySelectorAll("path").forEach(x=>x.classList.toggle("dim",x!==s));
+    $("#pi").innerHTML=`<b style="color:${p[2]}">${p[0]}</b><p>${p[3]}</p><p class="mute">About ${p[1]}% of what you eat</p>`};s.onclick=go;s.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go()}}});
+ },
+ willtree(el){
+  const Q=[["Did you already plan or decide it <b>before</b> now?","going to","📝 It's a plan → <b>be going to</b>. <i>We're going to visit Grandma on Sunday.</i>"],
+    ["Can you <b>see proof now</b> that it will happen?","going to","👀 There's proof → <b>be going to</b>. <i>Look at the clouds! It's going to rain.</i>"],
+    ["Are you deciding, promising or offering <b>right now</b>?","will","⚡ Decision / promise / offer → <b>will</b>. <i>I'll help you!</i>"],
+    ["Is it your opinion or a guess about the future?","will","🔮 Prediction / opinion → <b>will</b>. <i>I think it will be fun.</i>"]];
+  let i=0;
+  const ask=()=>{if(i>=Q.length){el.innerHTML=`<div class="wtitle">🤖 Decision machine</div><p>Hmm, for a future fact (like your age next year) use <b>will</b>.</p><div class="row center"><button class="btn small" id="wr">Start again</button></div>`;$("#wr").onclick=()=>{i=0;ask()};return}
+    el.innerHTML=`<div class="wtitle">🤖 Decision machine · question ${i+1}</div><p class="wq">${Q[i][0]}</p><div class="row center"><button class="btn small" id="wy">Yes</button><button class="btn small quiet" id="wn">No</button></div>`;
+    $("#wy").onclick=()=>{el.innerHTML=`<div class="wtitle">🤖 Decision machine</div><p class="wans ${Q[i][1]==="will"?"w":"g"}">${Q[i][2]}</p><div class="row center"><button class="btn small" id="wr">Try another sentence</button></div>`;$("#wr").onclick=()=>{i=0;ask()}};
+    $("#wn").onclick=()=>{i++;ask()}};
+  ask();
+ },
+ timeline(el){
+  el.innerHTML=`<div class="wtitle">⏳ Timeline</div><svg viewBox="0 0 600 170" class="tline" role="img" aria-label="I was reading (long action) when the phone rang (short action)">
+   <line x1="20" y1="110" x2="580" y2="110" class="axis"/><text x="20" y="150">past</text><text x="520" y="150">now</text>
+   <rect x="90" y="80" width="300" height="30" rx="8" class="long"/><text x="240" y="70" text-anchor="middle" class="lab">I was reading 📖 (past continuous)</text>
+   <line x1="260" y1="40" x2="260" y2="120" class="short"/><text x="268" y="134" class="lab2">📞 the phone rang (past simple)</text></svg>
+   <p class="hint">The long action was in progress → <b>was reading</b>. The short action interrupted it → <b>rang</b>.</p>`;
+ },
+ clock(el){
+  let h=3,m=15;
+  const draw=()=>{el.innerHTML=`<div class="wtitle">🕒 Try the clock</div>${clockSVG(h,m)}<p class="phrase">It's <b>${timePhrase(h,m)}</b></p><p class="hint">${h}:${pad(m)}</p>
+    <div class="row center"><button class="btn small quiet" data-d="-60">− 1 hour</button><button class="btn small quiet" data-d="-5">− 5 min</button><button class="btn small" data-d="5">+ 5 min</button><button class="btn small" data-d="60">+ 1 hour</button></div>`;
+    el.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{let t=((h%12)*60+m+ +b.dataset.d+720)%720;h=Math.floor(t/60)||12;m=t%60;draw()})};
+  draw();
+ },
+ ihlas(el){
+  const v=[["Kul hüvallâhü ehad.","De ki: O, Allah’tır, bir tektir."],["Allâhüs-samed.","Allah sameddir; her şey O’na muhtaçtır, O hiçbir şeye muhtaç değildir."],["Lem yelid ve lem yûled.","O, doğurmamış ve doğurulmamıştır."],["Ve lem yekün lehû küfüven ehad.","Hiçbir şey O’na denk değildir."]];
+  el.innerHTML=`<div class="wtitle">📖 Bismillâhirrahmânirrahîm</div>`+v.map((x,k)=>`<button class="verse" data-k="${k}"><span class="n">${k+1}</span><b>${x[0]}</b><span class="m" hidden>${x[1]}</span></button>`).join("");
+  el.querySelectorAll(".verse").forEach(b=>b.onclick=()=>{b.querySelector(".m").hidden=false;b.classList.add("open")});
+ }
+};
+
+// ---------- rewards: badges, stickers, chests and a study pet ----------
+const PETS=[[1,"🥚","Yumurta"],[2,"🐣","Civciv"],[3,"🐥","Minik kuş"],[5,"🦜","Papağan"],[7,"🦉","Bilge Baykuş"],[10,"🐉","Ejderha"]];
+const petFor=lv=>PETS.filter(p=>lv>=p[0]).pop();
+const STICKERS=["🦊","🐼","🐙","🦖","🐳","🐝","🦋","🐢","🦁","🐧","🚀","🛸","🌋","⚽","🎸","🎮","🧪","🔭","🧲","🌙","⭐","🍕","🍩","🍉","🏆","🦕","🦈","🐱","🐶","🎨","💎","👑","🐲","🌈","🪐","🦄"];
+const RARE=new Set(["💎","👑","🐲","🌈","🪐","🦄"]);
+const allTaskIds=()=>DAYS.flatMap(d=>d.tasks.map(t=>t.id));
+const subjOK=s=>Object.keys(SETS).filter(id=>SETS[id].s===s&&["quiz","sort","type","listen"].includes(SETS[id].kind)).every(id=>(S.best[id]||0)>=80);
+const BADGES=[
+ ["first","🚀","İlk adım","Finish your first task",()=>Object.keys(S.done).length>=1],
+ ["lesson1","📖","Konu kurdu","Finish your first lesson",()=>Object.keys(S.lessons).length>=1],
+ ["day","📅","Gün tamam","Finish every task of one day",()=>DAYS.some(d=>d.tasks.every(t=>S.done[t.id]))],
+ ["perfect","💯","Mükemmel","Get 100% in a quiz, sort or typing game",()=>S.stats.perfect>=1],
+ ["perfect5","🏅","Beş yıldız","Get 100% five times",()=>S.stats.perfect>=5],
+ ["streak10","🔥","Alev alev","10 right answers in a row",()=>S.stats.maxStreak>=10],
+ ["streak25","☄️","Durdurulamaz","25 right answers in a row",()=>S.stats.maxStreak>=25],
+ ["speed200","⚡","Hız canavarı","200+ points in a 60-second challenge",()=>Object.keys(SETS).some(id=>SETS[id].kind==="speed"&&(S.best[id]||0)>=200)],
+ ["match45","🧩","Eşleştirme ustası","Finish a match game in under 45 seconds",()=>Object.values(S.bestTime||{}).some(t=>t<45)],
+ ["clock","🕒","Saat ustası","12/12 in the clock game",()=>(S.best["en-time"]||0)===100],
+ ["future","🔮","Future master","100% in “Type it: will or going to”",()=>(S.best["en-will-type"]||0)===100],
+ ["tr","📝","Türkçe şampiyonu","80%+ in every Türkçe quiz",()=>subjOK("tr")],
+ ["fen","🔬","Bilim insanı","80%+ in every science quiz",()=>subjOK("fen")],
+ ["en","🗣️","English star","80%+ in every English quiz",()=>subjOK("en")],
+ ["din","🌙","Din Kültürü yıldızı","80%+ in every Din Kültürü quiz",()=>subjOK("din")],
+ ["profesor","🎓","Profesör","Finish all the lessons",()=>Object.keys(LESSONS).every(id=>S.lessons[id])],
+ ["lv5","🦜","Papağan","Reach level 5",()=>(S.xp||0)>=4*LV],
+ ["lv10","🐉","Ejderha","Reach level 10",()=>(S.xp||0)>=9*LV],
+ ["king","👑","Yazılı kralı","Finish every task in the whole plan",()=>allTaskIds().every(id=>S.done[id])]
+];
+function hit(ok){S.stats.streak=ok?(S.stats.streak||0)+1:0;if(S.stats.streak>(S.stats.maxStreak||0))S.stats.maxStreak=S.stats.streak}
+function giveSticker(rare){
+  const pool=rare?[...RARE]:STICKERS.filter(s=>!RARE.has(s)||Math.random()<.15);
+  const fresh=pool.filter(s=>!S.stickers[s]),src=fresh.length&&Math.random()<.75?fresh:pool,pick=src[Math.floor(Math.random()*src.length)];
+  S.stickers[pick]=(S.stickers[pick]||0)+1;return pick;
+}
+let rewardQueue=[];
+function afterProgress(){
+  // a chest for every finished day
+  DAYS.forEach(d=>{if(!S.dayChest[d.d]&&d.tasks.every(t=>S.done[t.id])){S.dayChest[d.d]=true;S.chests++;rewardQueue.push(`🎁 Day complete! A treasure chest is waiting in Rewards.`)}});
+  BADGES.forEach(([id,em,name])=>{if(!S.badges[id]&&BADGES.find(b=>b[0]===id)[4]()){S.badges[id]=Date.now();const st=giveSticker(false);rewardQueue.push(`${em} New badge: ${name}! +1 sticker ${st}`)}});
+  save();updateRewardDot();
+  if(rewardQueue.length){confetti();rewardQueue.splice(0).forEach(toast)}
+}
+function updateRewardDot(){const b=document.querySelector('[data-tab=rewards]');if(b)b.classList.toggle("dot",S.chests>0)}
+function renderRewards(){
+  const xp=S.xp||0,lv=Math.floor(xp/LV)+1,pet=petFor(lv),next=PETS.find(p=>p[0]>lv);
+  const got=BADGES.filter(b=>S.badges[b[0]]).length,owned=STICKERS.filter(s=>S.stickers[s]).length;
+  $("#tab-rewards").innerHTML=`
+   <div class="petcard"><div class="pet">${pet[1]}</div><div><h2>${pet[2]}</h2><p>Level ${lv} · ${xp} XP</p><div class="bar wide"><i style="width:${xp%LV/LV*100}%"></i></div>
+     <p class="mute">${next?`At level ${next[0]} your pet becomes ${next[1]} ${next[2]}!`:"Your pet is fully grown. Legend! 🏆"}</p></div></div>
+   <div class="chestrow">${S.chests>0?`<button class="chest" id="openChest"><span class="ce">🎁</span><b>Open your treasure chest!</b><span class="mute">${S.chests} waiting</span></button>`:
+     `<div class="chest off"><span class="ce">🎁</span><b>Finish every task of a day to win a treasure chest.</b><span class="mute">Each chest has 3 stickers.</span></div>`}</div>
+   <h2 class="sech">🏅 Badges <span class="mute">${got} / ${BADGES.length}</span></h2>
+   <div class="badges">${BADGES.map(b=>`<div class="badge ${S.badges[b[0]]?"got":""}"><span>${S.badges[b[0]]?b[1]:"🔒"}</span><b>${b[2]}</b><small>${b[3]}</small></div>`).join("")}</div>
+   <h2 class="sech">📒 Sticker album <span class="mute">${owned} / ${STICKERS.length}</span></h2>
+   <p class="mute">Stickers come from chests, badges and level-ups. Gold ones are rare!</p>
+   <div class="album">${STICKERS.map(s=>`<div class="stk ${S.stickers[s]?"got":""} ${RARE.has(s)?"rare":""}">${S.stickers[s]?s:"?"}${S.stickers[s]>1?`<small>×${S.stickers[s]}</small>`:""}</div>`).join("")}</div>`;
+  const oc=$("#openChest");if(oc)oc.onclick=openChest;
+}
+function openChest(){
+  if(S.chests<1)return;S.chests--;const got=[giveSticker(Math.random()<.25),giveSticker(false),giveSticker(false)];save();updateRewardDot();
+  openSheet("Treasure chest","brk");
+  body().innerHTML=`<div class="chestopen"><div class="bigchest" id="bc">🎁</div><p class="hint" id="bch">Tap the chest!</p><div class="reveal" id="rv"></div></div>`;
+  let taps=0;$("#bc").onclick=()=>{taps++;$("#bc").classList.remove("shake");void $("#bc").offsetWidth;$("#bc").classList.add("shake");
+    if(taps<3){$("#bch").textContent=taps===1?"Again!":"One more time!";return}
+    $("#bc").textContent="✨";$("#bch").textContent="You got:";confetti();
+    $("#rv").innerHTML=got.map((s,k)=>`<div class="stk got pop ${RARE.has(s)?"rare":""}" style="animation-delay:${k*.25}s">${s}</div>`).join("")+
+      `<div class="row center" style="grid-column:1/-1;margin-top:14px">${S.chests?'<button class="btn" id="more">Open the next chest</button>':""}<button class="btn quiet" id="cl">Done</button></div>`;
+    $("#cl").onclick=()=>{closeSheet();renderRewards()};if(S.chests)$("#more").onclick=openChest;$("#bc").onclick=null};
+}
+
 // ---------- start ----------
-renderNext();renderPlan();renderXP();
+renderNext();renderPlan();renderXP();updateRewardDot();
 setInterval(renderNext,60e3);
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#sheet").hidden)closeSheet()});
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r=>r.update()).catch(()=>{});
