@@ -129,6 +129,56 @@ header{padding-block:16px 6px;display:flex;align-items:center;gap:12px;flex-wrap
 .games{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:14px 0}
 .games a{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;text-decoration:none;color:var(--ink);font-family:var(--display);font-weight:600;text-align:center}
 .games a span{display:block;font-size:30px}
+.xp{display:flex;align-items:center;gap:8px;font-size:14px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:8px 12px}
+.xp b{font-family:var(--display);font-weight:600;color:var(--gold)}
+.xpbar{width:64px;height:8px;background:var(--panel-hi);border-radius:99px;overflow:hidden}
+.xpbar i{display:block;height:100%;background:var(--gold)}
+.toast{position:fixed;left:50%;top:calc(16px + env(safe-area-inset-top,0px));transform:translateX(-50%);background:var(--gold);color:#241a00;font-family:var(--display);font-weight:600;font-size:18px;padding:10px 20px;border-radius:99px;z-index:30;box-shadow:0 6px 24px #0008}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:40}
+.gap{display:inline-block;min-width:2.6em;border-bottom:3px solid var(--c);color:var(--c);line-height:1.1}
+.sortcard{background:#fff8e8;color:#2a2340;border-radius:18px;padding:24px 20px;font-size:21px;font-family:var(--display);font-weight:500;text-align:center;margin:4px 0 16px;line-height:1.35}
+.sortcard .gap{border-color:#6b4fe0;color:#6b4fe0}
+.sortcard.ok{box-shadow:0 0 0 4px var(--good)}
+.buckets{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.bucket{border:2px solid var(--c);background:var(--panel);border-radius:16px;padding:16px 10px;font-family:var(--display);font-weight:600;font-size:19px;cursor:pointer}
+.bucket:hover:not([disabled]){background:var(--panel-hi)}
+.bucket.right{background:#1c4a3d;border-color:var(--good)}
+.bucket.wrong{background:#4d1f33;border-color:var(--bad)}
+.bucket[disabled]{cursor:default}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.match{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.match .col{display:flex;flex-direction:column;gap:8px;min-width:0}
+.mt{border:2px solid var(--line);background:var(--panel);border-radius:12px;padding:10px;cursor:pointer;font-size:16px;min-height:58px;overflow-wrap:anywhere;transition:opacity .3s}
+.mt.sel{border-color:var(--gold);background:var(--panel-hi)}
+.mt.done{border-color:var(--good);background:#1c4a3d;opacity:.45;cursor:default}
+.mt.wrong{border-color:var(--bad);background:#4d1f33}
+.speedhud{display:flex;align-items:center;gap:16px;justify-content:space-between;margin-bottom:6px}
+.speedhud .pts{text-align:right;font-size:15px}
+.speedhud b{font-family:var(--display);font-size:36px;color:var(--gold);font-variant-numeric:tabular-nums}
+.timer.small{font-size:56px;margin:0;color:var(--c);font-variant-numeric:tabular-nums}
+.tbar{height:8px;background:var(--panel);border-radius:99px;overflow:hidden;margin-bottom:18px}
+.tbar i{display:block;height:100%;background:var(--c);width:100%}
+.opts.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+.opt.big{text-align:center;font-family:var(--display);font-weight:600;font-size:19px;padding:18px 12px}
+.typeform{display:flex;gap:8px;flex-wrap:wrap}
+.typeform input{flex:1 1 220px;min-width:0;background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:12px 14px;font:inherit;font-size:19px;color:var(--ink)}
+.typeform input:focus{border-color:var(--c);outline:none}
+.linkbtn{background:none;border:0;color:var(--c);text-decoration:underline;cursor:pointer;padding:10px 0;font-weight:700}
+.ordered{background:var(--panel);border:1px dashed var(--line);border-radius:14px;padding:12px 12px 12px 40px;min-height:56px;margin:0 0 14px}
+.ordered li{padding:3px 0;font-weight:700;color:var(--good)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:2px solid var(--c);background:var(--panel);border-radius:99px;padding:10px 16px;cursor:pointer;font-size:16px;text-align:left}
+.chip.wrong{border-color:var(--bad);background:#4d1f33}
+.clock{width:210px;max-width:100%;display:block;margin:0 auto}
+.clock .cface{fill:#fff8e8;stroke:var(--c);stroke-width:4}
+.clock .ticks line{stroke:#2a2340}
+.clock .nums text{font:600 17px var(--display);fill:#2a2340;text-anchor:middle}
+.clock .hh{stroke:#2a2340;stroke-width:7;stroke-linecap:round}
+.clock .mh{stroke:#e2553f;stroke-width:4;stroke-linecap:round}
+.clock .pin{fill:#2a2340}
+.digital{font-family:var(--display);font-size:64px;font-weight:700;color:var(--c);font-variant-numeric:tabular-nums;padding:10px 0}
+@media (prefers-reduced-motion:reduce){.shake{animation:none}.flip{transition:none}}
 @media (max-width:520px){
   .task{flex-wrap:wrap}
   .task .go{margin-left:46px}
@@ -145,6 +195,7 @@ header{padding-block:16px 6px;display:flex;align-items:center;gap:12px;flex-wrap
       <div><h1>Yazılı Planı</h1><p>1. Dönem 1. Yazılılar · 5. sınıf</p></div>
     </a>
     <div class="next" id="next"></div>
+    <div class="xp" id="xp"></div>
   </header>
 
   <div class="tabs" role="tablist">
@@ -529,42 +580,248 @@ qs:[
 ]}
 };
 
+// ---------- more games: speed rounds, matching, sorting, typing, ordering, clocks ----------
+const P_KUTUP="Kutup ayıları, Kuzey Kutbu’nun buzlarla kaplı topraklarında yaşar. Kalın kürkleri ve derilerinin altındaki yağ tabakası onları dondurucu soğuktan korur. Kutup ayıları çok iyi yüzücüdür; avlarını bulmak için kilometrelerce yüzebilirler. En sevdikleri yiyecek foklardır. Ancak buzullar her yıl biraz daha eriyor. Buzlar azaldıkça kutup ayılarının avlanması zorlaşıyor. Bu yüzden bilim insanları, kutup ayılarının geleceği için endişeli.";
+Object.assign(SETS,{
+"tr-de-sort":{s:"tr",kind:"sort",title:"Bağlaç mı, ek mi? (de/da)",ask:"Boşluğa gelen “de/da” bağlaç mı (ayrı yazılır), ek mi (bitişik yazılır)?",
+buckets:["Bağlaç → ayrı","Ek → bitişik"],items:[
+ {t:"Kardeşim ___ çok sevindi.",k:0,e:"Kardeşim de çok sevindi. Çıkarınca anlam bozulmuyor → bağlaç."},
+ {t:"Kitabı çanta___ unuttum.",k:1,e:"çantada: “nerede?” sorusunun cevabı → ek."},
+ {t:"Okul___ tören var.",k:1,e:"okulda → ek, bitişik."},
+ {t:"Sen ___ bizimle gel.",k:0,e:"Sen de gel → bağlaç."},
+ {t:"Hem ders çalıştım hem ___ oyun oynadım.",k:0,e:"hem de → bağlaç."},
+ {t:"Bahçe___ kediler oynuyor.",k:1,e:"bahçede → ek."},
+ {t:"Ankara’___ kar yağıyor.",k:1,e:"Ankara’da → ek (özel isim olduğu için kesme işareti)."},
+ {t:"Bu kitabı ben ___ okudum.",k:0,e:"ben de → bağlaç."},
+ {t:"Saat beş___ buluşalım.",k:1,e:"beşte → ek (sertleşme: -te)."},
+ {t:"Yağmur yağdı, hava ___ soğudu.",k:0,e:"hava da soğudu → bağlaç."},
+ {t:"Ev___ kimse yok.",k:1,e:"evde → ek."},
+ {t:"Ödevimi bitirdim, odamı ___ topladım.",k:0,e:"odamı da topladım → bağlaç."}
+]},
+"tr-speed":{s:"tr",kind:"speed",title:"Yazım yarışı: doğru mu, yanlış mı?",how:"60 saniye! Kelime ya da cümle doğru mu yazılmış, yanlış mı? Art arda doğru bil, kombo yap!",items:[
+ {q:"herkes",o:["Doğru ✓","Yanlış ✗"]},{q:"herkez",o:["Yanlış ✗","Doğru ✓"]},{q:"yanlız",o:["Yanlış ✗","Doğru ✓"]},{q:"yalnız",o:["Doğru ✓","Yanlış ✗"]},
+ {q:"yanlış",o:["Doğru ✓","Yanlış ✗"]},{q:"yalnış",o:["Yanlış ✗","Doğru ✓"]},{q:"hiçbir",o:["Doğru ✓","Yanlış ✗"]},{q:"hiç bir",o:["Yanlış ✗","Doğru ✓"]},
+ {q:"her şey",o:["Doğru ✓","Yanlış ✗"]},{q:"herşey",o:["Yanlış ✗","Doğru ✓"]},{q:"birkaç",o:["Doğru ✓","Yanlış ✗"]},{q:"bir kaç",o:["Yanlış ✗","Doğru ✓"]},
+ {q:"Geldin mi?",o:["Doğru ✓","Yanlış ✗"]},{q:"Geldinmi?",o:["Yanlış ✗","Doğru ✓"]},{q:"Ankara’ya gittik.",o:["Doğru ✓","Yanlış ✗"]},{q:"Ankaraya gittik.",o:["Yanlış ✗","Doğru ✓"]},
+ {q:"Okul’a gittim.",o:["Yanlış ✗","Doğru ✓"]},{q:"şoför",o:["Doğru ✓","Yanlış ✗"]},{q:"şöför",o:["Yanlış ✗","Doğru ✓"]},{q:"orijinal",o:["Doğru ✓","Yanlış ✗"]},
+ {q:"orjinal",o:["Yanlış ✗","Doğru ✓"]},{q:"Ben de geldim.",o:["Doğru ✓","Yanlış ✗"]},{q:"Bende geldim. (Ben de geldim demek istiyorum)",o:["Yanlış ✗","Doğru ✓"]},
+ {q:"yarınki",o:["Doğru ✓","Yanlış ✗"]},{q:"yarın ki",o:["Yanlış ✗","Doğru ✓"]},{q:"makine",o:["Doğru ✓","Yanlış ✗"]},{q:"makina",o:["Yanlış ✗","Doğru ✓"]},
+ {q:"sürpriz",o:["Doğru ✓","Yanlış ✗"]},{q:"süpriz",o:["Yanlış ✗","Doğru ✓"]},{q:"kılavuz",o:["Doğru ✓","Yanlış ✗"]},{q:"klavuz",o:["Yanlış ✗","Doğru ✓"]},
+ {q:"Öyle yoruldum ki uyuyakaldım.",o:["Doğru ✓","Yanlış ✗"]},{q:"Öyle yoruldumki uyuyakaldım.",o:["Yanlış ✗","Doğru ✓"]}
+]},
+"tr-deyim-match":{s:"tr",kind:"match",title:"Deyim eşleştirme",pairs:[
+ ["göz atmak","kısaca bakmak"],["havalara uçmak","çok sevinmek"],["kulak asmamak","önemsememek"],["eli açık","cömert"],["burnu havada","kendini beğenmiş"],
+ ["dili tutulmak","şaşırıp konuşamamak"],["kulak kesilmek","dikkatle dinlemek"],["pireyi deve yapmak","küçük şeyi büyütmek"],["gözden düşmek","değerini kaybetmek"],["ayakları geri geri gitmek","isteksiz olmak"]
+]},
+"tr-okuma2":{s:"tr",kind:"quiz",title:"Okuma 2: Kutup ayıları",qs:[
+ {p:P_KUTUP,q:"Kutup ayılarını soğuktan ne korur?",o:["Kalın kürkleri ve derilerinin altındaki yağ","Yaşadıkları mağaralar","Çok hızlı koşmaları","Foklar"],e:"“Kalın kürkleri ve … yağ tabakası onları … korur.”"},
+ {p:P_KUTUP,q:"Kutup ayılarının en sevdiği yiyecek nedir?",o:["Fok","Balık yumurtası","Bal","Kuş"],e:"“En sevdikleri yiyecek foklardır.”"},
+ {p:P_KUTUP,q:"Kutup ayılarının avlanması neden zorlaşıyor?",o:["Buzullar eridiği için","Çok yüzdükleri için","Foklar büyüdüğü için","Kürkleri inceldiği için"],e:"“Buzlar azaldıkça … avlanması zorlaşıyor.”"},
+ {p:P_KUTUP,q:"Metinde geçen “dondurucu” kelimesi ne anlama gelir?",o:["Çok soğuk","Çok sıcak","Çok rüzgârlı","Çok karanlık"],e:"Dondurucu soğuk = insanı donduracak kadar soğuk."},
+ {p:P_KUTUP,q:"“endişeli” kelimesinin anlamı nedir?",o:["kaygılı","mutlu","yorgun","şaşkın"],e:"Bilim insanları geleceklerinden korkuyor → kaygılı."},
+ {p:P_KUTUP,q:"Bu metnin anahtar kelimeleri hangileridir?",o:["kutup ayısı, buz, erime","yüzme, kilometre, bilim","fok, balık, deniz","kürk, yağ, soğuk"],e:"Metin buzların erimesinin kutup ayılarını nasıl etkilediğini anlatıyor."},
+ {p:P_KUTUP,q:"Bu metne en uygun başlık hangisidir?",o:["Buzların Kralı Tehlikede","Kutupta Bir Tatil","Fokların Hayatı","Yüzme Yarışı"],e:"Başlık konuyu ve ana fikri yansıtmalı."},
+ {v:"♻️ 📄 🟦<small>“Kâğıtları mavi kutuya at”</small>",q:"Bu görselin mesajı nedir?",o:["Kâğıtları geri dönüşüm kutusuna atmalıyız.","Mavi renk güzeldir.","Kâğıt çok pahalıdır.","Kutuları boyamalıyız."],e:"♻️ işareti geri dönüşüm demektir."},
+ {v:"🤫 📚<small>KÜTÜPHANE</small>",q:"Kütüphane kapısındaki bu görsel ne anlatıyor?",o:["Kütüphanede sessiz olmalıyız.","Kütüphane kapalıdır.","Kitap satılır.","Burada şarkı söylenir."],e:"🤫 sessiz ol demektir."}
+]},
+"tr-dinle2":{s:"tr",kind:"listen",title:"Dinleme 2: Bilim şenliği",lang:"tr-TR",
+text:"Bugün okulumuzda bilim şenliği vardı. Sınıfımız güneş enerjisiyle çalışan küçük bir araba yaptı. Arabayı Elif tasarladı, Can ise tekerlekleri taktı. Ben de sunumu hazırladım. Şenliğe velilerimiz ve diğer sınıflar geldi. Arabamız, gökyüzü bulutlu olduğu için ilk denemede çalışmadı. Ama güneş açınca pistin sonuna kadar gitti ve herkes alkışladı. Öğretmenimiz, ilk denemede başaramasak bile vazgeçmememiz gerektiğini söyledi.",
+qs:[
+ {q:"Okulda bugün ne vardı?",o:["Bilim şenliği","Spor şenliği","Resim sergisi","Tiyatro"],e:"“Bugün okulumuzda bilim şenliği vardı.”"},
+ {q:"Sınıf ne yaptı?",o:["Güneş enerjisiyle çalışan bir araba","Bir robot","Bir uçak","Bir roket"],e:"“güneş enerjisiyle çalışan küçük bir araba”"},
+ {q:"Arabayı kim tasarladı?",o:["Elif","Can","Öğretmen","Anlatıcı"],e:"Elif tasarladı, Can tekerlekleri taktı."},
+ {q:"Anlatıcının görevi neydi?",o:["Sunumu hazırlamak","Tekerlekleri takmak","Arabayı boyamak","Pisti yapmak"],e:"“Ben de sunumu hazırladım.”"},
+ {q:"Araba ilk denemede neden çalışmadı?",o:["Hava bulutlu olduğu için","Tekerlek kırıldığı için","Pil bittiği için","Pist kısa olduğu için"],e:"Güneş enerjisi için güneş gerekir."},
+ {q:"Metnin ana fikri nedir?",o:["İlk denemede başaramasak da vazgeçmemeliyiz.","Bilim şenlikleri sıkıcıdır.","Arabalar hızlıdır.","Güneş her zaman açar."],e:"Öğretmenin sözü ana fikirdir."}
+]},
+"fen-states-sort":{s:"fen",kind:"sort",title:"Solid, liquid or gas?",ask:"Which state of matter is it?",buckets:["Solid","Liquid","Gas"],items:[
+ {t:"Has a fixed shape and a fixed volume",k:0},{t:"Takes the shape of its container but keeps its volume",k:1},{t:"Spreads out to fill the whole container",k:2},
+ {t:"Particles are far apart and move quickly",k:2},{t:"Particles vibrate in fixed places",k:0},{t:"Particles are close but slide past each other",k:1},
+ {t:"Can be squashed easily",k:2},{t:"Oxygen",k:2},{t:"Orange juice",k:1},{t:"A brick",k:0},{t:"Water vapour",k:2},{t:"Honey",k:1},{t:"Ice",k:0},
+ {t:"Helium in a balloon",k:2},{t:"Can flow and be poured, but not squashed",k:1,e:"Liquids flow but can't be compressed."}
+]},
+"fen-food-sort":{s:"fen",kind:"sort",title:"Which nutrient group?",ask:"What is this food mostly rich in?",buckets:["Carbohydrate","Protein","Fat","Vitamins & minerals"],items:[
+ {t:"Bread 🍞",k:0},{t:"Rice 🍚",k:0},{t:"Pasta 🍝",k:0},{t:"Potato 🥔",k:0},{t:"Chicken 🍗",k:1},{t:"Eggs 🥚",k:1},{t:"Lentils",k:1},{t:"Fish 🐟",k:1},
+ {t:"Butter 🧈",k:2},{t:"Olive oil 🫒",k:2},{t:"Orange 🍊",k:3},{t:"Carrot 🥕",k:3},{t:"Spinach 🥬",k:3},{t:"Apple 🍎",k:3}
+]},
+"fen-order":{s:"fen",kind:"order",title:"The journey of food",puzzles:[
+ {title:"Tap the parts in order, from start to end:",items:["mouth","oesophagus","stomach","small intestine","large intestine","rectum","anus"]},
+ {title:"What happens to a sandwich? Tap in order:",items:["Teeth cut and grind it","Saliva makes it soft","The oesophagus pushes it down","The stomach churns it with acid","Nutrients go into the blood in the small intestine","Water is absorbed in the large intestine","Waste leaves the body"]}
+]},
+"fen-match":{s:"fen",kind:"match",title:"Science words match",pairs:[
+ ["gas","gaz"],["liquid","sıvı"],["solid","katı"],["particle","tanecik"],["evaporation","buharlaşma"],["condensation","yoğuşma"],["oesophagus","yemek borusu"],
+ ["stomach","mide"],["small intestine","ince bağırsak"],["large intestine","kalın bağırsak"],["saliva","tükürük"],["nutrient","besin ögesi"],["fibre","lif"],["balanced diet","dengeli beslenme"]
+]},
+"fen-tf":{s:"fen",kind:"speed",title:"Science true or false",how:"60 seconds! True or false? Get several right in a row for a combo bonus.",items:[
+ {q:"Gases have no fixed shape.",o:["True","False"]},{q:"Gases cannot be compressed.",o:["False","True"]},{q:"Liquids have a fixed volume.",o:["True","False"]},
+ {q:"Air has no mass.",o:["False","True"]},{q:"Evaporation is liquid → gas.",o:["True","False"]},{q:"Condensation is liquid → gas.",o:["False","True"]},
+ {q:"Nutrients are absorbed in the small intestine.",o:["True","False"]},{q:"The large intestine absorbs water.",o:["True","False"]},
+ {q:"Saliva is made in the stomach.",o:["False","True"]},{q:"Molars grind food.",o:["True","False"]},{q:"Incisors grind food.",o:["False","True"]},
+ {q:"Proteins help us grow and repair.",o:["True","False"]},{q:"Fibre gives us most of our energy.",o:["False","True"]},{q:"Carbohydrates give us energy.",o:["True","False"]},
+ {q:"Calcium makes bones strong.",o:["True","False"]},{q:"A balanced diet means eating only vegetables.",o:["False","True"]},
+ {q:"The oesophagus connects the mouth to the stomach.",o:["True","False"]},{q:"Stomach acid kills germs.",o:["True","False"]},{q:"Gas particles are packed tightly.",o:["False","True"]},
+ {q:"Smell spreading across a room is diffusion.",o:["True","False"]}
+]},
+"en-will":{s:"en",kind:"quiz",title:"Will or be going to?",
+notes:`<h3>will + verb</h3><ul>
+<li><b>Predictions and opinions</b> (often with <i>I think, I'm sure, maybe, probably</i>): <i>I think it <b>will</b> be sunny tomorrow.</i></li>
+<li><b>Decisions you make right now</b>: <i>The phone is ringing. I<b>'ll</b> answer it!</i></li>
+<li><b>Promises and offers</b>: <i>I <b>won't</b> tell anyone. · I<b>'ll</b> help you with your bag.</i></li>
+<li><b>Future facts</b>: <i>I <b>will</b> be 11 next year.</i></li></ul>
+<h3>be going to + verb</h3><ul>
+<li><b>Plans you already made</b>: <i>We<b>'re going to</b> visit Cappadocia in July. We've booked the hotel.</i></li>
+<li><b>Predictions with proof you can see now</b>: <i>Look at those black clouds! It<b>'s going to</b> rain.</i></li></ul>
+<h3>Forms</h3><p>I <b>will</b> go · I <b>won't</b> go · <b>Will</b> you go?<br>I <b>am / 'm going to</b> go · She <b>is / 's going to</b> go · They <b>are / 're going to</b> go · She <b>isn't going to</b> go · <b>Are</b> you <b>going to</b> go?</p>
+<p class="ex">Trick: Is there a plan or proof? → going to. Deciding now, promising, offering, guessing? → will.</p>`,
+qs:[
+ {q:"“I'm thirsty.” “Wait, I ___ get you some water.”",o:["'ll","'m going to","going to","am"],e:"An offer / a decision made now → will."},
+ {q:"We ___ visit Cappadocia next summer. We've already booked the hotel.",o:["are going to","will","going to","are will"],e:"A plan already made → going to."},
+ {q:"Look at that boy on the wall! He ___ fall!",o:["is going to","will","going","is will"],e:"You can see it now (proof) → going to."},
+ {q:"I think it ___ be sunny tomorrow.",o:["will","is going","are going to","going to"],e:"“I think” + prediction → will."},
+ {q:"Don't worry, I ___ tell anyone your secret.",o:["won't","am not going","not will","don't"],e:"A promise → will / won't."},
+ {q:"Maybe people ___ live on the Moon in 2100.",o:["will","are going to","going to","is going to"],e:"A guess about the far future → will."},
+ {q:"“What are your plans for the weekend?” “I ___ clean my room.”",o:["'m going to","'ll","will to","going"],e:"Plans → going to."},
+ {q:"“The phone is ringing!” “I ___ answer it!”",o:["'ll","'m going to","am","going to"],e:"Deciding right now → will."},
+ {q:"She has bought flour and eggs. She ___ make a cake.",o:["is going to","will","are going to","going to"],e:"Plan with proof (she bought the things) → going to."},
+ {q:"I'm sure you ___ pass the exam.",o:["will","are going","going to","are will"],e:"“I'm sure” + prediction → will."},
+ {q:"Are you going to ___ football tomorrow?",o:["play","playing","plays","played"],e:"going to + base verb."},
+ {q:"Which sentence is a prediction with proof?",o:["The sky is black. It's going to rain.","I think it will rain next week.","I'll take an umbrella.","Maybe it will rain."],e:"“The sky is black” is the proof."},
+ {q:"Which sentence is a decision made right now?",o:["Oh, it's cold. I'll close the window.","I'm going to close the window at 8.","We're going to buy a new window.","The window is going to break."],e:"Instant decision → will."},
+ {q:"He ___ going to come to school today. He is ill.",o:["isn't","won't","doesn't","not"],e:"Negative: isn't going to."},
+ {q:"Next year I ___ 11 years old.",o:["will be","am going","be","will"],e:"A future fact → will be."},
+ {q:"___ you help me with my homework, please?",o:["Will","Are","Going","Do going"],e:"Asking for help → Will you…?"}
+]},
+"en-will-sort":{s:"en",kind:"sort",title:"Will or going to? Sort it!",ask:"Which one fits the gap best?",buckets:["will","be going to"],items:[
+ {t:"I think robots ___ do our homework one day.",k:0,e:"“I think” → opinion → will."},
+ {t:"Look at those clouds! It ___ rain.",k:1,e:"Proof you can see → going to."},
+ {t:"We ___ fly to London on Monday. We have the tickets.",k:1,e:"A plan → going to."},
+ {t:"That bag looks heavy. I ___ help you.",k:0,e:"An offer → will."},
+ {t:"I promise I ___ be late again. (won't)",k:0,e:"A promise → will / won't."},
+ {t:"She ___ be a doctor. She's studying medicine.",k:1,e:"A plan / intention → going to."},
+ {t:"It ___ probably snow in January.",k:0,e:"“probably” → prediction → will."},
+ {t:"“I forgot my pencil!” “Don't worry, I ___ lend you one.”",k:0,e:"Decided right now → will."},
+ {t:"Be careful! You ___ drop the glass!",k:1,e:"It's about to happen → going to."},
+ {t:"My cousin ___ get married in June. The invitations are ready.",k:1,e:"A plan → going to."},
+ {t:"Maybe I ___ become a famous singer.",k:0,e:"“Maybe” → guess → will."},
+ {t:"I'm hungry. I think I ___ make a sandwich.",k:0,e:"Deciding now → will."},
+ {t:"Tonight we ___ watch a film. Dad has already chosen it.",k:1,e:"Already planned → going to."},
+ {t:"In 2050 cars ___ fly.",k:0,e:"A guess about the future → will."},
+ {t:"It's 8.55 and Ali is still at home. He ___ be late for school.",k:1,e:"Proof (the time) → going to."},
+ {t:"Wait, I ___ open the door for you.",k:0,e:"An offer → will."}
+]},
+"en-will-speed":{s:"en",kind:"speed",title:"Will vs going to: 60-second challenge",fromSort:"en-will-sort",how:"60 seconds! Will or going to? Get several right in a row for a combo bonus."},
+"en-will-type":{s:"en",kind:"type",title:"Type it: will or going to",ask:"Write the verb in brackets with will or be going to.",items:[
+ {t:"Look at the sky! It ___ (rain).",a:["is going to rain","'s going to rain"],h:"You can see the clouds: proof.",e:"Proof → going to."},
+ {t:"I think Turkey ___ (win) the match.",a:["will win","'ll win"],h:"“I think” = opinion.",e:"Opinion → will."},
+ {t:"We ___ (visit) our grandparents this weekend. We've planned it.",a:["are going to visit","'re going to visit"],h:"It's a plan.",e:"Plan → going to."},
+ {t:"The phone is ringing. I ___ (answer) it.",a:["will answer","'ll answer"],h:"You decide right now.",e:"Decision now → will."},
+ {t:"I promise I ___ (not / tell) anyone.",a:["won't tell","will not tell"],h:"A promise. Short form of will not?",e:"Promise → won't."},
+ {t:"She ___ (buy) a new bike. She has saved the money.",a:["is going to buy","'s going to buy"],h:"She already planned it.",e:"Plan → going to."},
+ {t:"In the future, people ___ (travel) to Mars.",a:["will travel","'ll travel"],h:"A guess about the future.",e:"Prediction → will."},
+ {t:"Watch out! You ___ (fall)!",a:["are going to fall","'re going to fall"],h:"It's about to happen.",e:"Proof now → going to."},
+ {t:"I'm tired. I think I ___ (go) to bed.",a:["will go","'ll go"],h:"Deciding right now.",e:"Decision now → will."},
+ {t:"They ___ (not / play) football tomorrow. They have an exam.",a:["aren't going to play","are not going to play","'re not going to play"],h:"A plan, negative: are not going to…",e:"Plan (negative) → aren't going to."},
+ {t:"My brother ___ (be) 15 next month.",a:["will be","'ll be","is going to be","'s going to be"],h:"A future fact.",e:"Future fact → will be (going to be is also OK)."},
+ {t:"Are you ___ (study) tonight?",a:["going to study"],h:"The question already has “Are you…”.",e:"Are you going to study…?"}
+]},
+"en-will-dinle":{s:"en",kind:"listen",title:"Listening: Deniz's summer plans",lang:"en-GB",
+text:"Hi, I'm Deniz. Next summer my family is going to travel to Japan. We have already bought the tickets! My dad is going to visit his old friend in Tokyo, and my sister is going to learn some Japanese words before we go. I think the food will be amazing, and I'm sure I will love the fast trains. My mum says it will be very hot in August. Oh, look at the time! It's ten to eight. I'm going to be late for school. Bye!",
+qs:[
+ {q:"Where is Deniz's family going to travel?",o:["Japan","China","England","Italy"],e:"“my family is going to travel to Japan”"},
+ {q:"How do we know it is a plan?",o:["They have already bought the tickets.","Deniz thinks so.","Mum says so.","It's hot in August."],e:"Bought tickets = a plan → going to."},
+ {q:"What is Deniz's sister going to do?",o:["Learn some Japanese words","Visit a friend","Cook Japanese food","Take the fast train"],e:"“my sister is going to learn some Japanese words”"},
+ {q:"What does Deniz think about the food?",o:["It will be amazing.","It will be too spicy.","It will be expensive.","He won't like it."],e:"“I think the food will be amazing” – an opinion → will."},
+ {q:"What time is it at the end?",o:["7:50","8:10","7:10","8:50"],e:"Ten to eight = 7:50."},
+ {q:"Why is Deniz going to be late?",o:["It's ten to eight and he is still talking.","The train is late.","He is ill.","It's August."],e:"Proof (the time) → going to be late."}
+]},
+"en-nature-match":{s:"en",kind:"match",title:"Nature words match",pairs:[
+ ["natural resources","doğal kaynaklar"],["renewable","yenilenebilir"],["non-renewable","yenilenemez"],["fossil fuels","fosil yakıtlar"],["soil","toprak"],["pollution","kirlilik"],
+ ["recycle","geri dönüştürmek"],["protect","korumak"],["wildlife","yaban hayatı"],["endangered","nesli tükenmekte"],["habitat","yaşam alanı"],["climate","iklim"]
+]},
+"en-school-match":{s:"en",kind:"match",title:"School words match",cards:"en-school-words"},
+"en-time":{s:"en",kind:"quiz",title:"Clock game: what time is it?",gen:"clock",n:12,
+notes:`<h3>Telling the time</h3><p>Minutes 1–30 → <b>past</b> this hour. Minutes 31–59 → <b>to</b> the next hour.</p><ul>
+<li>9:00 = nine <b>o'clock</b></li><li>9:05 = five past nine · 9:10 = ten past nine</li><li>9:15 = <b>quarter past</b> nine</li><li>9:20 = twenty past nine · 9:25 = twenty-five past nine</li>
+<li>9:30 = <b>half past</b> nine</li><li>9:35 = twenty-five to ten · 9:40 = twenty to ten</li><li>9:45 = <b>quarter to</b> ten</li><li>9:50 = ten to ten · 9:55 = five to ten</li></ul>
+<p class="ex">On the clock: the short hand shows the hour, the long red hand shows the minutes.</p>`},
+"din-esma-match":{s:"din",kind:"match",title:"Güzel isimler eşleştirme",pairs:[
+ ["Er-Rahmân","bütün canlılara merhamet eden"],["El-Hâlık","yaratan"],["El-Alîm","her şeyi bilen"],["El-Kadîr","her şeye gücü yeten"],["Er-Rezzâk","rızık veren"],
+ ["Es-Semî","her şeyi işiten"],["El-Basîr","her şeyi gören"],["El-Vedûd","kullarını çok seven"],["El-Gafûr","günahları bağışlayan"],["El-Hafîz","koruyan"],
+ ["El-Ehad","bir ve tek olan"],["Es-Samed","hiçbir şeye muhtaç olmayan"],["El-Musavvir","şekil veren"],["El-Hakîm","her işi hikmetli olan"]
+]},
+"din-esma-speed":{s:"din",kind:"speed",title:"Güzel isimler yarışı",cards:"din-esma",how:"60 saniye! İsmin anlamı hangisi? Art arda doğru bil, kombo yap!"},
+"din-ihlas-order":{s:"din",kind:"order",title:"İhlas suresini sırala",puzzles:[
+ {title:"Ayetlerin okunuşunu sırayla dokun:",items:["Kul hüvallâhü ehad.","Allâhüs-samed.","Lem yelid ve lem yûled.","Ve lem yekün lehû küfüven ehad."]},
+ {title:"Anlamlarını sırayla dokun:",items:["De ki: O, Allah’tır, bir tektir.","Allah sameddir; her şey O’na muhtaçtır.","O, doğurmamış ve doğurulmamıştır.","Hiçbir şey O’na denk değildir."]}
+]},
+"din-tf":{s:"din",kind:"speed",title:"Din: doğru mu, yanlış mı?",how:"60 saniye! Cümle doğru mu, yanlış mı?",items:[
+ {q:"İhlas suresi 4 ayettir.",o:["Doğru","Yanlış"]},{q:"İhlas suresi Medine’de inmiştir.",o:["Yanlış","Doğru"]},{q:"Tevhid, Allah’ın bir olduğuna inanmaktır.",o:["Doğru","Yanlış"]},
+ {q:"Es-Semî “her şeyi gören” demektir.",o:["Yanlış","Doğru"]},{q:"El-Basîr “her şeyi gören” demektir.",o:["Doğru","Yanlış"]},{q:"Evrendeki düzen kendiliğinden oluşmuştur.",o:["Yanlış","Doğru"]},
+ {q:"Mevsimlerin sırayla gelmesi evrendeki düzene örnektir.",o:["Doğru","Yanlış"]},{q:"“İhlas” samimiyet, içtenlik demektir.",o:["Doğru","Yanlış"]},
+ {q:"Er-Rezzâk “rızık veren” demektir.",o:["Doğru","Yanlış"]},{q:"El-Gafûr “her şeye gücü yeten” demektir.",o:["Yanlış","Doğru"]},
+ {q:"İhlas suresi Kur’an’ın 112. suresidir.",o:["Doğru","Yanlış"]},{q:"“Lem yelid ve lem yûled” Allah’ın doğurmadığını ve doğurulmadığını anlatır.",o:["Doğru","Yanlış"]},
+ {q:"Dünya Güneş’e çok daha yakın olsaydı canlılar daha rahat yaşardı.",o:["Yanlış","Doğru"]},{q:"Allah’ın güzel isimlerine Esmaü’l-Hüsna denir.",o:["Doğru","Yanlış"]},
+ {q:"El-Kadîr “her şeye gücü yeten” demektir.",o:["Doğru","Yanlış"]},{q:"Es-Samed “her şeyi bilen” demektir.",o:["Yanlış","Doğru"]}
+]}
+});
+
 // ---------- the plan: about an hour a day ----------
 const DAYS=[
- {d:"2026-11-08",note:"Türkçe is on Tuesday, so start with it. Today is Sunday: go slowly and read the notes first.",tasks:[
+ {d:"2026-11-08",note:"Türkçe is on Tuesday, so start with it. Finished fast? Do the bonus games below and collect XP!",tasks:[
   {set:"tr-yazim",min:20,desc:"Read the notes, then do the quiz"},
   {set:"tr-yazim-cards",min:5,desc:"Which spelling is right?"},
   {brk:1,min:5},
   {set:"tr-anlam",min:15,desc:"Guess word meanings from the sentence"},
-  {set:"din-esma",min:15,desc:"First look at the names; it's fine not to know them yet"}]},
- {d:"2026-11-09",note:"Tomorrow: Türkçe 09.20 and the listening exam 10.15. Do the Türkçe tasks first.",tasks:[
-  {set:"tr-okuma",min:15,desc:"Reading, key words and pictures"},
-  {set:"tr-dinle",min:10,desc:"Listen carefully, like the real listening exam"},
+  {set:"din-esma",min:15,desc:"First look at the names; it's fine not to know them yet"},
+  {set:"tr-de-sort",min:5,desc:"Bonus: sort each “de/da” — joined or separate?"},
+  {set:"tr-speed",min:3,desc:"Bonus: 60-second spelling race. Beat your score!"},
+  {set:"tr-deyim-match",min:5,desc:"Bonus: match the idioms to their meanings"},
+  {set:"en-will-sort",min:5,desc:"Bonus: a first try at will vs going to"}]},
+ {d:"2026-11-09",note:"Tomorrow: Türkçe 09.20 and the listening exam 10.15. Türkçe first, then a bit of science.",tasks:[
+  {set:"tr-okuma",min:10,desc:"Reading, key words and pictures"},
+  {set:"tr-okuma2",min:10,desc:"A new text about polar bears"},
+  {set:"tr-dinle",min:8,desc:"Listen carefully, like the real listening exam"},
+  {set:"tr-dinle2",min:8,desc:"A second listening: the science fair"},
+  {set:"tr-speed",min:3,desc:"Spelling race again. Can you beat yesterday?"},
   {brk:1,min:5},
-  {set:"fen-gas",min:15,desc:"Cambridge Science: read the notes, then the quiz"},
-  {set:"fen-digest",min:15,desc:"Learn the order of the organs"}]},
+  {set:"fen-gas",min:10,desc:"Cambridge Science: read the notes, then the quiz"},
+  {set:"fen-states-sort",min:5,desc:"Solid, liquid or gas? Sort them"},
+  {set:"fen-digest",min:10,desc:"The digestive system quiz"},
+  {set:"fen-order",min:5,desc:"Put the journey of food in order"}]},
  {d:"2026-11-10",note:"Türkçe is done today. Tomorrow at 11.10: Cambridge Science. (Kültür ve Medeniyetimize Yön Verenler at 09.20 is skipped.)",tasks:[
-  {set:"fen-words",min:10,desc:"All the key words for tomorrow"},
-  {set:"fen-diet",min:15,desc:"Nutrients and their jobs"},
+  {set:"fen-match",min:5,desc:"Match the science words, as fast as you can"},
+  {set:"fen-diet",min:10,desc:"Nutrients and their jobs"},
+  {set:"fen-food-sort",min:5,desc:"Which nutrient group is each food?"},
+  {set:"fen-tf",min:3,desc:"60-second true or false"},
   {set:"fen-all",min:10,desc:"A mixed test from all three topics"},
   {brk:1,min:5},
-  {set:"en-nature",min:10,desc:"Start English: Unit 1 words"},
-  {set:"en-verbs",min:10,desc:"Stative and action verbs"}]},
- {d:"2026-11-11",note:"Tomorrow: English 09.20 and the English listening exam 10.15.",tasks:[
-  {set:"en-past",min:15,desc:"Was reading when … rang"},
-  {set:"en-cond",min:15,desc:"If …, will / would; going to"},
-  {set:"en-dinle",min:10,desc:"Practise for the listening exam"},
+  {set:"en-will",min:12,desc:"Will or be going to: notes and quiz"},
+  {set:"en-will-sort",min:5,desc:"Sort the sentences: will or going to?"},
+  {set:"en-nature-match",min:5,desc:"Unit 1 nature words"}]},
+ {d:"2026-11-11",note:"Tomorrow: English 09.20 and the English listening exam 10.15. Lots of will vs going to today!",tasks:[
+  {set:"en-will-type",min:10,desc:"Type the answers yourself"},
+  {set:"en-will-speed",min:3,desc:"60-second will vs going to challenge"},
+  {set:"en-will-dinle",min:8,desc:"Listening: Deniz's summer plans"},
+  {set:"en-verbs",min:8,desc:"Stative and action verbs"},
+  {set:"en-past",min:10,desc:"Was reading when … rang"},
+  {set:"en-cond",min:10,desc:"If …, will / would"},
   {brk:1,min:5},
-  {set:"din-duzen",min:15,desc:"Start Din Kültürü for Friday"}]},
+  {set:"en-dinle",min:6,desc:"Listening: Emma's trip"},
+  {set:"din-duzen",min:10,desc:"Start Din Kültürü for Friday"}]},
  {d:"2026-11-12",note:"Last study day! Tomorrow: Cambridge English 09.20 and Din Kültürü 10.15.",tasks:[
-  {set:"en-school",min:15,desc:"Cambridge English: rules, likes and the time"},
-  {set:"en-school-words",min:10,desc:"School and classroom words"},
+  {set:"en-school",min:12,desc:"Cambridge English: rules, likes and the time"},
+  {set:"en-time",min:8,desc:"Clock game: read the clock in English"},
+  {set:"en-school-match",min:5,desc:"School and classroom words"},
+  {set:"en-will-speed",min:3,desc:"Will vs going to: beat your best score"},
   {brk:1,min:5},
-  {set:"din-esmaq",min:15,desc:"Which name fits the sentence?"},
-  {set:"din-ihlas",min:15,desc:"Reading, meaning and facts"}]},
+  {set:"din-esma-match",min:5,desc:"Match the names and meanings"},
+  {set:"din-esmaq",min:10,desc:"Which name fits the sentence?"},
+  {set:"din-ihlas",min:10,desc:"İhlas: reading, meaning and facts"},
+  {set:"din-ihlas-order",min:5,desc:"Put the verses in order"},
+  {set:"din-tf",min:3,desc:"60-second true or false"}]},
  {d:"2026-11-13",note:"Exam day! Just a short warm-up at breakfast. Good luck! 🍀",tasks:[
-  {set:"en-school-words",min:5,desc:"Quick warm-up for Cambridge English"},
-  {set:"din-esma",min:5,desc:"Quick warm-up for Din Kültürü"}]}
+  {set:"en-time",min:4,desc:"Quick warm-up for Cambridge English"},
+  {set:"din-esma-speed",min:3,desc:"Quick warm-up for Din Kültürü"}]}
 ];
 DAYS.forEach(day=>day.tasks.forEach((t,i)=>t.id=day.d+"#"+i));
 
@@ -621,7 +878,7 @@ function renderPlan(){
   const exams=EXAMS.filter(e=>e.d===day.d);
   $("#dayBanner").innerHTML=`<div class="banner">${exams.length?"<b>Exams today:</b> "+exams.map(e=>esc(e.name)+" ("+e.t+")"+(e.skip?" – skipped":"")).join(", ")+"<br>":""}${esc(day.note)}</div>`;
   $("#tasks").innerHTML=day.tasks.map(t=>{
-    const i=taskInfo(t),done=!!S.done[t.id],best=t.set&&S.best[t.set]!=null&&SETS[t.set].kind!=="cards"?` · best ${S.best[t.set]}%`:"";
+    const i=taskInfo(t),done=!!S.done[t.id],best=t.set?bestText(t.set):"";
     return `<div class="task${done?" done":""}" style="--c:${SUBJ[i.s].c}">
       <button class="chk" data-check="${t.id}" aria-label="${done?"Mark not done":"Mark done"}"></button>
       <div class="body"><div class="sub">${SUBJ[i.s].name} · ${t.min} min${best}</div><h3>${esc(i.title)}</h3><p>${esc(i.desc)}</p></div>
@@ -634,8 +891,7 @@ function renderPractice(){
   $("#tab-practice").innerHTML=`<p class="mute">Everything in the plan, plus extras. Do any of them as often as you like.</p>`+order.map(s=>{
     const ids=Object.keys(SETS).filter(id=>SETS[id].s===s);
     return `<div class="group" style="--c:${SUBJ[s].c}"><h2>${SUBJ[s].name}</h2><div class="sets">${ids.map(id=>{const x=SETS[id];
-      const kind=x.kind==="cards"?"Flashcards · "+x.cards.length:x.kind==="listen"?"Listening · "+x.qs.length+" questions":"Quiz · "+(x.mix?x.n:x.qs.length)+" questions";
-      return `<button class="set" style="--c:${SUBJ[s].c}" data-open="${id}"><b>${esc(x.title)}</b><span>${kind}${S.best[id]!=null&&x.kind!=="cards"?" · best "+S.best[id]+"%":""}</span></button>`}).join("")}</div></div>`}).join("");
+      return `<button class="set" style="--c:${SUBJ[s].c}" data-open="${id}"><b>${esc(x.title)}</b><span>${kindLabel(x)}${bestText(id)}</span></button>`}).join("")}</div></div>`}).join("");
 }
 
 // ---------- exams tab ----------
@@ -684,14 +940,20 @@ function openActivity(id,taskId){
   const set=SETS[id];openSheet(set.title,set.s);
   if(set.kind==="cards")return runCards(id,set);
   if(set.kind==="listen")return runListen(id,set);
+  if(set.kind==="speed")return runSpeed(id,set);
+  if(set.kind==="match")return runMatch(id,set);
+  if(set.kind==="order")return runOrder(id,set);
+  const run={sort:runSort,type:runType}[set.kind]||runQuiz;
   if(set.notes){
     body().innerHTML=`<div class="notes">${set.notes}</div><div class="row center"><button class="btn" id="startQ">Start the quiz →</button></div>`;
-    $("#startQ").onclick=()=>{$("#sheet").scrollTop=0;runQuiz(id,set)};
-  } else runQuiz(id,set);
+    $("#startQ").textContent=set.kind==="quiz"?"Start the quiz →":"Start →";
+    $("#startQ").onclick=()=>{$("#sheet").scrollTop=0;run(id,set)};
+  } else run(id,set);
 }
 
 // quiz
 function quizQuestions(set){
+  if(set.gen==="clock")return clockQuestions(set.n);
   if(set.mix){const all=set.mix.flatMap(m=>SETS[m].qs);return shuffle(all).slice(0,set.n)}
   return set.qs.slice();
 }
@@ -706,25 +968,13 @@ function runQuiz(id,set,only){
     body().querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
       const k=+b.dataset.k,ok=opts[k].ok;
       body().querySelectorAll(".opt").forEach((x,j)=>{x.disabled=true;if(opts[j].ok)x.classList.add("right")});
-      if(ok)score++;else{b.classList.add("wrong");wrong.push(q)}
+      if(ok){score++;addXP(10)}else{b.classList.add("wrong");wrong.push(q)}
       $("#fb").innerHTML=`<div class="feedback ${ok?"ok":"no"}">${ok?"✓ Right!":"✗ Not quite."} ${esc(q.e||"")}</div>
         <div class="row" style="margin-top:12px"><button class="btn" id="nx">${i+1<qs.length?"Next →":"See score"}</button></div>`;
       $("#nx").onclick=()=>{i++;show();$("#sheet").scrollTop=0};$("#nx").focus();
     });
   };
-  const end=()=>{
-    const pct=Math.round(score/qs.length*100);
-    if(!only){S.best[id]=Math.max(S.best[id]||0,pct)}
-    finishTask();save();
-    const msg=pct===100?"Perfect! 🌟":pct>=80?"Great job! 💪":pct>=50?"Good — look at the ones you missed.":"Read the notes again and try once more.";
-    body().innerHTML=`<div class="result"><div class="big">${score}/${qs.length}</div><p>${msg}</p></div>
-      <div class="row center">${wrong.length?'<button class="btn" id="rw">Try my mistakes again</button>':""}
-      <button class="btn quiet" id="ra">Do it all again</button>${set.notes?'<button class="btn quiet" id="rn">Read the notes</button>':""}<button class="btn quiet" id="cl">Finish</button></div>`;
-    if(wrong.length)$("#rw").onclick=()=>runQuiz(id,set,shuffle(wrong));
-    $("#ra").onclick=()=>runQuiz(id,set);
-    if(set.notes)$("#rn").onclick=()=>openActivity(id,curTask);
-    $("#cl").onclick=closeSheet;
-  };
+  const end=()=>scoreEnd(id,set,score,qs.length,wrong,only,()=>runQuiz(id,set),w=>runQuiz(id,set,w));
   show();
 }
 
@@ -793,8 +1043,223 @@ function openBreak(){
   $("#bd").onclick=()=>{S.breakEnd=0;if(task){S.done[task]=true}save();closeSheet()};
 }
 
+// ---------- XP, levels and confetti ----------
+const LV=250;
+function renderXP(){const xp=S.xp||0,lv=Math.floor(xp/LV)+1;
+  $("#xp").innerHTML=`<b>⭐ Level ${lv}</b><span class="xpbar" title="${xp%LV} of ${LV} XP to the next level"><i style="width:${xp%LV/LV*100}%"></i></span><span class="mute">${xp} XP</span>`}
+function addXP(n){const before=Math.floor((S.xp||0)/LV);S.xp=(S.xp||0)+n;save();renderXP();
+  if(Math.floor(S.xp/LV)>before){toast("Level up! ⭐ Level "+(Math.floor(S.xp/LV)+1));confetti()}}
+function toast(t){const el=document.createElement("div");el.className="toast";el.textContent=t;document.body.appendChild(el);setTimeout(()=>el.remove(),2400)}
+const calm=matchMedia("(prefers-reduced-motion: reduce)").matches;
+function confetti(){if(calm)return;const c=document.createElement("canvas");c.className="confetti";document.body.appendChild(c);
+  const W=c.width=innerWidth,H=c.height=innerHeight,x=c.getContext("2d"),cols=["#ffd166","#6ee7a8","#7cc7ff","#ff9a76","#f0a6ff"];
+  const ps=Array.from({length:140},()=>({x:Math.random()*W,y:-20-Math.random()*H*.5,vx:(Math.random()-.5)*3,vy:2+Math.random()*4,r:5+Math.random()*6,c:cols[Math.random()*5|0],a:Math.random()*6}));
+  let t=0;const step=()=>{x.clearRect(0,0,W,H);ps.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.05;p.a+=.12;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.fillStyle=p.c;x.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);x.restore()});
+    if(++t<140)requestAnimationFrame(step);else c.remove()};step()}
+const fmt=t=>esc(t).replace(/___/g,'<span class="gap">___</span>');
+const strip=h=>String(h).replace(/<[^>]*>/g,"").replace(/\s+/g," ").trim();
+const fmtT=s=>Math.floor(s/60)+":"+pad(Math.round(s%60));
+function bestText(id){const x=SETS[id];if(!x||x.kind==="cards"||x.kind==="order")return"";
+  if(x.kind==="speed")return S.best[id]!=null?` · best ${S.best[id]} pts`:"";
+  if(x.kind==="match")return S.bestTime&&S.bestTime[id]!=null?` · best ${fmtT(S.bestTime[id])}`:"";
+  return S.best[id]!=null?` · best ${S.best[id]}%`:""}
+function kindLabel(x){return {cards:"Flashcards · "+(x.cards||[]).length,listen:"Listening · "+(x.qs||[]).length+" questions",
+  speed:"⚡ 60-second challenge",match:"🧩 Match pairs",sort:"🗂️ Sort it · "+(x.items||[]).length,type:"⌨️ Type the answer · "+(x.items||[]).length,
+  order:"🔢 Put in order",quiz:x.gen==="clock"?"🕒 Clock game · "+x.n:"Quiz · "+(x.mix?x.n:(x.qs||[]).length)+" questions"}[x.kind]}
+
+// shared score screen for quiz, sort and type
+function scoreEnd(id,set,score,total,wrong,only,again,retry){
+  const pct=Math.round(score/total*100);
+  if(!only){S.best[id]=Math.max(S.best[id]||0,pct)}
+  finishTask();if(!only&&pct>=80)addXP(pct===100?40:20);save();if(pct===100)confetti();
+  const msg=pct===100?"Perfect! 🌟":pct>=80?"Great job! 💪":pct>=50?"Good. Look again at the ones you missed.":"Read the notes again and try once more.";
+  body().innerHTML=`<div class="result"><div class="big">${score}/${total}</div><p>${msg}</p>${!only&&pct>=80?`<p class="mute">+${pct===100?40:20} bonus XP</p>`:""}</div>
+    <div class="row center">${wrong.length?'<button class="btn" id="rw">Try my mistakes again</button>':""}
+    <button class="btn quiet" id="ra">Do it all again</button>${set.notes?'<button class="btn quiet" id="rn">Read the notes</button>':""}<button class="btn quiet" id="cl">Finish</button></div>`;
+  if(wrong.length)$("#rw").onclick=()=>retry(shuffle(wrong));
+  $("#ra").onclick=again;
+  if(set.notes)$("#rn").onclick=()=>openActivity(id,curTask);
+  $("#cl").onclick=closeSheet;
+}
+
+// sort: put each sentence in the right box
+function runSort(id,set,only){
+  const items=only||shuffle(set.items);let i=0,score=0,streak=0;const wrong=[];
+  const show=()=>{
+    if(i>=items.length)return scoreEnd(id,set,score,items.length,wrong,only,()=>runSort(id,set),w=>runSort(id,set,w));
+    const it=items[i];
+    body().innerHTML=`<div class="progress">${i+1} of ${items.length} · ${score} right${streak>=3?` · 🔥 ${streak} in a row`:""}</div>
+      ${set.ask?`<p class="hint">${esc(set.ask)}</p>`:""}<div class="sortcard" id="sc">${fmt(it.t)}</div>
+      <div class="buckets">${set.buckets.map((b,k)=>`<button class="bucket" data-k="${k}">${esc(b)}</button>`).join("")}</div><div id="fb"></div>`;
+    body().querySelectorAll(".bucket").forEach(b=>b.onclick=()=>{
+      const ok=+b.dataset.k===it.k;
+      body().querySelectorAll(".bucket").forEach(x=>{x.disabled=true;if(+x.dataset.k===it.k)x.classList.add("right")});
+      if(ok){score++;streak++;addXP(streak>=3?15:10);$("#sc").classList.add("ok")}
+      else{streak=0;b.classList.add("wrong");$("#sc").classList.add("shake");wrong.push(it)}
+      $("#fb").innerHTML=`<div class="feedback ${ok?"ok":"no"}">${ok?"✓ Right!":"✗ It's <b>"+esc(set.buckets[it.k])+"</b>."} ${esc(it.e||"")}</div>
+        <div class="row" style="margin-top:12px"><button class="btn" id="nx">Next →</button></div>`;
+      $("#nx").onclick=()=>{i++;show()};$("#nx").focus();
+    });
+  };
+  show();
+}
+
+// match: tap a word, then its meaning
+function matchPairs(set){return set.pairs||SETS[set.cards].cards.map(c=>[c.f,strip(c.b)])}
+function runMatch(id,set){
+  const all=shuffle(matchPairs(set)),per=5,rounds=Math.ceil(all.length/per);let round=0,mistakes=0;const t0=Date.now();
+  const iv=setInterval(()=>{const el=$("#tm2");if(el)el.textContent=fmtT((Date.now()-t0)/1000)},500);cleanup=()=>clearInterval(iv);
+  const show=()=>{
+    if(round>=rounds)return end();
+    const pairs=all.slice(round*per,round*per+per);let sel=null,left=pairs.length;
+    const L=shuffle(pairs.map((p,k)=>({t:p[0],k}))),R=shuffle(pairs.map((p,k)=>({t:p[1],k})));
+    body().innerHTML=`<div class="progress">Round ${round+1} of ${rounds} · ⏱ <span id="tm2">${fmtT((Date.now()-t0)/1000)}</span> · <span id="mk">${mistakes}</span> mistakes</div>
+      <p class="hint">Tap a word, then tap its meaning.</p>
+      <div class="match"><div class="col">${L.map(x=>`<button class="mt" data-s="L" data-k="${x.k}">${esc(x.t)}</button>`).join("")}</div>
+      <div class="col">${R.map(x=>`<button class="mt" data-s="R" data-k="${x.k}">${esc(x.t)}</button>`).join("")}</div></div>`;
+    body().querySelectorAll(".mt").forEach(b=>b.onclick=()=>{
+      if(b.disabled)return;
+      if(!sel||sel.dataset.s===b.dataset.s){if(sel)sel.classList.remove("sel");sel=b;b.classList.add("sel");return}
+      const a=sel;sel=null;
+      if(a.dataset.k===b.dataset.k){[a,b].forEach(x=>{x.classList.remove("sel");x.classList.add("done");x.disabled=true});addXP(5);
+        if(--left===0){round++;setTimeout(show,400)}}
+      else{mistakes++;$("#mk").textContent=mistakes;[a,b].forEach(x=>x.classList.add("wrong"));setTimeout(()=>[a,b].forEach(x=>x.classList.remove("wrong","sel")),500)}
+    });
+  };
+  const end=()=>{
+    clearInterval(iv);const sec=Math.round((Date.now()-t0)/1000);S.bestTime=S.bestTime||{};const prev=S.bestTime[id];
+    const record=prev==null||sec<prev;if(record)S.bestTime[id]=sec;finishTask();save();if(record||mistakes===0)confetti();
+    body().innerHTML=`<div class="result"><div class="big">${fmtT(sec)}</div><p>${all.length} pairs · ${mistakes} mistake${mistakes===1?"":"s"}</p>
+      ${prev!=null&&record?"<p>🏆 New record!</p>":prev!=null?`<p class="mute">Record: ${fmtT(prev)}</p>`:""}</div>
+      <div class="row center"><button class="btn" id="ra">Play again</button><button class="btn quiet" id="cl">Finish</button></div>`;
+    $("#ra").onclick=()=>runMatch(id,set);$("#cl").onclick=closeSheet;
+  };
+  show();
+}
+
+// speed: as many as you can in 60 seconds, combos multiply points
+function speedPool(set){
+  if(set.items)return set.items.map(x=>({q:x.q,o:x.o}));
+  if(set.fromSort){const s=SETS[set.fromSort];return s.items.map(it=>({q:it.t,o:[s.buckets[it.k],...s.buckets.filter((_,k)=>k!==it.k)]}))}
+  const cs=SETS[set.cards].cards.map(c=>({f:c.f,b:strip(c.b)}));
+  return cs.map(c=>({q:c.f,o:[c.b,shuffle(cs.filter(x=>x.b!==c.b))[0].b]}));
+}
+function runSpeed(id,set){
+  const DUR=60;
+  body().innerHTML=`<div class="result"><div class="big">⚡ ${DUR}s</div><p>${esc(set.how||"Answer as many as you can before the time runs out!")}</p>
+    <p class="mute">3 in a row = ×2 points · 6 in a row = ×3 · 9 in a row = ×4${S.best[id]!=null?` · Your best: ${S.best[id]} points`:""}</p></div>
+    <div class="row center"><button class="btn" id="go">Start!</button></div>`;
+  $("#go").onclick=()=>{
+    let pool=shuffle(speedPool(set)),i=0,pts=0,right=0,wrong=0,combo=0,lock=false;const end=Date.now()+DUR*1000,misses=new Map();
+    body().innerHTML=`<div class="speedhud"><div class="timer small" id="st">${DUR}</div><div class="pts"><b id="sp">0</b> points<br><span id="sc2">&nbsp;</span></div></div>
+      <div class="tbar"><i id="tb"></i></div><div class="q" id="sq"></div><div class="opts two" id="so"></div>`;
+    const mult=()=>Math.min(1+Math.floor(combo/3),4);
+    const hud=()=>{$("#sp").textContent=pts;$("#sc2").innerHTML=combo>=3?`🔥 ×${mult()} combo`:"&nbsp;"};
+    const next=()=>{
+      if(i>=pool.length){pool=shuffle(pool);i=0}
+      const q=pool[i++],opts=shuffle(q.o.map((t,k)=>({t,ok:k===0})));
+      $("#sq").innerHTML=fmt(q.q);
+      $("#so").innerHTML=opts.map((o,k)=>`<button class="opt big" data-k="${k}">${esc(o.t)}</button>`).join("");
+      $("#so").querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
+        if(lock)return;lock=true;const ok=opts[+b.dataset.k].ok;
+        if(ok){right++;combo++;pts+=10*mult();b.classList.add("right");addXP(2)}
+        else{wrong++;combo=0;b.classList.add("wrong");$("#so").querySelectorAll(".opt").forEach((x,j)=>{if(opts[j].ok)x.classList.add("right")});misses.set(q.q,q.o[0])}
+        hud();setTimeout(()=>{lock=false;if(Date.now()<end)next()},ok?250:900);
+      });
+    };
+    next();hud();
+    const iv=setInterval(()=>{const left=Math.max(0,end-Date.now());$("#st").textContent=Math.ceil(left/1000);$("#tb").style.width=(left/DUR/10)+"%";
+      if(!left){clearInterval(iv);finish()}},100);
+    cleanup=()=>clearInterval(iv);
+    const finish=()=>{
+      const prev=S.best[id],record=prev==null||pts>prev;if(record)S.best[id]=pts;finishTask();save();if(record&&right>=5)confetti();
+      body().innerHTML=`<div class="result"><div class="big">${pts}</div><p>points · ${right} right, ${wrong} wrong</p>
+        ${prev!=null&&record?"<p>🏆 New best score!</p>":prev!=null?`<p class="mute">Your best: ${prev}</p>`:""}</div>
+        ${misses.size?`<div class="notes"><h3>Check these</h3><ul>${[...misses].map(([q,a])=>`<li>${fmt(q)} → <b>${esc(a)}</b></li>`).join("")}</ul></div>`:""}
+        <div class="row center"><button class="btn" id="ra">Play again</button><button class="btn quiet" id="cl">Finish</button></div>`;
+      $("#ra").onclick=()=>runSpeed(id,set);$("#cl").onclick=closeSheet;
+    };
+  };
+}
+
+// type: write the answer yourself
+const norm=s=>s.toLowerCase().replace(/[’‘`´]/g,"'").replace(/[.!?,]/g,"").replace(/\s+/g," ").trim();
+const SUBJW=["i","you","he","she","it","we","they"];
+function typeOK(inp,ans){
+  const n=norm(inp),A=ans.map(norm);if(A.includes(n))return true;
+  const w=n.split(" ");if(SUBJW.includes(w[0])&&A.includes(w.slice(1).join(" ")))return true; // "it is going to rain"
+  const m=n.match(/^([a-z]+)('s|'re|'m|'ll)\s(.*)$/);if(m&&A.includes(m[2]+" "+m[3]))return true; // "it's going to rain"
+  return false;
+}
+function runType(id,set,only){
+  const qs=only||shuffle(set.items);let i=0,score=0;const wrong=[];
+  const show=()=>{
+    if(i>=qs.length)return scoreEnd(id,set,score,qs.length,wrong,only,()=>runType(id,set),w=>runType(id,set,w));
+    const q=qs[i];
+    body().innerHTML=`<div class="progress">${i+1} of ${qs.length} · ${score} right</div>${set.ask?`<p class="hint">${esc(set.ask)}</p>`:""}
+      <div class="q">${fmt(q.t)}</div>
+      <form id="tf" class="typeform" autocomplete="off"><input id="ti" type="text" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Type the missing words" aria-label="Your answer"><button class="btn" id="tb2">Check</button></form>
+      ${q.h?`<button class="linkbtn" id="hb" type="button">Need a hint?</button><p class="hint" id="ht" hidden>💡 ${esc(q.h)}</p>`:""}<div id="fb"></div>`;
+    const ti=$("#ti");ti.focus();
+    if(q.h)$("#hb").onclick=()=>{$("#ht").hidden=false;$("#hb").hidden=true};
+    $("#tf").onsubmit=e=>{e.preventDefault();if(!ti.value.trim()||ti.disabled)return;
+      const ok=typeOK(ti.value,q.a);ti.disabled=true;$("#tb2").disabled=true;
+      if(ok){score++;addXP(15)}else wrong.push(q);
+      $("#fb").innerHTML=`<div class="feedback ${ok?"ok":"no"}">${ok?"✓ Right!":"✗ The answer is <b>"+esc(q.a[0])+"</b>."} ${esc(q.e||"")}</div>
+        <div class="row" style="margin-top:12px"><button class="btn" id="nx">Next →</button></div>`;
+      $("#nx").onclick=()=>{i++;show()};$("#nx").focus()};
+  };
+  show();
+}
+
+// order: tap the pieces in the right order
+function runOrder(id,set){
+  let p=0,mistakes=0;
+  const show=()=>{
+    const pz=set.puzzles[p];if(!pz)return end();
+    let next=0;const items=pz.items.map((t,k)=>({t,k}));
+    body().innerHTML=`<div class="progress">Puzzle ${p+1} of ${set.puzzles.length} · <span id="mk">${mistakes}</span> mistakes</div><div class="q">${esc(pz.title)}</div>
+      <ol class="ordered" id="od"></ol><div class="chips" id="ch">${shuffle(items).map(x=>`<button class="chip" data-k="${x.k}">${esc(x.t)}</button>`).join("")}</div>`;
+    $("#ch").querySelectorAll(".chip").forEach(b=>b.onclick=()=>{
+      if(+b.dataset.k===next){next++;$("#od").insertAdjacentHTML("beforeend",`<li>${esc(b.textContent)}</li>`);b.remove();addXP(3);
+        if(next===items.length){p++;$("#ch").innerHTML=`<div class="feedback ok">✓ Perfect order!</div><div class="row" style="margin-top:12px"><button class="btn" id="nx">${p<set.puzzles.length?"Next puzzle →":"See result"}</button></div>`;$("#nx").onclick=show}}
+      else{mistakes++;$("#mk").textContent=mistakes;b.classList.add("shake","wrong");setTimeout(()=>b.classList.remove("shake","wrong"),450)}
+    });
+  };
+  const end=()=>{finishTask();if(mistakes===0){addXP(20);confetti()}save();
+    body().innerHTML=`<div class="result"><div class="big">${mistakes===0?"🌟":mistakes}</div><p>${mistakes===0?"No mistakes! +20 bonus XP":mistakes+" mistake"+(mistakes===1?"":"s")+". Try again for a perfect round!"}</p></div>
+      <div class="row center"><button class="btn" id="ra">Play again</button><button class="btn quiet" id="cl">Finish</button></div>`;
+    $("#ra").onclick=()=>runOrder(id,set);$("#cl").onclick=closeSheet};
+  show();
+}
+
+// clock game questions, made fresh every time
+const NUMW=["","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve"];
+const MINW={5:"five",10:"ten",15:"quarter",20:"twenty",25:"twenty-five",30:"half"};
+const hn=h=>NUMW[(h-1)%12+1];
+const timePhrase=(h,m)=>m===0?`${hn(h)} o'clock`:m<=30?`${MINW[m]} past ${hn(h)}`:`${MINW[60-m]} to ${hn(h+1)}`;
+function clockSVG(h,m){
+  const R=a=>a*Math.PI/180,ha=R(((h%12)+m/60)*30),ma=R(m*6);let ticks="",nums="";
+  for(let k=0;k<60;k++){const a=R(k*6),r1=k%5?85:79;ticks+=`<line x1="${(100+r1*Math.sin(a)).toFixed(1)}" y1="${(100-r1*Math.cos(a)).toFixed(1)}" x2="${(100+90*Math.sin(a)).toFixed(1)}" y2="${(100-90*Math.cos(a)).toFixed(1)}" stroke-width="${k%5?1.5:3}"/>`}
+  for(let k=1;k<=12;k++){const a=R(k*30);nums+=`<text x="${(100+66*Math.sin(a)).toFixed(1)}" y="${(100-66*Math.cos(a)+6).toFixed(1)}">${k}</text>`}
+  return `<svg class="clock" viewBox="0 0 200 200" role="img" aria-label="An analogue clock"><circle cx="100" cy="100" r="96" class="cface"/><g class="ticks">${ticks}</g><g class="nums">${nums}</g>
+    <line x1="100" y1="100" x2="${(100+44*Math.sin(ha)).toFixed(1)}" y2="${(100-44*Math.cos(ha)).toFixed(1)}" class="hh"/>
+    <line x1="100" y1="100" x2="${(100+72*Math.sin(ma)).toFixed(1)}" y2="${(100-72*Math.cos(ma)).toFixed(1)}" class="mh"/><circle cx="100" cy="100" r="5" class="pin"/></svg>`;
+}
+function clockQuestions(n){
+  const ms=[0,5,10,15,20,25,30,35,40,45,50,55],qs=[];
+  for(let i=0;i<n;i++){
+    const h=1+Math.floor(Math.random()*12),m=ms[Math.floor(Math.random()*ms.length)],right=timePhrase(h,m),cand=new Set();
+    [[h,(m+30)%60],[h+1,m],[h+11,m],[h,(60-m)%60],[h,(m+15)%60]].forEach(([a,b])=>{const t=timePhrase((a-1)%12+1,b);if(t!==right)cand.add(t)});
+    const digital=i%3===2;
+    qs.push({v:digital?`<div class="digital">${h}:${pad(m)}</div>`:clockSVG(h,m),q:digital?"How do you say this time?":"What time is it?",
+      o:["It's "+right,...shuffle([...cand]).slice(0,3).map(w=>"It's "+w)],e:`${h}:${pad(m)} = ${right}.`});
+  }
+  return qs;
+}
+
 // ---------- start ----------
-renderNext();renderPlan();
+renderNext();renderPlan();renderXP();
 setInterval(renderNext,60e3);
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#sheet").hidden)closeSheet()});
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r=>r.update()).catch(()=>{});
