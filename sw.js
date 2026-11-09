@@ -1,6 +1,6 @@
 // Caches the arcade so it works offline. Bump VERSION when files change.
-const VERSION = 'arcade-v6';
-const FILES = ['./', 'index.html', 'snake.html', 'temples.html', 'stack.html', 'dodger.html', 'words.html', 'sosyal.html', 'elementals.html', 'snake-arena.html', 'app-forge.html', 'minecraft/', 'minecraft/index.html', 'manifest.webmanifest',
+const VERSION = 'arcade-v7';
+const FILES = ['./', 'index.html', 'snake.html', 'temples.html', 'stack.html', 'dodger.html', 'words.html', 'bandit.html', 'sosyal.html', 'elementals.html', 'snake-arena.html', 'app-forge.html', 'minecraft/', 'minecraft/index.html', 'manifest.webmanifest',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
