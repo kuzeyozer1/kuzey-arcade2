@@ -1155,13 +1155,25 @@ const DAYS=[
   {set:"en-time",min:4,desc:"Quick warm-up for Cambridge English"},
   {set:"din-esma-speed",min:3,desc:"Quick warm-up for Din Kültürü"}]}
 ];
-DAYS.forEach(day=>day.tasks.forEach((t,i)=>t.id=day.d+"#"+i));
+// Each task's id is its day plus what it is (2026-11-09#tr-okuma), never its position.
+// So new tasks can be added, moved or removed in an update and saved progress stays on the right task.
+const taskKey=t=>t.set||(t.lesson?"lesson:"+t.lesson:"break");
+DAYS.forEach(day=>{const seen={};day.tasks.forEach(t=>{const k=taskKey(t);seen[k]=(seen[k]||0)+1;t.id=day.d+"#"+k+(seen[k]>1?"#"+seen[k]:"")})});
 
 // ---------- saved progress (this device only) ----------
 const KEY="yazili:v1";
 let S={done:{},best:{},breakEnd:0};
 try{const x=JSON.parse(localStorage.getItem(KEY)||"null");if(x&&x.done)S=Object.assign(S,x)}catch(e){}
-S=Object.assign({lessons:{},badges:{},stickers:{},dayChest:{},chests:0,xp:0,bestTime:{}},S);S.stats=Object.assign({perfect:0,maxStreak:0,streak:0},S.stats||{});
+S=Object.assign({lessons:{},badges:{},stickers:{},dayChest:{},chests:0,xp:0,bestTime:{}},S);
+// Saves from before 9 November stored tasks by position (2026-11-09#3). Move them to the
+// stable ids using the plan as it was then. Nothing else in the save ever needs moving:
+// scores, XP, lessons, badges and stickers are stored by name. Never rename KEY.
+if(!S.v){const OLD_LAYOUT={"2026-11-08":["tr-yazim","tr-yazim-cards","break","tr-anlam","din-esma","tr-de-sort","tr-speed","tr-deyim-match","en-will-sort","lesson:L-tr-yazim","lesson:L-tr-nokta"],"2026-11-09":["lesson:L-tr-okuma","tr-okuma","tr-okuma2","tr-dinle","tr-dinle2","tr-speed","break","lesson:L-fen-matter","fen-gas","fen-states-sort","lesson:L-fen-digest","fen-digest","fen-order"],"2026-11-10":["fen-match","lesson:L-fen-diet","fen-diet","fen-food-sort","fen-tf","fen-all","break","lesson:L-en-will","en-will","en-will-sort","en-nature-match"],"2026-11-11":["en-will-type","en-will-speed","en-will-dinle","lesson:L-en-grammar","en-verbs","lesson:L-en-past","en-past","en-cond","break","en-dinle","lesson:L-din-duzen","din-duzen"],"2026-11-12":["lesson:L-en-school","en-school","en-time","en-school-match","en-will-speed","break","lesson:L-din-esma","din-esma-match","din-esmaq","lesson:L-din-ihlas","din-ihlas","din-ihlas-order","din-tf"],"2026-11-13":["en-time","din-esma-speed"]};const moved={};
+  Object.keys(S.done).forEach(id=>{const m=id.match(/^(\d{4}-\d\d-\d\d)#(\d+)$/);
+    if(!m){moved[id]=S.done[id];return}
+    const list=OLD_LAYOUT[m[1]];if(!list||list[+m[2]]==null)return;
+    const k=list[+m[2]],n=list.slice(0,+m[2]+1).filter(x=>x===k).length;moved[m[1]+"#"+k+(n>1?"#"+n:"")]=true});
+  S.done=moved;S.v=2;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}S.stats=Object.assign({perfect:0,maxStreak:0,streak:0},S.stats||{});
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
 
 // ---------- helpers ----------
