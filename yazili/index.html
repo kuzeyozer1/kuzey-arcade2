@@ -279,6 +279,35 @@ header{padding-block:16px 6px;display:flex;align-items:center;gap:12px;flex-wrap
 @keyframes pop{0%{transform:scale(0) rotate(-30deg)}70%{transform:scale(1.2)}100%{transform:scale(1)}}
 @media (max-width:520px){.platebox{grid-template-columns:1fr;justify-items:center}.petcard .pet{font-size:60px}.tabs button{font-size:13px}}
 @media (prefers-reduced-motion:reduce){.petcard .pet,.chest .ce,.pop{animation:none}}
+.examhead{text-align:center}.examhead .big{font-size:56px}.examhead h2{font-size:26px;color:var(--c);margin:6px 0}
+.rules{text-align:left;max-width:560px;margin:12px auto;display:flex;flex-direction:column;gap:6px}
+.examtimer{position:sticky;top:64px;z-index:1;margin:0 auto 12px;width:max-content;background:var(--panel-hi);border:1px solid var(--line);border-radius:99px;padding:6px 16px;font-family:var(--display);font-weight:600;font-variant-numeric:tabular-nums}
+.examtimer.late{background:#4d1f33;border-color:var(--bad)}
+.paper{list-style:none;padding:0;margin:0 0 16px;display:flex;flex-direction:column;gap:16px}
+.pq{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.pqh{display:flex;align-items:center;gap:10px}.qn{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--c);color:#141033;font-weight:800;font-family:var(--display)}
+.kz{font-size:13px;color:var(--mute);font-weight:700}
+.pq .passage{margin:0}
+.pp{display:flex;flex-direction:column;gap:6px}.pp label{display:flex;flex-direction:column;gap:2px;font-weight:700}.pp label em{font-style:normal;font-weight:600;font-size:13px;color:var(--c)}
+.pp textarea{width:100%;min-height:84px;background:#fff8e8;color:#2a2340;border:2px solid var(--line);border-radius:12px;padding:10px 12px;font:inherit;font-size:17px;resize:vertical}
+.pp textarea:focus{outline:none;border-color:var(--c)}
+.graded{border-top:1px dashed var(--line);padding-top:10px}.pq2{font-weight:700}
+.yours{background:var(--panel-hi);border-radius:10px;padding:8px 12px}.model{background:#1c4a3d;border-radius:10px;padding:8px 12px}
+.rubric{display:flex;flex-direction:column;gap:4px}.rubric label{display:grid;grid-template-columns:24px 1fr auto;gap:8px;align-items:center;background:var(--night);border:1px solid var(--line);border-radius:10px;padding:8px 10px;cursor:pointer}
+.rubric input{width:20px;height:20px;accent-color:var(--good)}.rubric b{color:var(--gold)}
+.scorebar{position:sticky;bottom:0;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:var(--panel-hi);border:2px solid var(--gold);border-radius:16px;padding:12px 16px;margin-top:8px}
+.scorebar b{font-family:var(--display);font-size:28px;color:var(--gold)}
+.chart{margin:0;background:#fff8e8;border-radius:14px;padding:10px 12px;color:#2a2340}.chart figcaption{font-weight:800;margin-bottom:4px}
+.chart svg{width:100%;max-width:460px;height:auto;display:block}.chart .cl{font:600 14px var(--body);fill:#2a2340}.chart .cv{font:800 14px var(--body);fill:#2a2340}.chart .cb{fill:#6b4fe0}
+.poster{background:#fff8e8;color:#2a2340;border-radius:14px;padding:14px;text-align:center;display:flex;flex-direction:column;gap:6px}.poster .pv{font-size:44px}.poster .pv.small{font-size:30px}
+.chain{background:var(--panel-hi);border-radius:12px;padding:10px 14px;text-align:center;font-size:18px;font-weight:700;line-height:1.6}
+.tbl.tt td,.tbl.tt th{text-align:center}
+.listenbox{text-align:center;background:var(--panel);border:2px dashed var(--c);border-radius:18px;padding:10px;margin-bottom:12px}
+details.notes summary{cursor:pointer}
+.speakctl{background:var(--night);border:2px solid var(--c);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.task-p{font-size:18px}.recdot{color:var(--bad);font-weight:800;text-align:center}.speakctl audio{width:100%}
+.transcript{background:var(--panel-hi);border-radius:10px;padding:8px 12px;font-style:italic}
+.ck{display:flex;gap:8px;align-items:center;padding:3px 0;cursor:pointer}.ck input{width:18px;height:18px;accent-color:var(--good)}
 @media (prefers-reduced-motion:reduce){.shake{animation:none}.flip{transition:none}}
 @media (max-width:520px){
   .task{flex-wrap:wrap}
@@ -380,7 +409,16 @@ qs:[
  {q:"Hangisinde “ki” yanlış yazılmıştır?",o:["Öyle çok çalıştıki sınavı kazandı.","Duydum ki yarın tatilmiş.","Masadaki kitabı uzatır mısın?","Öyle güzel konuştu ki herkes alkışladı."],e:"Bağlaç olan “ki” ayrı yazılır: “çalıştı ki”."},
  {q:"Hangisinde büyük harf yanlış kullanılmıştır?",o:["Bugün Okula erken gittik.","Annem Ankara’da doğdu.","Kedimin adı Pamuk.","Van Gölü çok büyüktür."],e:"“okul” özel isim değildir, küçük harfle yazılır."},
  {q:"“Pazardan şunları aldık __ domates, biber, patlıcan.” Boşluğa hangi işaret gelir?",o:["İki nokta (:)","Nokta (.)","Soru işareti (?)","Ünlem (!)"],e:"Örnek/açıklama sıralanacaksa iki nokta konur."}
-]},
+,
+  {set:"ex-fen-cam",min:40,desc:"📝 Open-ended practice exam for tomorrow"},
+  {lesson:"L-en-meb",min:8,desc:"Clubs, countries, national days, rules, a/an/the"},
+  {set:"en-meb",min:6,desc:"Quiz on the MEB school-life topics"},
+  {set:"ex-en-meb",min:40,desc:"📝 Open-ended practice exam (MEB Themes 1–2)"},
+  {set:"ex-en-dinle",min:15,desc:"🎧 Practice for the English listening exam"},
+  {set:"en-speak",min:15,desc:"🎤 Speak out loud, record yourself, compare with the sample"},
+  {set:"ex-en-cam",min:40,desc:"📝 Open-ended practice exam for Cambridge English"},
+  {set:"ex-din-1",min:40,desc:"📝 Din Kültürü practice exam (Senaryo 4)"},
+  {set:"ex-din-2",min:40,desc:"📝 A second Din Kültürü practice exam"}]},
 "tr-yazim-cards":{s:"tr",kind:"cards",title:"Doğru yazım kartları",cards:[
  {f:"herkez / herkes ?",b:"<b>herkes</b>"},{f:"yanlız / yalnız ?",b:"<b>yalnız</b>"},{f:"yalnış / yanlış ?",b:"<b>yanlış</b>"},
  {f:"hiç bir / hiçbir ?",b:"<b>hiçbir</b> (bitişik)"},{f:"her şey / herşey ?",b:"<b>her şey</b> (ayrı)"},{f:"bir kaç / birkaç ?",b:"<b>birkaç</b> (bitişik)"},
@@ -1084,6 +1122,271 @@ const LESSONS={
 ]}
 };
 
+// ---------- deneme sınavları: open-ended papers in the MEB ortak sınav format, scored with a rubric ----------
+// Question counts follow the ÖDSGM 2026-2027 senaryo tables (Türkçe Senaryo 3: 7 questions, Din Senaryo 4: 6 questions).
+// The texts and questions are written for this app in that style; they are not copied from MEB or MEBİ.
+const P_UCURTMA="Uçurtma yapmak için iki ince çıta, renkli kâğıt, ip ve yapıştırıcı gerekir. Önce çıtaları artı işareti şeklinde çaprazlayıp ortasından iple sıkıca bağlarız. Sonra çıtaların uçlarından ip geçirerek uçurtmanın çerçevesini oluştururuz. Kâğıdı çerçeveden biraz büyük keser, kenarlarını çerçevenin üzerine katlayıp yapıştırırız. En son uçurtmaya kâğıttan bir kuyruk ekleriz. Kuyruk, uçurtmanın havada dengede durmasını sağlar. Uçurtmayı rüzgârlı ama yağmursuz bir günde, elektrik tellerinden uzak, açık bir alanda uçurmalıyız.";
+const P_ECE="Ece, sınıfın kitap okuma yarışmasında birinci olmak istiyordu. Yarışmanın son haftası arkadaşı Mert’in kolu kırıldı ve kütüphaneden aldığı kitapları taşıyamaz oldu. Ece her gün teneffüslerde Mert’in kitaplarını kütüphaneye götürüp getirdi. Bu yüzden kendi okuma saatleri azaldı ve yarışmada ikinci oldu. Ödül töreninde öğretmeni, Ece’ye bir “Yardımseverlik Belgesi” verdi ve “Gerçek birincilik, zor anda arkadaşının yanında olmaktır.” dedi. Ece o gün, madalyadan daha değerli bir şey kazandığını anladı.";
+const P_CAY="Türkiye’de çay en çok Rize’de yetişir. Çay bitkisi bol yağmur ve ılıman iklim ister. Bu yüzden Doğu Karadeniz’in yağışlı yamaçları çay tarımı için çok uygundur. Çay yaprakları mayıs ayından ekim ayına kadar toplanır. Toplanan yapraklar fabrikalarda kurutulur ve paketlenir. Çay, Türk kültüründe misafirperverliğin simgesidir; evlere gelen misafirlere çoğu zaman ilk önce çay ikram edilir.";
+const P_KUTUPHANE="Okul kütüphanemiz hafta içi her gün 08.30 ile 16.00 arasında açıktır. Her öğrenci aynı anda en fazla iki kitap ödünç alabilir. Kitaplar iki hafta içinde geri getirilmelidir. Kitabını geç getiren öğrenci, bir hafta boyunca yeni kitap alamaz. Kütüphanede yüksek sesle konuşmak ve yiyecek yemek yasaktır. Kitabını kaybeden öğrenci, aynı kitabın yenisini getirmelidir.";
+const P_FIDAN="Okulumuzun bahçesinde kurumak üzere olan küçük bir fidan vardı. Kimse onunla ilgilenmiyordu. Selin, her sabah evden getirdiği bir şişe suyla fidanı sulamaya başladı. Bir süre sonra arkadaşları da ona katıldı; kimi fidanın dibindeki toprağı kazıdı, kimi etrafına küçük taşlar dizdi. Bahar geldiğinde fidan yemyeşil yapraklar açtı. Okul müdürümüz bunu görünce öğrencilere teşekkür etti ve “Birlikte çalışınca küçük emekler büyük sonuçlar doğurur.” dedi.";
+const P_LEYLEK="Leylekler her yıl sonbaharda Avrupa’dan Afrika’ya göç eder. Bu uzun yolculuk sırasında Türkiye’nin üzerinden geçerler. Leylekler yorulmamak için sıcak hava akımlarından yararlanır ve kanat çırpmadan süzülürler. İlkbaharda yeniden eski yuvalarına dönerler. Leyleklerin her yıl aynı yuvayı bulması, bilim insanlarını hâlâ şaşırtmaktadır.";
+
+const DENEME={
+"ex-tr-1":{s:"tr",kind:"exam",title:"Türkçe Deneme 1 (Senaryo 3)",sub:"7 açık uçlu soru · 100 puan · 40 dakika",mins:40,qs:[
+ {k:"T.O.5.5",text:`<div class="passage">Dedemin bahçesi bu yıl çok <u>bereketli</u> oldu. Ağaçlar meyveden yere doğru eğilmiş, sepetlerimiz domates ve biberle dolup taşmıştı. Komşulara bile dağıttık, yine de bitmedi.</div>`,
+  parts:[{q:"Metinde altı çizili “bereketli” kelimesinin anlamını tahmin ediniz ve tahmininize yardımcı olan ipucunu metinden yazınız.",pts:12,rub:[["Anlamı doğru tahmin etti (bol ürün veren, verimli)",6],["Metinden uygun bir ipucu yazdı",6]],model:"Bereketli: bol ürün veren, verimli. İpucu: “Ağaçlar meyveden yere doğru eğilmiş, sepetlerimiz dolup taşmıştı.” ya da “Komşulara dağıttık, yine de bitmedi.”"}]},
+ {k:"T.O.5.6",text:`<div class="passage">${P_UCURTMA}</div>`,parts:[
+  {q:"2.1 Metne göre uçurtma yapmak için gereken dört malzemeyi yazınız.",pts:8,rub:[["çıta",2],["renkli kâğıt",2],["ip",2],["yapıştırıcı",2]],model:"İki ince çıta, renkli kâğıt, ip ve yapıştırıcı."},
+  {q:"2.2 Metne göre uçurtmaya neden kuyruk eklenir?",pts:4,rub:[["Uçurtmanın havada dengede durmasını sağlar",4]],model:"Kuyruk, uçurtmanın havada dengede durmasını sağlar."},
+  {q:"2.3 Metne göre uçurtma nasıl bir yerde ve günde uçurulmalıdır? İki bilgi yazınız.",pts:4,rub:[["Bir doğru bilgi (rüzgârlı/yağmursuz gün)",2],["İkinci doğru bilgi (elektrik tellerinden uzak, açık alan)",2]],model:"Rüzgârlı ama yağmursuz bir günde; elektrik tellerinden uzak, açık bir alanda."}]},
+ {k:"T.O.5.6",text:`<div class="passage">${P_ECE}</div>`,parts:[
+  {q:"3.1 Metinde açıkça ifade edilen ana fikri yazınız.",pts:8,rub:[["Ana fikri metindeki cümleyle ya da aynı anlamla yazdı",8]],model:"“Gerçek birincilik, zor anda arkadaşının yanında olmaktır.”"},
+  {q:"3.2 Ece yarışmada neden ikinci oldu? Metne göre açıklayınız.",pts:8,rub:[["Mert’in kitaplarını taşıyarak ona yardım ettiğini yazdı",4],["Bu yüzden kendi okuma saatlerinin azaldığını yazdı",4]],model:"Kolu kırılan Mert’in kitaplarını her gün kütüphaneye götürüp getirdi; bu yüzden kendi okuma saatleri azaldı."}]},
+ {k:"T.O.5.7",text:`<p>Aşağıdaki grafik, 5-B sınıfındaki 30 öğrencinin okula nasıl geldiğini göstermektedir.</p>`,chart:{title:"5-B sınıfı: okula geliş şekli (öğrenci sayısı)",data:[["Yürüyerek",12],["Servisle",9],["Otomobille",6],["Bisikletle",3]]},parts:[
+  {q:"4.1 Grafiğe göre öğrencilerin en çok ve en az kullandığı geliş şekillerini yazınız.",pts:8,rub:[["En çok: yürüyerek",4],["En az: bisikletle",4]],model:"En çok: yürüyerek (12 öğrenci). En az: bisikletle (3 öğrenci)."},
+  {q:"4.2 Bir öğrenci “Sınıfımızın yarıdan fazlası okula yürüyerek geliyor.” diyor. Bu sözün doğru olup olmadığını grafikten kanıt göstererek açıklayınız.",pts:8,rub:[["Sözün yanlış olduğunu belirtti",2],["Kanıt: 12 öğrenci yürüyor, 30’un yarısı 15; 12, 15’ten az",6]],model:"Yanlıştır. Yürüyerek gelen 12 öğrenci var. 30’un yarısı 15’tir. 12, 15’ten az olduğu için yarıdan fazlası değildir."}]},
+ {k:"T.O.5.15",text:`<div class="passage">${P_CAY}</div>`,parts:[
+  {q:"5.1 Metnin anahtar kelimelerinden üçünü yazınız.",pts:6,rub:[["Üç uygun anahtar kelime (çay, Rize/Karadeniz, tarım, yaprak, misafirperverlik…) – her biri 2 puan",6]],model:"çay, Rize (Doğu Karadeniz), çay tarımı / misafirperverlik"},
+  {q:"5.2 Seçtiğiniz anahtar kelimelerden birinin neden anahtar kelime olduğunu açıklayınız.",pts:6,rub:[["Kelimenin metnin konusunu anlattığını / sık tekrarlandığını açıkladı",6]],model:"“Çay” anahtar kelimedir, çünkü metnin konusu çaydır ve kelime metinde birçok kez tekrarlanır. Bu kelimeyi duyan, metnin neyi anlattığını tahmin edebilir."}]},
+ {k:"T.Y.5.13",text:`<div class="passage">Parka gittik. Hava güzeldi. Salıncağa bindik. Eve döndük.</div>`,parts:[
+  {q:"Yukarıdaki paragrafı; havayı ve parkı betimleyen kelimeler ve duygularınızı anlatan ifadeler ekleyerek daha ayrıntılı ve etkili olacak şekilde yeniden yazınız.",pts:16,rub:[["Betimleyici kelimeler (sıfatlar) ekledi",6],["Duygularını anlatan ifadeler ekledi",6],["Olayların sırasını ve anlamını korudu",4]],model:"Pazar sabahı ailemle mahallemizdeki yemyeşil parka gittik. Gökyüzü masmavi, güneş pırıl pırıldı; serin bir rüzgâr yüzümüzü okşuyordu. Rengârenk salıncaklara bindiğimizde sanki kuşlar gibi uçuyordum, çok mutluydum. Akşamüstü yorgun ama neşeyle eve döndük."}]},
+ {k:"T.Y.5.16",text:`<div class="passage">Değerli velilerimiz 5 sınıflar için düzenlenen bilim şenliği 14 11 2026 tarihinde saat 13 30 da okul bahçesinde yapılacaktır Şenliğe Prof Dr Ayşe Kaya da katılacaktır</div>`,parts:[
+  {q:"Yukarıdaki duyuruyu yazım ve noktalama kurallarına uygun olarak yeniden yazınız.",pts:12,rub:[["Hitaptan sonra virgül (velilerimiz,)",2],["Sıra sayısından sonra nokta (5.)",2],["Tarihte noktalar (14.11.2026)",2],["Saatte nokta ve kesme (13.30’da)",2],["Kısaltmalarda nokta (Prof. Dr.)",2],["Cümle sonlarında nokta",2]],model:"Değerli velilerimiz, 5. sınıflar için düzenlenen bilim şenliği 14.11.2026 tarihinde saat 13.30’da okul bahçesinde yapılacaktır. Şenliğe Prof. Dr. Ayşe Kaya da katılacaktır."}]}
+]},
+"ex-tr-2":{s:"tr",kind:"exam",title:"Türkçe Deneme 2 (Senaryo 3)",sub:"7 açık uçlu soru · 100 puan · 40 dakika",mins:40,qs:[
+ {k:"T.O.5.5",text:`<div class="passage">Zil çalınca Ali çantasını <u>telaşla</u> topladı. Kalemleri yere düştü, defterini sırada unuttu ve koşarak sınıftan çıktı.</div>`,
+  parts:[{q:"Metinde altı çizili “telaşla” kelimesinin anlamını tahmin ediniz ve tahmininize yardımcı olan ipucunu metinden yazınız.",pts:12,rub:[["Anlamı doğru tahmin etti (aceleyle, heyecanla, panikle)",6],["Metinden uygun ipucu yazdı",6]],model:"Telaşla: aceleyle, heyecan ve panik içinde. İpucu: “Kalemleri yere düştü, defterini sırada unuttu ve koşarak sınıftan çıktı.”"}]},
+ {k:"T.O.5.6",text:`<div class="passage">${P_KUTUPHANE}</div>`,parts:[
+  {q:"2.1 Metne göre bir öğrenci aynı anda kaç kitap alabilir ve kitabı en fazla ne kadar süre tutabilir?",pts:8,rub:[["En fazla iki kitap",4],["İki hafta",4]],model:"Aynı anda en fazla iki kitap alabilir ve iki hafta içinde geri getirmelidir."},
+  {q:"2.2 Metne göre kütüphanede yasak olan iki davranışı yazınız.",pts:8,rub:[["Yüksek sesle konuşmak",4],["Yiyecek yemek",4]],model:"Yüksek sesle konuşmak ve yiyecek yemek."}]},
+ {k:"T.O.5.6",text:`<div class="passage">${P_FIDAN}</div>`,parts:[
+  {q:"3.1 Metinde açıkça ifade edilen ana fikri yazınız.",pts:8,rub:[["Ana fikri yazdı",8]],model:"“Birlikte çalışınca küçük emekler büyük sonuçlar doğurur.”"},
+  {q:"3.2 Selin’in arkadaşları fidan için neler yaptı? İki örnek yazınız.",pts:8,rub:[["Toprağı kazıdılar",4],["Etrafına taş dizdiler",4]],model:"Kimi fidanın dibindeki toprağı kazıdı, kimi etrafına küçük taşlar dizdi."}]},
+ {k:"T.O.5.7",text:`<p>Okulun koridorunda şu afiş asılı:</p><div class="poster"><div class="pv">🚰 💧💧</div><b>“Bir damla suyun bile değeri var!”</b><div class="pv small">🔒🚰 → 🌍😊</div><small>Köşede: kapalı bir musluk ve gülümseyen bir Dünya resmi</small></div>`,parts:[
+  {q:"4.1 Afişin vermek istediği mesajı bir cümleyle yazınız.",pts:8,rub:[["Suyu tasarruflu kullanmamız gerektiği mesajını yazdı",8]],model:"Suyu boşa harcamamalı, tasarruflu kullanmalıyız."},
+  {q:"4.2 Afişteki iki görsel ögeyi ve bunların ne anlattığını yazınız.",pts:8,rub:[["Damlayan musluk: su israfı",4],["Kapalı musluk / gülen Dünya: tasarruf edersek doğa mutlu olur",4]],model:"Damlayan musluk su israfını anlatır. Kapalı musluk ve gülümseyen Dünya ise suyu tasarruf edersek doğanın korunacağını anlatır."}]},
+ {k:"T.O.5.15",text:`<div class="passage">${P_LEYLEK}</div>`,parts:[
+  {q:"5.1 Metnin anahtar kelimelerinden üçünü yazınız.",pts:6,rub:[["Üç uygun anahtar kelime (leylek, göç, yolculuk, yuva…) – her biri 2 puan",6]],model:"leylek, göç, yuva"},
+  {q:"5.2 Bu anahtar kelimelere bakarak metnin konusunu yazınız.",pts:6,rub:[["Konuyu doğru yazdı (leyleklerin göçü)",6]],model:"Leyleklerin göçü."}]},
+ {k:"T.Y.5.13",text:`<div class="passage">Denize gittik. Su soğuktu. Kumdan kale yaptık. Akşam olunca döndük.</div>`,parts:[
+  {q:"Yukarıdaki paragrafı; betimleyici kelimeler, duygularınızı anlatan ifadeler ve en az bir deyim ya da atasözü kullanarak daha etkili hâle getiriniz.",pts:16,rub:[["Betimleyici kelimeler ekledi",4],["Duygularını anlatan ifadeler ekledi",4],["Bir deyim veya atasözünü doğru kullandı",4],["Olayların sırasını ve anlamını korudu",4]],model:"Yazın son günü ailemle masmavi denize gittik. Su buz gibiydi, ilk girdiğimde tüylerim diken diken oldu. Kardeşimle ıslak kumdan kocaman bir kale yaptık; kale bitince ağzımız kulaklarımıza vardı. Güneş turuncu bir top gibi batarken mutlu ama yorgun eve döndük."}]},
+ {k:"T.Y.5.16",text:`<div class="passage">Merhaba Ayşe 3 sınıftaki kardeşin bugün okula gelecek mi Veli toplantısı 20 11 2026 Cuma günü saat 15 00 te yapılacak Lütfen yanına şunları getir kalem defter ve silgi</div>`,parts:[
+  {q:"Yukarıdaki notu yazım ve noktalama kurallarına uygun olarak yeniden yazınız.",pts:12,rub:[["Hitaptan sonra virgül (Ayşe,)",2],["Sıra sayısında nokta (3.)",2],["Soru cümlesinin sonunda soru işareti",2],["Tarih ve saatte nokta, saatte kesme (20.11.2026, 15.00’te)",2],["Açıklamadan önce iki nokta (şunları getir:)",2],["Sıralanan kelimeler arasında virgül",2]],model:"Merhaba Ayşe, 3. sınıftaki kardeşin bugün okula gelecek mi? Veli toplantısı 20.11.2026 Cuma günü saat 15.00’te yapılacak. Lütfen yanına şunları getir: kalem, defter ve silgi."}]}
+]},
+"ex-tr-dinle":{s:"tr",kind:"exam",title:"Türkçe Dinleme Sınavı",sub:"Metni dinle, 6 açık uçlu soruyu cevapla",mins:20,lang:"tr-TR",
+ listen:"Geçen cumartesi sabahı mahallemizin köpeği Duman kayboldu. Duman, kulakları siyah, kendisi beyaz, çok uysal bir köpekti. Bütün çocuklar onu çok severdi. Kaybolduğunu ilk fark eden, her sabah ona su veren bakkal Hasan Amca oldu. Biz de arkadaşlarımla hemen bir arama ekibi kurduk. Elif, Duman’ın fotoğrafıyla küçük ilanlar hazırladı. Kerem ile ben ilanları parktaki ağaçlara ve duraklara astık. Öğleden sonra yağmur başladı ama aramaya devam ettik. Akşama doğru okulun bekçisi Ali Bey bizi aradı. Duman, yağmurdan korunmak için okulun spor salonunun kapısının önüne sığınmıştı. Onu görünce hepimiz sevinçten zıpladık. O gün, birlikte çalışınca en zor işlerin bile kolaylaştığını öğrendim.",
+ qs:[
+ {k:"Dinleme",parts:[
+  {q:"1. Kaybolan köpeğin adı nedir ve nasıl bir köpektir? (görünüşü ve huyu)",pts:16,rub:[["Adı: Duman",4],["Kulakları siyah, kendisi beyaz",8],["Uysal bir köpek",4]],model:"Adı Duman’dır. Kulakları siyah, kendisi beyaz, çok uysal bir köpektir."},
+  {q:"2. Duman’ın kaybolduğunu ilk kim fark etti? Neden?",pts:16,rub:[["Bakkal Hasan Amca",8],["Her sabah ona su veriyordu",8]],model:"Bakkal Hasan Amca, çünkü her sabah Duman’a su veriyordu."},
+  {q:"3. Çocuklar Duman’ı bulmak için neler yaptı? İki örnek yazınız.",pts:16,rub:[["Elif ilan hazırladı",8],["İlanları parka ve duraklara astılar / aramaya devam ettiler",8]],model:"Bir arama ekibi kurdular. Elif fotoğraflı ilanlar hazırladı; Kerem ve anlatıcı ilanları parktaki ağaçlara ve duraklara astı."},
+  {q:"4. Duman nerede bulundu ve oraya neden gitmişti?",pts:20,rub:[["Okulun spor salonunun kapısının önünde",10],["Yağmurdan korunmak için",10]],model:"Okulun spor salonunun kapısının önünde bulundu. Yağmurdan korunmak için oraya sığınmıştı."},
+  {q:"5. Duman’ı bulduklarını çocuklara kim haber verdi?",pts:12,rub:[["Okulun bekçisi Ali Bey",12]],model:"Okulun bekçisi Ali Bey."},
+  {q:"6. Bu metnin ana fikri nedir? Metne uygun bir başlık da yazınız.",pts:20,rub:[["Ana fikir: birlikte çalışınca zor işler kolaylaşır",12],["Metne uygun bir başlık",8]],model:"Ana fikir: Birlikte çalışınca en zor işler bile kolaylaşır. Başlık: “Duman’ı Arıyoruz” / “Kayıp Köpek”"}]}
+]},
+"ex-din-1":{s:"din",kind:"exam",title:"Din Kültürü Deneme 1 (Senaryo 4)",sub:"6 açık uçlu soru · 100 puan · 40 dakika",mins:40,qs:[
+ {k:"DKAB.5.1.1",text:`<p>Okul bahçesindeki küçük gölette güneş ışığıyla büyüyen su bitkileri, bu bitkilerle beslenen küçük balıklar, sinekleri yakalayan kurbağalar ve balıkları avlayan bir balıkçıl kuşu yaşıyor.</p><div class="chain">☀️ → 🌿 su bitkisi → 🐟 küçük balık → 🐦 balıkçıl</div>`,parts:[
+  {q:"1.1 Göletteki canlılar arasındaki iki ilişkiyi yazınız.",pts:6,rub:[["Birinci ilişki (ör. balıklar su bitkileriyle beslenir)",3],["İkinci ilişki (ör. balıkçıl balıkları avlar / bitkiler güneşle büyür)",3]],model:"Su bitkileri güneş ışığıyla büyür. Küçük balıklar bu bitkilerle beslenir. Balıkçıl kuşu da balıkları avlar."},
+  {q:"1.2 Gölete zehirli atık dökülürse bu düzen nasıl etkilenir?",pts:5,rub:[["Bitkiler/balıklar zarar görür",3],["Zincirdeki diğer canlılar da etkilenir, denge bozulur",2]],model:"Su bitkileri ve balıklar ölür. Balıklarla beslenen balıkçıl da yiyecek bulamaz. Bir halka bozulunca bütün düzen bozulur."},
+  {q:"1.3 Bu örnekten evrendeki düzenle ilgili hangi sonuca ulaşırsınız?",pts:4,rub:[["Canlılar birbirine bağlıdır, her birinin görevi vardır, düzen tesadüf değildir",4]],model:"Canlılar birbirine bağlıdır ve her birinin bir görevi vardır. Bu ölçülü düzen tesadüfen oluşamaz."}]},
+ {k:"DKAB.5.1.2",text:`<p>Dünya kendi etrafında yaklaşık 24 saatte, Güneş’in etrafında yaklaşık 365 günde döner. Kur’an-ı Kerim’de şöyle buyrulur:</p><blockquote>“Güneş ve ay bir hesaba göre hareket etmektedir.” <span class="ex">(Rahmân suresi, 5. ayet)</span></blockquote>`,parts:[
+  {q:"2.1 Dünya’nın iki hareketini ve bu hareketlerin sonuçlarını yazınız.",pts:8,rub:[["Kendi etrafında dönme → gece ve gündüz",4],["Güneş etrafında dolanma → mevsimler / yıl",4]],model:"Dünya kendi etrafında döner; bu yüzden gece ve gündüz oluşur. Güneş’in etrafında döner; bu yüzden yıl ve mevsimler oluşur."},
+  {q:"2.2 Ayeti, evrendeki düzen ve Allah’ın varlığı ile ilişkilendirerek açıklayınız.",pts:8,rub:[["Hareketlerin bir hesaba / ölçüye göre olduğunu belirtti",4],["Bu hesaplı düzenin tesadüf olamayacağını, Allah’ın varlığını gösterdiğini yazdı",4]],model:"Güneş ve Ay belli bir hesaba göre hareket eder; bu yüzden takvimler, saatler yapılabilir. Bu kadar hesaplı bir düzen kendiliğinden olamaz; onu yaratan ve yöneten Allah’ın varlığını gösterir."}]},
+ {k:"DKAB.5.1.2",text:`<blockquote>“Eğer yerde ve gökte Allah’tan başka ilahlar olsaydı, ikisinin de düzeni bozulurdu.” <span class="ex">(Enbiyâ suresi, 22. ayet)</span></blockquote><p>Bir sınıfta aynı anda iki öğretmen ders anlatsa ve birbirine zıt kurallar koysa sınıfta düzen kalmaz.</p>`,parts:[
+  {q:"3.1 Ayette anlatılmak istenen düşünceyi kendi cümlelerinizle açıklayınız.",pts:6,rub:[["Birden fazla ilah olsaydı düzenin bozulacağını yazdı",6]],model:"Evrende Allah’tan başka ilahlar olsaydı her biri farklı şey isterdi ve düzen bozulurdu."},
+  {q:"3.2 Sınıf örneği ile ayet arasında nasıl bir benzerlik vardır?",pts:6,rub:[["İki yönetici olunca düzenin bozulacağı benzerliğini kurdu",6]],model:"Sınıfta iki öğretmen zıt kurallar koyunca düzen bozulur. Evrende de birden fazla yaratıcı olsaydı düzen bozulurdu. Düzenin bozulmaması yaratıcının bir olduğunu gösterir."},
+  {q:"3.3 Tevhid ne demektir? Evrendeki düzenle bağlantısını yazınız.",pts:6,rub:[["Tevhid: Allah’ın bir olduğuna inanmak",3],["Düzenin bozulmadan sürmesi Allah’ın birliğini gösterir",3]],model:"Tevhid, Allah’ın bir ve tek olduğuna inanmaktır. Evrendeki düzenin hiç bozulmadan sürmesi, onu yaratanın bir olduğunu gösterir."}]},
+ {k:"DKAB.5.1.3",text:`<p>Panodaki isimler: <b>Er-Rahmân · Er-Rahîm · El-Alîm · Es-Semî · El-Basîr · El-Kadîr</b></p>`,parts:[
+  {q:"4.1 Aşağıdaki her durumun hangi isimle ilgili olduğunu yazınız.<br>a) Güneş ışığını ve yağmuru bütün canlılara gönderir.<br>b) Gökyüzündeki milyarlarca yıldızı yaratmaya gücü yeter.<br>c) Ayşe’nin içinden sessizce ettiği duayı duyar.<br>ç) Toprağa düşen her tohumu ve kalplerden geçeni bilir.<br>d) Karanlık gecede siyah taşın üzerindeki karıncayı görür.<br>e) Pişman olup tövbe eden kuluna merhamet eder, onu bağışlar.",pts:12,rub:[["a) Er-Rahmân",2],["b) El-Kadîr",2],["c) Es-Semî",2],["ç) El-Alîm",2],["d) El-Basîr",2],["e) Er-Rahîm",2]],model:"a) Er-Rahmân b) El-Kadîr c) Es-Semî ç) El-Alîm d) El-Basîr e) Er-Rahîm"},
+  {q:"4.2 İnsanın görmesi ve işitmesi ile Allah’ın Basîr ve Semî olması arasındaki farkı açıklayınız.",pts:4,rub:[["İnsan göz ve kulağa muhtaçtır, sınırlı görür ve işitir",2],["Allah hiçbir şeye muhtaç değildir, her şeyi görür ve işitir",2]],model:"İnsan görmek için göze, duymak için kulağa ihtiyaç duyar ve her şeyi göremez, duyamaz. Allah hiçbir şeye muhtaç değildir; gizli açık her şeyi görür ve işitir."}]},
+ {k:"DKAB.5.1.3",text:`<p>Öğretmen dua kartlarını şu örnekle başlattı: <i>“Ya Basîr! Yaptıklarımızı görürsün, bizi güzel davranışlara yönelt.”</i></p>`,parts:[
+  {q:"5. Aşağıdaki her kart için Allah’ın güzel isimlerinden birini kullanarak kısa bir dua yazınız.<br>Kart 1: Ali yarınki sınavı için çok heyecanlı.<br>Kart 2: Zeynep, küstüğü arkadaşıyla barışmak istiyor.<br>Kart 3: Can, arkadaşının kalbini kırdığı için pişman.",pts:15,rub:[["Kart 1: uygun isim ve anlamına uygun dua (ör. Ya Alîm / Ya Kadîr)",5],["Kart 2: uygun isim ve dua (ör. Ya Semî / Ya Rahmân)",5],["Kart 3: uygun isim ve dua (ör. Ya Rahîm / Ya Gafûr)",5]],model:"Kart 1: “Ya Alîm! Her şeyi bilirsin; öğrendiklerimi hatırlamamı kolaylaştır.” Kart 2: “Ya Semî! Duamı işitirsin; arkadaşımla barışmamı nasip et.” Kart 3: “Ya Rahîm! Merhametin sonsuzdur; hatamı bağışla, arkadaşımın gönlünü almayı bana kolaylaştır.”"}]},
+ {k:"DKAB.5.1.4",text:`<p>Zehra, İhlas suresini sınıfta okudu. Emir de sureyle ilgili sorular sordu.</p>`,parts:[
+  {q:"6.1 İhlas suresinin okunuşunu yazınız.",pts:8,rub:[["Dört ayeti doğru sırayla yazdı (her biri 2 puan)",8]],model:"Kul hüvallâhü ehad. Allâhüs-samed. Lem yelid ve lem yûled. Ve lem yekün lehû küfüven ehad."},
+  {q:"6.2 “Allâhüs-samed” ayetinin anlamını yazınız.",pts:4,rub:[["Allah hiçbir şeye muhtaç değildir, her şey O’na muhtaçtır",4]],model:"Allah sameddir; her şey O’na muhtaçtır, O hiçbir şeye muhtaç değildir."},
+  {q:"6.3 “Lem yelid ve lem yûled” ayetinin anlamını yazınız.",pts:4,rub:[["O doğurmamış ve doğurulmamıştır",4]],model:"O, doğurmamış ve doğurulmamıştır."},
+  {q:"6.4 İhlas suresinin ana mesajı nedir?",pts:4,rub:[["Allah’ın bir olduğu (tevhid), hiçbir şeye muhtaç olmadığı ve benzerinin olmadığı",4]],model:"Allah birdir (tevhid); hiçbir şeye muhtaç değildir, doğmamış ve doğurmamıştır, hiçbir şey O’na denk değildir."}]}
+]},
+"ex-din-2":{s:"din",kind:"exam",title:"Din Kültürü Deneme 2 (Senaryo 4)",sub:"6 açık uçlu soru · 100 puan · 40 dakika",mins:40,qs:[
+ {k:"DKAB.5.1.1",text:`<p>Vücudumuzda kalp hiç durmadan çalışır, kanı bütün vücuda pompalar. Gözümüz toz kaçmasın diye kendiliğinden kırpılır. Yediğimiz besinler sindirilir ve vücudumuza enerji olur.</p>`,parts:[
+  {q:"1.1 Metinde vücudumuzdaki düzene verilen üç örneği yazınız.",pts:9,rub:[["Kalbin durmadan çalışması",3],["Gözün kendiliğinden kırpılması",3],["Besinlerin sindirilip enerjiye dönüşmesi",3]],model:"Kalbin durmadan kanı pompalaması, gözün kendiliğinden kırpılması, besinlerin sindirilip enerjiye dönüşmesi."},
+  {q:"1.2 Bu örneklerden hangi sonuca ulaşırsınız?",pts:6,rub:[["Vücudumuz kusursuz bir düzenle çalışır; bu düzen tesadüf olamaz, bir yaratıcıyı gösterir",6]],model:"Vücudumuz kusursuz bir düzenle çalışır. Bu düzen kendiliğinden oluşamaz; onu yaratan Allah’ı gösterir."}]},
+ {k:"DKAB.5.1.2",text:`<blockquote>“Rabbin bal arısına şöyle vahyetti: ‘Dağlardan, ağaçlardan ve insanların kurdukları çardaklardan kendine evler edin.’” <span class="ex">(Nahl suresi, 68. ayet)</span></blockquote><p>Arılar peteklerini hiç boşluk kalmayacak şekilde altıgen yapar, çiçekten çiçeğe polen taşır ve bal üretir. Arılara bunları kimse öğretmez.</p>`,parts:[
+  {q:"2.1 Arıların hayatındaki düzene iki örnek yazınız.",pts:8,rub:[["Birinci örnek (altıgen petek)",4],["İkinci örnek (polen taşıma / bal yapma)",4]],model:"Peteklerini boşluk kalmayacak şekilde altıgen yapmaları; çiçekten çiçeğe polen taşıyıp bal yapmaları."},
+  {q:"2.2 Ayeti ve arıların davranışlarını Allah’ın varlığı ile ilişkilendiriniz.",pts:8,rub:[["Arılara bu bilgiyi Allah’ın verdiğini (vahyettiğini) belirtti",4],["Bu düzenin Allah’ın varlığını gösterdiğini yazdı",4]],model:"Arılara kimse bir şey öğretmez; ayete göre onlara bunu Allah öğretmiştir. Arıların bu düzenli işleri, onları yaratan Allah’ın varlığını gösterir."}]},
+ {k:"DKAB.5.1.2",text:`<p>Ahmet, gezide çok güzel ve sağlam bir köprü gördü. Babası: “Bu köprüyü usta bir mühendis tasarlamış.” dedi.</p>`,parts:[
+  {q:"3.1 Babanın sözündeki akıl yürütmeyi açıklayınız.",pts:6,rub:[["Düzenli ve sağlam yapının onu yapan birini gösterdiğini yazdı",6]],model:"Düzenli ve sağlam bir köprü kendiliğinden oluşmaz; onu tasarlayan bir mühendis olmalıdır."},
+  {q:"3.2 Bu akıl yürütmeyi evrene uygulayınız.",pts:6,rub:[["Evrendeki düzenin de bir yaratıcıyı (Allah) gösterdiğini yazdı",6]],model:"Köprü mühendisini gösterdiği gibi, evrendeki muhteşem düzen de onu yaratan Allah’ın varlığını gösterir."},
+  {q:"3.3 Evrendeki düzenin hiç bozulmadan sürmesi neyi gösterir?",pts:6,rub:[["Allah’ın bir olduğunu (tevhid)",6]],model:"Evreni yaratanın bir olduğunu, yani Allah’ın birliğini (tevhid) gösterir."}]},
+ {k:"DKAB.5.1.3",text:``,parts:[
+  {q:"4.1 Aşağıdaki cümlelerdeki boşluklara uygun ismi yazınız.<br>a) Allah gizli açık her şeyi bilir; O, ______’dir.<br>b) Annemin hastanede ettiği duayı Allah işitir; O, ______’dir.<br>c) Bütün canlıları yaratan ve var eden Allah, ______’tır.<br>ç) Allah her şeye gücü yeter; O, ______’dir.<br>d) Okyanusun dibindeki balığı bile gören Allah, ______’dir.<br>e) Allah dünyada inanan inanmayan bütün canlılara merhamet eder; O, ______’dır.",pts:12,rub:[["a) Alîm",2],["b) Semî",2],["c) Hâlık",2],["ç) Kadîr",2],["d) Basîr",2],["e) Rahmân",2]],model:"a) Alîm b) Semî c) Hâlık ç) Kadîr d) Basîr e) Rahmân"},
+  {q:"4.2 Seçtiğiniz bir ismin anlamını günlük hayattan bir örnekle açıklayınız.",pts:4,rub:[["İsmi doğru anlamla açıkladı",2],["Uygun bir günlük hayat örneği verdi",2]],model:"Er-Rezzâk rızık veren demektir. Kuşların her gün yiyecek bulması Allah’ın Rezzâk olduğunu gösterir."}]},
+ {k:"DKAB.5.1.3",text:``,parts:[
+  {q:"5. Aşağıdaki durumlar için birer cümle yazınız. Cümlede Allah’ın uygun bir ismini, anlamına uygun şekilde kullanınız.<br>a) Kardeşin karanlıktan korkuyor.<br>b) Arkadaşın bir hata yaptı ve çok üzgün.<br>c) Bir çiftçi tarlasına yağmur yağması için dua ediyor.",pts:15,rub:[["a) uygun isim ve cümle (ör. El-Basîr / El-Hafîz)",5],["b) uygun isim ve cümle (ör. Er-Rahîm / El-Gafûr)",5],["c) uygun isim ve cümle (ör. Er-Rezzâk / Er-Rahmân)",5]],model:"a) “Korkma, Allah Basîr’dir; karanlıkta da bizi görür ve korur.” b) “Üzülme, Allah Gafûr’dur; pişman olanları bağışlar.” c) “Ya Rezzâk! Tarlalarımıza bereketli yağmurlar gönder.”"}]},
+ {k:"DKAB.5.1.4",text:``,parts:[
+  {q:"6.1 İhlas suresinin her ayetinin anlamını sırasıyla yazınız.",pts:12,rub:[["1. ayet: De ki: O Allah birdir",3],["2. ayet: Allah sameddir, her şey O’na muhtaçtır",3],["3. ayet: Doğurmamış ve doğurulmamıştır",3],["4. ayet: Hiçbir şey O’na denk değildir",3]],model:"1. De ki: O, Allah’tır, bir tektir. 2. Allah sameddir (her şey O’na muhtaçtır, O hiçbir şeye muhtaç değildir). 3. O, doğurmamış ve doğurulmamıştır. 4. Hiçbir şey O’na denk değildir."},
+  {q:"6.2 İhlas suresiyle ilgili iki bilgi yazınız (kaçıncı sure, ayet sayısı, nerede indiği, adının anlamı…).",pts:4,rub:[["İki doğru bilgi (112. sure, 4 ayet, Mekke, samimiyet)",4]],model:"Kur’an’ın 112. suresidir ve 4 ayettir. “İhlas” samimiyet, içtenlik demektir."},
+  {q:"6.3 İhlas suresi Allah’ın birliğini nasıl anlatır?",pts:4,rub:[["Allah’ın bir olduğunu, benzerinin olmadığını ve hiçbir şeye muhtaç olmadığını yazdı",4]],model:"“O Allah birdir” der; O’na denk hiçbir şeyin olmadığını ve O’nun hiçbir şeye muhtaç olmadığını bildirir. Bu tevhidin özüdür."}]}
+]},
+"ex-en-meb":{s:"en",kind:"exam",title:"English Practice Exam (MEB Themes 1–2)",sub:"School life & classroom life · open-ended · 100 points",mins:40,qs:[
+ {k:"School rules",text:`<div class="poster"><b>OUR SCHOOL RULES</b><small>✅ Wear your uniform. · ✅ Be on time. · 🚫 Don't run in the corridors. · 🚫 You can't use your phone in class. · 🚫 You mustn't eat in the library.</small></div>`,parts:[
+  {q:"1.1 Write two things students must / have to do at this school.",pts:8,rub:[["Wear the uniform",4],["Be on time",4]],model:"Students have to wear their uniform. They must be on time."},
+  {q:"1.2 Write two things students mustn't / can't do.",pts:8,rub:[["One correct rule with mustn't / can't / don't",4],["A second correct rule",4]],model:"You mustn't run in the corridors. You can't use your phone in class. You mustn't eat in the library."}]},
+ {k:"Countries",text:``,parts:[
+  {q:"2. Complete with the nationality:<br>a) Hiroshi is from Japan. He is ______.<br>b) Emma is from Canada. She is ______.<br>c) Hans and Lena are from Germany. They are ______.<br>d) I am from Türkiye. I am ______.",pts:16,rub:[["a) Japanese",4],["b) Canadian",4],["c) German",4],["d) Turkish",4]],model:"a) Japanese b) Canadian c) German d) Turkish"}]},
+ {k:"Timetable & time",text:`<table class="tbl tt"><tr><th></th><th>Monday</th><th>Tuesday</th></tr><tr><td>09:00</td><td>Maths</td><td>Turkish</td></tr><tr><td>10:15</td><td>Science</td><td>Art</td></tr><tr><td>11:30</td><td>English</td><td>PE</td></tr></table>`,parts:[
+  {q:"3.1 What time is the Science lesson on Monday? Write the time in words.",pts:6,rub:[["quarter past ten",6]],model:"It's at quarter past ten."},
+  {q:"3.2 Which lessons do we have on Tuesday?",pts:6,rub:[["Turkish, Art and PE (2 each)",6]],model:"We have Turkish, Art and PE on Tuesday."},
+  {q:"3.3 Write the times in words: 11:30 · 08:45 · 01:15",pts:6,rub:[["half past eleven",2],["quarter to nine",2],["quarter past one",2]],model:"half past eleven · quarter to nine · quarter past one"}]},
+ {k:"Clubs & likes",text:`<p>Clubs: Art · Chess · Drama · Science · Sports · Music · Environment</p>`,parts:[
+  {q:"4.1 Which club do you want to join? Why? Write two sentences.",pts:8,rub:[["Names a club correctly",3],["Gives a reason with like / love / enjoy + -ing",5]],model:"I want to join the chess club. I love solving problems and I enjoy playing chess with my friends."},
+  {q:"4.2 Write about your likes and dislikes at school. Use love, like, don't like and hate + -ing.",pts:12,rub:[["love + -ing",3],["like + -ing",3],["don't like + -ing",3],["hate + -ing",3]],model:"I love drawing pictures in Art. I like reading books in the library. I don't like doing homework at the weekend. I hate getting up early."}]},
+ {k:"Grammar",text:``,parts:[
+  {q:"5.1 Write a, an or the:<br>a) She is ___ English teacher.<br>b) I have ___ new ruler.<br>c) ___ library is on the first floor.<br>d) He eats ___ apple every break.",pts:8,rub:[["a) an",2],["b) a",2],["c) The",2],["d) an",2]],model:"a) an b) a c) The d) an"},
+  {q:"5.2 Write two classroom instructions (imperatives), one positive and one negative.",pts:10,rub:[["Positive imperative",5],["Negative imperative with Don't",5]],model:"Open your books, please. Don't talk during the test."}]},
+ {k:"National days",text:``,parts:[
+  {q:"6. Match and write: 29 October · 23 April · 19 May. What do we celebrate on these days?",pts:12,rub:[["29 October: Republic Day",4],["23 April: National Sovereignty and Children's Day",4],["19 May: Commemoration of Atatürk, Youth and Sports Day",4]],model:"29 October is Republic Day. 23 April is National Sovereignty and Children's Day. 19 May is the Commemoration of Atatürk, Youth and Sports Day."}]}
+]},
+"ex-en-cam":{s:"en",kind:"exam",title:"Cambridge English Practice Exam",sub:"Nature · past tenses · conditionals · will / going to · open-ended",mins:40,qs:[
+ {k:"Reading",text:`<div class="passage" lang="en">Last summer, my family and I were camping near a lake when a big storm started. We were cooking dinner and my little brother was playing with a ball. Suddenly, the wind blew our tent away! We ran after it, but it flew into the lake. A park ranger helped us and told us about the forest. "Forests are very important," she said. "Trees give us oxygen, and many animals live here. Please don't leave rubbish." Next year, we are going to camp there again, and I think we will take a stronger tent!</div>`,parts:[
+  {q:"1.1 What were the family doing when the storm started? Write two things.",pts:8,rub:[["They were cooking dinner",4],["The brother was playing with a ball",4]],model:"They were cooking dinner and the little brother was playing with a ball."},
+  {q:"1.2 Why are forests important, according to the park ranger?",pts:6,rub:[["Trees give us oxygen",3],["Many animals live there",3]],model:"Because trees give us oxygen and many animals live there."},
+  {q:"1.3 Find one plan and one prediction in the last sentence. Why does the writer use 'going to' and 'will'?",pts:12,rub:[["Plan: are going to camp (already decided)",6],["Prediction / decision: will take a stronger tent (opinion with I think)",6]],model:"Plan: 'we are going to camp there again' (decided before, so going to). Prediction: 'I think we will take a stronger tent' (opinion with I think, so will)."}]},
+ {k:"Past simple & continuous",text:``,parts:[
+  {q:"2. Complete with the past simple or past continuous:<br>a) I (read) ______ when the phone (ring) ______.<br>b) While we (walk) ______ to school, it (start) ______ to rain.<br>c) They (not / watch) ______ TV at 9 pm last night.",pts:15,rub:[["a) was reading / rang",5],["b) were walking / started",5],["c) weren't watching",5]],model:"a) was reading, rang b) were walking, started c) weren't watching"}]},
+ {k:"Stative & action verbs",text:``,parts:[
+  {q:"3. Correct the mistakes:<br>a) I am knowing the answer.<br>b) This cake is tasting delicious.<br>c) Look! The children play in the garden.",pts:15,rub:[["a) I know the answer.",5],["b) This cake tastes delicious.",5],["c) The children are playing in the garden.",5]],model:"a) I know the answer. b) This cake tastes delicious. c) Look! The children are playing in the garden."}]},
+ {k:"Conditionals",text:``,parts:[
+  {q:"4.1 Complete: If it rains tomorrow, we ______ (stay) at home.",pts:4,rub:[["will stay",4]],model:"will stay"},
+  {q:"4.2 Complete: If I ______ (have) a million dollars, I would ______ (buy) …",pts:6,rub:[["had",3],["buy + a sensible ending",3]],model:"If I had a million dollars, I would buy a big house for my family."},
+  {q:"4.3 Write your own sentence: If I were a superhero, …",pts:6,rub:[["would + base verb",4],["Makes sense",2]],model:"If I were a superhero, I would protect the forests and the animals."}]},
+ {k:"Will / going to",text:``,parts:[
+  {q:"5. Write will or be going to:<br>a) Look at those black clouds! It ______ rain.<br>b) I think robots ______ teach us one day.<br>c) We ______ visit Cappadocia in July. We have the tickets.<br>d) 'The bag is heavy.' 'I ______ help you.'",pts:12,rub:[["a) is going to",3],["b) will",3],["c) are going to",3],["d) will / 'll",3]],model:"a) is going to b) will c) are going to d) 'll (will)"}]},
+ {k:"Writing",text:``,parts:[
+  {q:"6. Write 4–5 sentences about your dream job. What are you going to do to make your dream come true? Use 'going to', 'will' and 'if'.",pts:16,rub:[["Names a job and says why",4],["Uses be going to for plans",4],["Uses will for a prediction",4],["Uses an if-sentence correctly",4]],model:"I want to be a vet because I love animals. I'm going to study hard at science. I'm also going to help at an animal shelter. I think I will be a good vet. If I become a vet, I will help sick animals every day."}]}
+]},
+"ex-en-dinle":{s:"en",kind:"exam",title:"English Listening Exam",sub:"Listen to Ella and answer 6 questions",mins:20,lang:"en-GB",
+ listen:"Hi! My name is Ella and I'm eleven years old. I'm from Canada, so I'm Canadian, but now I live in Ankara with my family. I go to a big school near my house. My favourite place at school is the library because I love reading books. I'm in the chess club and the drama club. We have chess club on Wednesdays at half past three. At our school, we must wear a uniform and we mustn't run in the corridors. We can't use our phones in class either. My favourite lesson is Science, but I don't like Maths very much. Next week is very exciting. We are going to visit a science museum on Friday. I think it will be great fun!",
+ qs:[{k:"Listening",parts:[
+  {q:"1. Where is Ella from and what is her nationality?",pts:16,rub:[["Canada",8],["Canadian",8]],model:"She is from Canada. She is Canadian."},
+  {q:"2. What is her favourite place at school and why?",pts:16,rub:[["The library",8],["Because she loves reading books",8]],model:"The library, because she loves reading books."},
+  {q:"3. Which clubs is Ella in? When is chess club?",pts:20,rub:[["Chess club and drama club",10],["On Wednesdays at half past three",10]],model:"The chess club and the drama club. Chess club is on Wednesdays at half past three."},
+  {q:"4. Write two school rules from the text.",pts:16,rub:[["One rule (must wear a uniform / mustn't run / can't use phones)",8],["A second rule",8]],model:"They must wear a uniform. They mustn't run in the corridors. They can't use their phones in class."},
+  {q:"5. Which lesson does she like, and which doesn't she like?",pts:16,rub:[["Likes Science",8],["Doesn't like Maths",8]],model:"She likes Science, but she doesn't like Maths."},
+  {q:"6. What is Ella going to do next Friday?",pts:16,rub:[["Visit a science museum",16]],model:"She is going to visit a science museum."}]}]
+},
+"ex-fen-cam":{s:"fen",kind:"exam",title:"Cambridge Science Practice Exam",sub:"Gases · digestive system · balanced diet · open-ended",mins:40,qs:[
+ {k:"States of matter",text:`<div class="chain">Box A: ●●●●<br>●●●● (packed in rows) · Box B: ● ●● ●<br>●● ● ● (close, jumbled) · Box C: ●&nbsp;&nbsp;&nbsp;● &nbsp;&nbsp;●<br>&nbsp;●&nbsp;&nbsp;&nbsp;&nbsp;● (far apart)</div>`,parts:[
+  {q:"1.1 Which box shows a solid, a liquid and a gas?",pts:6,rub:[["A = solid",2],["B = liquid",2],["C = gas",2]],model:"A is a solid, B is a liquid and C is a gas."},
+  {q:"1.2 Describe how the particles move in a gas.",pts:6,rub:[["Far apart",3],["Move quickly in all directions",3]],model:"Gas particles are far apart and move quickly in all directions."}]},
+ {k:"Gases",text:``,parts:[
+  {q:"2.1 Why can we squash (compress) a gas but not a liquid?",pts:6,rub:[["Gas particles have big spaces between them",3],["Liquid particles are already close together",3]],model:"There is a lot of space between gas particles, so they can be pushed closer. Liquid particles are already close together."},
+  {q:"2.2 Mum is baking bread in the kitchen. You smell it in your bedroom. Explain why.",pts:6,rub:[["Gas particles from the bread spread out / move everywhere",4],["Names diffusion",2]],model:"Gas particles from the bread spread out through the air until they reach my bedroom. This is called diffusion."},
+  {q:"2.3 How can you show that air has mass?",pts:6,rub:[["Weigh a ball / balloon empty and then pumped up",3],["The pumped-up one is heavier",3]],model:"Weigh a flat football, then pump it up and weigh it again. It is heavier, so the air inside has mass."}]},
+ {k:"Changes of state",text:``,parts:[
+  {q:"3. Name the change: a) puddles dry in the sun · b) drops form on a cold glass · c) ice cream melts in your hand",pts:9,rub:[["a) evaporation",3],["b) condensation",3],["c) melting",3]],model:"a) evaporation b) condensation c) melting"}]},
+ {k:"Digestive system",text:``,parts:[
+  {q:"4.1 Write the parts of the digestive system in order, starting with the mouth.",pts:10,rub:[["mouth → oesophagus → stomach",5],["→ small intestine → large intestine → rectum → anus",5]],model:"mouth, oesophagus, stomach, small intestine, large intestine, rectum, anus"},
+  {q:"4.2 What is the job of: a) saliva b) the stomach c) the small intestine d) the large intestine",pts:12,rub:[["a) softens/wets food, starts digestion",3],["b) churns food, acid kills germs",3],["c) nutrients absorbed into the blood",3],["d) water absorbed",3]],model:"a) Saliva makes food soft and wet and starts digestion. b) The stomach churns food and its acid kills germs. c) Nutrients pass into the blood in the small intestine. d) Water is absorbed in the large intestine."}]},
+ {k:"Balanced diet",text:`<p>Deniz's lunch box: 🍫 chocolate bar · 🥤 cola · 🍟 crisps · 🍞 white bread</p>`,parts:[
+  {q:"5.1 Is Deniz's lunch balanced? Explain your answer.",pts:15,rub:[["Says it is not balanced",5],["Too much sugar/fat",5],["Missing protein / vitamins / fibre",5]],model:"No. It has too much sugar and fat, and there is no protein, fruit or vegetables (vitamins, minerals and fibre)."},
+  {q:"5.2 Suggest two changes and say which nutrient each one adds.",pts:8,rub:[["Change 1 with correct nutrient",4],["Change 2 with correct nutrient",4]],model:"Swap the crisps for an apple (vitamins and fibre). Add a cheese or egg sandwich on wholegrain bread (protein and fibre). Drink water instead of cola."},
+  {q:"5.3 What is the job of protein and of carbohydrate?",pts:16,rub:[["Protein: growth and repair",8],["Carbohydrate: energy",8]],model:"Protein helps us grow and repairs the body. Carbohydrate gives us energy."}]}
+]}
+};
+Object.assign(SETS,DENEME);
+
+// speaking practice: prepare, speak, listen to yourself, check
+SETS["en-speak"]={s:"en",kind:"speak",title:"English Speaking Exam Practice",sub:"6 speaking tasks with sample answers and a checklist",tasks:[
+ {t:"Introduce yourself",p:"Say your name, age, where you are from, your nationality, your school and your class.",ph:["My name is …","I'm … years old.","I'm from Türkiye. I'm Turkish.","I go to … school. I'm in class 5-…"],m:"Hello! My name is Kuzey. I'm ten years old. I'm from Türkiye, so I'm Turkish. I live in Ankara. I go to Beştepe College and I'm in class five."},
+ {t:"My school and its rules",p:"Talk about your school: places you like and three school rules.",ph:["My favourite place is the … because …","We must / have to …","We mustn't / can't …"],m:"My school is big. My favourite place is the library because I love reading. We have to wear a uniform and we must be on time. We mustn't run in the corridors and we can't use our phones in class."},
+ {t:"My timetable",p:"Talk about your lessons. Which lessons do you have on Monday and at what time? Use quarter past, half past, quarter to.",ph:["On Monday, we have …","… is at quarter past nine.","My favourite lesson is … because …"],m:"On Monday, we have Maths at nine o'clock. Then we have Science at quarter past ten. English is at half past eleven. My favourite lesson is Science because I love doing experiments."},
+ {t:"Likes and dislikes",p:"Talk about things you love, like, don't like and hate doing. Add a club you want to join.",ph:["I love + -ing","I don't mind + -ing","I can't stand + -ing","I want to join the … club."],m:"I love playing football and I like drawing. I don't mind doing homework, but I hate getting up early. I want to join the chess club because I enjoy thinking."},
+ {t:"Plans and predictions",p:"What are you going to do this weekend? What do you think your life will be like in 20 years?",ph:["This weekend, I'm going to …","I think I will …","Maybe …"],m:"This weekend, I'm going to visit my grandparents and I'm going to play games with my cousin. In twenty years, I think I will be an engineer. Maybe I will build robots."},
+ {t:"My dream job",p:"What is your dream job? Why? What will you do if you get it?",ph:["I want to be a … because …","If I become a …, I will …","I'm going to … to make my dream come true."],m:"I want to be a game designer because I love making games. I'm going to learn coding. If I become a game designer, I will make fun games for children."}
+]};
+
+// ---------- additions found while checking the official topic lists (9 Nov) ----------
+LESSONS["L-tr-nokta"].pages.push({h:"Noktanın diğer görevleri",html:`<p>Sınavda “duyuruyu noktalama işaretlerine dikkat ederek yeniden yaz” soruları çok çıkar. Nokta sadece cümle sonunda kullanılmaz:</p>
+<div class="tblwrap"><table class="tbl"><tr><th>Nerede?</th><th>Örnek</th></tr>
+<tr><td><b>Sıra sayılarında</b> (rakamla yazılınca)</td><td>5<b>.</b> sınıf · 2<b>.</b> kat · 23 Nisan’ın 106<b>.</b> yılı</td></tr>
+<tr><td><b>Tarihlerde</b> gün, ay, yıl arasında</td><td>14<b>.</b>11<b>.</b>2026</td></tr>
+<tr><td><b>Saatlerde</b> saat ile dakika arasında</td><td>13<b>.</b>30 · 09<b>.</b>20 (eke kesme: 13.30’da)</td></tr>
+<tr><td><b>Kısaltmalarda</b></td><td>Dr<b>.</b> · Prof<b>.</b> · Öğr<b>.</b> · vb<b>.</b> · Cad<b>.</b> · Sok<b>.</b></td></tr>
+<tr><td><b>Büyük sayılarda</b> üçlü basamakları ayırmak için</td><td>12<b>.</b>500 adım · 1<b>.</b>250<b>.</b>000 kişi</td></tr></table></div>
+<p><b>Kısa çizgi ( - ):</b> Satır sonuna sığmayan kelime <b>hecesinden</b> bölünür: “kele-bek”, “okul-da”. Bir de “arası” anlamı verir: Ankara-İzmir yolu.</p>`,
+ check:{q:"“Toplantı 20 11 2026 günü saat 15 00 te yapılacak” Hangisi doğru yazılmıştır?",o:["Toplantı 20.11.2026 günü saat 15.00’te yapılacak.","Toplantı 20,11,2026 günü saat 15:00 te yapılacak.","Toplantı 20.11.2026 günü saat 15.00te yapılacak.","Toplantı 20-11-2026 günü saat 15,00’te yapılacak."],e:"Tarih ve saatte nokta; saate gelen ek kesmeyle ayrılır."}});
+LESSONS["L-tr-okuma"].pages.splice(3,0,{h:"Grafik ve tablo okumak",html:`<p>Görsel sorularında bazen bir <b>grafik</b> verilir. Adım adım oku:</p><ol class="steps"><li><b>Başlığı oku:</b> Grafik neyi gösteriyor? Kaç kişi var?</li><li><b>En uzun ve en kısa çubuğu bul:</b> en çok / en az.</li><li><b>Sayıları karşılaştır:</b> “yarısı” demek toplamın ikiye bölünmesi demek (30’un yarısı 15).</li><li><b>Kanıt göster:</b> Cevabında grafikteki sayıyı mutlaka yaz!</li></ol>
+${'${CHART}'}<p class="ex">Örnek cevap: “Yanlıştır, çünkü futbolu 7 öğrenci seçmiş. 28’in yarısı 14’tür, 7 ise 14’ten azdır.”</p>`,
+ check:{q:"Grafiğe göre “Sınıfın yarısı futbolu seçti.” sözü doğru mu?",o:["Hayır, futbolu 7 öğrenci seçmiş; 28’in yarısı 14’tür.","Evet, futbol en çok seçilen oyundur.","Evet, 7 öğrenci yarısıdır.","Grafikten anlaşılamaz."],e:"Kanıt: 7 < 14."}});
+LESSONS["L-tr-okuma"].pages[3].html=LESSONS["L-tr-okuma"].pages[3].html.replace("${CHART}","");LESSONS["L-tr-okuma"].pages[3].widget="chart5a";
+LESSONS["L-tr-okuma"].pages.push({h:"Yazını zenginleştir (söz varlığı)",html:`<p>Sınavda sade bir paragraf verilir ve “daha ayrıntılı ve etkili yaz” denir. Puan şu üç şeyden gelir:</p>
+<div class="cards4"><div class="box"><b>🎨 Betimle</b><p>Renk, ses, koku, büyüklük bildiren sıfatlar: <i>masmavi, yemyeşil, buz gibi, pırıl pırıl, mis kokulu</i></p></div>
+<div class="box"><b>💛 Duygunu yaz</b><p><i>çok heyecanlandım, içim kıpır kıpır oldu, sevinçten havalara uçtum, biraz korktum</i></p></div>
+<div class="box"><b>📜 Deyim / atasözü</b><p><i>ağzı kulaklarına varmak, tüyleri diken diken olmak, damlaya damlaya göl olur</i></p></div>
+<div class="box"><b>🔁 Sırayı koru</b><p>Olayların sırasını ve anlamını değiştirme; sadece süsle!</p></div></div>
+<p><b>Örnek:</b> “Parka gittik. Hava güzeldi.” → “Pazar sabahı ailemle <u>yemyeşil</u> parka gittik. Gökyüzü <u>masmavi</u>, güneş <u>pırıl pırıldı</u>; <u>içim kıpır kıpırdı</u>.”</p>`,
+ check:{q:"“Kar yağdı. Dışarı çıktık.” cümlelerini en iyi zenginleştiren hangisidir?",o:["Bembeyaz, pamuk gibi kar taneleri yağdı; heyecandan yerimizde duramayıp sevinçle dışarı koştuk.","Kar yağdı ve dışarı çıktık.","Çok çok kar yağdı, dışarı çıktık.","Kar yağınca dışarı çıkılır."],e:"Betimleme + duygu + aynı olay sırası."}});
+LESSONS["L-din-duzen"].pages.splice(2,0,{h:"Ayetlerde ve doğada düzen",html:`<blockquote>“Güneş ve ay bir hesaba göre hareket etmektedir.”<br><span class="ex">(Rahmân suresi, 5. ayet)</span></blockquote>
+<p>Dünya kendi etrafında yaklaşık <b>24 saatte</b> döner → gece ve gündüz. Güneş’in etrafında yaklaşık <b>365 günde</b> döner → yıl ve mevsimler. Bu hesap sayesinde takvim ve saat yapabiliriz.</p>
+<blockquote>“Rabbin bal arısına şöyle vahyetti: ‘Dağlardan, ağaçlardan ve insanların kurdukları çardaklardan kendine evler edin.’”<br><span class="ex">(Nahl suresi, 68. ayet)</span></blockquote>
+<p>Arılara altıgen petek yapmayı kimse öğretmez. <b>Besin zincirinde</b> de (ot → çekirge → kurbağa → yılan → kartal) her canlının bir görevi vardır; bir halka bozulursa bütün denge bozulur. Bu ölçülü düzen tesadüf olamaz; Allah’ın varlığını gösterir.</p>`,
+ check:{q:"Besin zincirindeki çekirgeler yok olursa ne olur?",o:["Kurbağalar azalır, ardından yılanlar ve kartallar da etkilenir; denge bozulur.","Hiçbir şey değişmez.","Sadece çekirgeler etkilenir.","Kartallar çoğalır."],e:"Bir halka bozulunca bütün zincir etkilenir."}});
+LESSONS["L-din-esma"].pages.push({h:"Güzel isimlerle dua yazmak",html:`<p>Sınavda bir durum verilir ve “uygun bir isimle dua yaz” denir. Formül:</p>
+<p class="big-mnemonic" style="font-size:20px">Ya + isim! + ismin anlamı + isteğin</p>
+<ul><li>Sınav heyecanı: “<b>Ya Alîm!</b> Her şeyi bilirsin; öğrendiklerimi hatırlamamı kolaylaştır.”</li>
+<li>Pişmanlık: “<b>Ya Rahîm!</b> Merhametin sonsuzdur; hatamı bağışla.” (ya da Ya Gafûr)</li>
+<li>Korku: “<b>Ya Basîr!</b> Her yeri görürsün; beni koru.” (ya da Ya Hafîz)</li>
+<li>Bir istek: “<b>Ya Semî!</b> Duamı işitirsin; hasta dedemize şifa ver.”</li>
+<li>Zor bir iş: “<b>Ya Kadîr!</b> Her şeye gücün yeter; bu işi bana kolaylaştır.”</li></ul>
+<p class="ex">Puan: doğru isim + ismin anlamını kullanman + duruma uygun istek.</p>`,
+ check:{q:"Arkadaşıyla küsen ve barışmak isteyen Zeynep için en uygun dua hangisidir?",o:["“Ya Semî! Duamı işitirsin; arkadaşımla barışmamı kolaylaştır.”","“Ya Rezzâk! Bana rızık ver.”","“Ya Musavvir! Bana şekil ver.”","“Ya Hâlık! Beni yarat.”"],e:"Durum, isim ve istek uyumlu olmalı."}});
+LESSONS["L-en-meb"]={s:"en",title:"MEB English: Themes 1 & 2",sub:"clubs, countries, national days, rules, a/an/the, timetable",practice:["en-meb","en-country-match","ex-en-meb"],pages:[
+ {h:"School clubs & likes",html:`<div class="chips static"><span>Art</span><span>Chess</span><span>Drama</span><span>Music</span><span>Science</span><span>Sports</span><span>Environment</span><span>Folk Dance</span><span>Technology</span><span>Film</span></div>
+<p class="ex">I draw pictures in the <b>art club</b>. · We play chess in the <b>chess club</b>.</p><p><b>Do you like + -ing?</b> “Do you like dancing?” “Yes, I do. I love dancing!” / “No, I don't. I don't like dancing.”</p>`,
+ check:{q:"“Do you like acting?” “Yes, I love it! I'm in the ___ club.”",o:["drama","chess","maths","environment"],e:"Acting → drama club."}},
+ {h:"Countries & nationalities",html:`<div class="tblwrap"><table class="tbl"><tr><th>Country</th><th>Nationality</th><th>Country</th><th>Nationality</th></tr>
+<tr><td>Türkiye</td><td>Turkish</td><td>Japan</td><td>Japanese</td></tr><tr><td>Germany</td><td>German</td><td>China</td><td>Chinese</td></tr>
+<tr><td>France</td><td>French</td><td>Spain</td><td>Spanish</td></tr><tr><td>Italy</td><td>Italian</td><td>Brazil</td><td>Brazilian</td></tr>
+<tr><td>Canada</td><td>Canadian</td><td>the USA</td><td>American</td></tr><tr><td>the UK</td><td>British</td><td>Azerbaijan</td><td>Azerbaijani</td></tr>
+<tr><td>Netherlands</td><td>Dutch</td><td>Greece</td><td>Greek</td></tr></table></div>
+<p class="ex">Where are you from? I'm from Japan. I'm Japanese. · She is from Brazil. She's Brazilian.</p>`,
+ check:{q:"Pierre is from France. He is ___.",o:["French","Franch","Francish","Frenchy"],e:"France → French."}},
+ {h:"Rules: imperatives, can't, mustn't",html:`<ul><li><b>Imperatives</b> (commands): <i>Open your books. Stand up, please.</i> Negative: <i><b>Don't</b> be late! <b>Don't</b> shout!</i></li>
+<li><b>can't</b> = not allowed: <i>You <b>can't</b> use your phone in class.</i></li><li><b>mustn't</b> = it's against the rules: <i>You <b>mustn't</b> run in the corridors.</i></li>
+<li><b>must / have to</b> = necessary: <i>We <b>must</b> wear a uniform.</i></li></ul>
+<p><b>National days:</b> 23 April – National Sovereignty and Children's Day · 19 May – Commemoration of Atatürk, Youth and Sports Day · 30 August – Victory Day · 29 October – Republic Day · 15 July – Democracy and National Unity Day</p>`,
+ check:{q:"Which sentence is a negative imperative?",o:["Don't eat in the library.","You must eat lunch.","I don't like eating.","Can you eat?"],e:"Don't + verb = negative command."}},
+ {h:"a / an / the, subjects & timetable",html:`<ul><li><b>a</b> + consonant sound: a book, a ruler, a teacher</li><li><b>an</b> + vowel sound: an apple, an eraser, an English book, an hour</li><li><b>the</b> = a specific one: <i>The library is on the first floor.</i></li></ul>
+<p><b>Subjects:</b> Maths, Science, Turkish, English, Social Studies, Art, Music, PE, ICT, Religious Culture</p>
+<p><b>Timetable:</b> <i>What time is the Maths lesson? It's at quarter past nine. · We have Art on Tuesday. · What's your favourite lesson? It's Science.</i></p>
+<p><b>Days:</b> Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday</p>`,
+ check:{q:"I have ___ eraser and ___ ruler.",o:["an / a","a / an","the / an","a / a"],e:"an eraser (vowel sound), a ruler."}}
+]};
+Object.assign(SETS,{
+"en-meb":{s:"en",kind:"quiz",title:"MEB English: school life quiz",qs:[
+ {q:"Hiroshi is from Japan. He is ___.",o:["Japanese","Japan","Japanish","Japanian"],e:"Japan → Japanese."},
+ {q:"Emma is from Canada. She is ___.",o:["Canadian","Canada","Canadish","Canadese"],e:"Canada → Canadian."},
+ {q:"You ___ use your phone in class. It's a rule.",o:["can't","can","must","have to"],e:"Not allowed → can't / mustn't."},
+ {q:"___ be late for school!",o:["Don't","Doesn't","Not","No"],e:"Negative imperative: Don't + verb."},
+ {q:"She is ___ English teacher.",o:["an","a","the","–"],e:"English starts with a vowel sound → an."},
+ {q:"I play chess every Wednesday in the ___ club.",o:["chess","drama","art","music"],e:"chess → chess club."},
+ {q:"What do we celebrate on 29 October?",o:["Republic Day","Victory Day","Children's Day","Youth and Sports Day"],e:"29 Ekim Cumhuriyet Bayramı = Republic Day."},
+ {q:"What do we celebrate on 23 April?",o:["National Sovereignty and Children's Day","Republic Day","Victory Day","Teachers' Day"],e:"23 Nisan Ulusal Egemenlik ve Çocuk Bayramı."},
+ {q:"“Do you like painting?” “No, I ___.”",o:["don't","doesn't","am not","not"],e:"Do you…? No, I don't."},
+ {q:"The Science lesson is at 10:15. → It's at ___.",o:["quarter past ten","quarter to ten","half past ten","ten fifteen to"],e:"10:15 = quarter past ten."},
+ {q:"Which one is a school subject?",o:["Social Studies","Canteen","Uniform","Headmaster"],e:"Social Studies = Sosyal Bilgiler."},
+ {q:"Open ___ books, please.",o:["your","you","yours","you're"],e:"Imperative: Open your books."}
+]},
+"en-country-match":{s:"en",kind:"match",title:"Countries & nationalities match",pairs:[["Türkiye","Turkish"],["Japan","Japanese"],["Germany","German"],["France","French"],["Spain","Spanish"],["Italy","Italian"],["Canada","Canadian"],["the USA","American"],["the UK","British"],["China","Chinese"],["Brazil","Brazilian"],["Netherlands","Dutch"]]}
+});
+SETS["tr-yazim"].qs.push(
+ {q:"“5 sınıflar için gezi 14 11 2026 tarihinde yapılacak” cümlesi nasıl yazılmalıdır?",o:["5. sınıflar için gezi 14.11.2026 tarihinde yapılacak.","5 sınıflar için gezi 14 11 2026 tarihinde yapılacak.","5’inci sınıflar için gezi 14-11-2026 tarihinde yapılacak.","5, sınıflar için gezi 14/11/2026 tarihinde yapılacak."],e:"Sıra sayısında ve tarihte nokta kullanılır."},
+ {q:"Hangisinde kısaltma doğru yazılmıştır?",o:["Konuşmayı Dr. Elif Aydın yapacak.","Konuşmayı Dr Elif Aydın yapacak.","Konuşmayı D.r. Elif Aydın yapacak.","Konuşmayı Dr, Elif Aydın yapacak."],e:"Kısaltmalardan sonra nokta konur: Dr."},
+ {q:"“Yarışmada 12500 adım attı.” Sayı nasıl yazılmalıdır?",o:["12.500","12,500","12-500","1.2500"],e:"Büyük sayılarda üçlü basamaklar nokta ile ayrılır."}
+);
+
 // ---------- the plan: about an hour a day ----------
 const DAYS=[
  {d:"2026-11-08",note:"Türkçe is on Tuesday, so start with it. Finished fast? Do the bonus games below and collect XP!",tasks:[
@@ -1111,7 +1414,10 @@ const DAYS=[
   {set:"fen-states-sort",min:5,desc:"Solid, liquid or gas? Sort them"},
   {lesson:"L-fen-digest",min:6,desc:"Follow a bite of food through the body"},
   {set:"fen-digest",min:10,desc:"The digestive system quiz"},
-  {set:"fen-order",min:5,desc:"Put the journey of food in order"}]},
+  {set:"fen-order",min:5,desc:"Put the journey of food in order"},
+  {set:"ex-tr-1",min:40,desc:"📝 Full practice exam, like tomorrow’s real one. Then score it with the answer key."},
+  {set:"ex-tr-2",min:40,desc:"📝 A second practice exam (do it if you have time, or tomorrow morning)"},
+  {set:"ex-tr-dinle",min:15,desc:"🎧 Practice for the Türkçe listening exam"}]},
  {d:"2026-11-10",note:"Türkçe is done today. Tomorrow at 11.10: Cambridge Science. (Kültür ve Medeniyetimize Yön Verenler at 09.20 is skipped.)",tasks:[
   {set:"fen-match",min:5,desc:"Match the science words, as fast as you can"},
   {lesson:"L-fen-diet",min:6,desc:"Tap the healthy plate"},
@@ -1124,7 +1430,7 @@ const DAYS=[
   {set:"en-will",min:12,desc:"Will or be going to: notes and quiz"},
   {set:"en-will-sort",min:5,desc:"Sort the sentences: will or going to?"},
   {set:"en-nature-match",min:5,desc:"Unit 1 nature words"}]},
- {d:"2026-11-11",note:"Tomorrow: English 09.20 and the English listening exam 10.15. Lots of will vs going to today!",tasks:[
+ {d:"2026-11-11",note:"Tomorrow: English 09.20 and the English listening exam 10.15. The topics sheet lists MEB Themes 1–2 (school life, classroom life) and the Cambridge units (nature, past tenses, will/going to). Ask your teacher which exam has which, and practise both!",tasks:[
   {set:"en-will-type",min:10,desc:"Type the answers yourself"},
   {set:"en-will-speed",min:3,desc:"60-second will vs going to challenge"},
   {set:"en-will-dinle",min:8,desc:"Listening: Deniz's summer plans"},
@@ -1300,6 +1606,8 @@ function openActivity(id,taskId){
   const set=SETS[id];openSheet(set.title,set.s);
   if(set.kind==="cards")return runCards(id,set);
   if(set.kind==="listen")return runListen(id,set);
+  if(set.kind==="exam")return runExam(id);
+  if(set.kind==="speak")return runSpeak(id);
   if(set.kind==="speed")return runSpeed(id,set);
   if(set.kind==="match")return runMatch(id,set);
   if(set.kind==="order")return runOrder(id,set);
@@ -1426,11 +1734,13 @@ const strip=h=>String(h).replace(/<[^>]*>/g,"").replace(/\s+/g," ").trim();
 const fmtT=s=>Math.floor(s/60)+":"+pad(Math.round(s%60));
 function bestText(id){const x=SETS[id];if(!x||x.kind==="cards"||x.kind==="order")return"";
   if(x.kind==="speed")return S.best[id]!=null?` · best ${S.best[id]} pts`:"";
+  if(x.kind==="exam")return S.best[id]!=null?` · best ${S.best[id]}/100`:"";
+  if(x.kind==="speak")return S.stats.spoke?" · ✓ done":"";
   if(x.kind==="match")return S.bestTime&&S.bestTime[id]!=null?` · best ${fmtT(S.bestTime[id])}`:"";
   return S.best[id]!=null?` · best ${S.best[id]}%`:""}
 function kindLabel(x){return {cards:"Flashcards · "+(x.cards||[]).length,listen:"Listening · "+(x.qs||[]).length+" questions",
   speed:"⚡ 60-second challenge",match:"🧩 Match pairs",sort:"🗂️ Sort it · "+(x.items||[]).length,type:"⌨️ Type the answer · "+(x.items||[]).length,
-  order:"🔢 Put in order",quiz:x.gen==="clock"?"🕒 Clock game · "+x.n:"Quiz · "+(x.mix?x.n:(x.qs||[]).length)+" questions"}[x.kind]}
+  order:"🔢 Put in order",exam:"📝 Deneme sınavı · açık uçlu",speak:"🎤 Speaking practice · "+(x.tasks||[]).length+" tasks",quiz:x.gen==="clock"?"🕒 Clock game · "+x.n:"Quiz · "+(x.mix?x.n:(x.qs||[]).length)+" questions"}[x.kind]}
 
 // shared score screen for quiz, sort and type
 function scoreEnd(id,set,score,total,wrong,only,again,retry){
@@ -1761,6 +2071,8 @@ const BADGES=[
  ["profesor","🎓","Profesör","Finish all the lessons",()=>Object.keys(LESSONS).every(id=>S.lessons[id])],
  ["lv5","🦜","Papağan","Reach level 5",()=>(S.xp||0)>=4*LV],
  ["lv10","🐉","Ejderha","Reach level 10",()=>(S.xp||0)>=9*LV],
+ ["deneme","📝","Deneme ustası","Score 85+ in a practice exam",()=>!!S.stats.examHigh],
+ ["speak","🎤","Konuşkan","Finish the English speaking practice",()=>!!S.stats.spoke],
  ["king","👑","Yazılı kralı","Finish every task in the whole plan",()=>allTaskIds().every(id=>S.done[id])]
 ];
 function hit(ok){S.stats.streak=ok?(S.stats.streak||0)+1:0;if(S.stats.streak>(S.stats.maxStreak||0))S.stats.maxStreak=S.stats.streak}
@@ -1803,6 +2115,129 @@ function openChest(){
     $("#rv").innerHTML=got.map((s,k)=>`<div class="stk got pop ${RARE.has(s)?"rare":""}" style="animation-delay:${k*.25}s">${s}</div>`).join("")+
       `<div class="row center" style="grid-column:1/-1;margin-top:14px">${S.chests?'<button class="btn" id="more">Open the next chest</button>':""}<button class="btn quiet" id="cl">Done</button></div>`;
     $("#cl").onclick=()=>{closeSheet();renderRewards()};if(S.chests)$("#more").onclick=openChest;$("#bc").onclick=null};
+}
+
+// ---------- exam player: write answers, then score them with the rubric ----------
+function barChart(c){
+  const max=Math.max(...c.data.map(d=>d[1])),W=420,bh=34,gap=12,left=110,H=c.data.length*(bh+gap)+40;
+  return `<figure class="chart"><figcaption>${esc(c.title)}</figcaption><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(c.title)}">`+
+    c.data.map((d,i)=>{const y=10+i*(bh+gap),w=(W-left-50)*d[1]/max;return `<text x="${left-8}" y="${y+bh/2+5}" text-anchor="end" class="cl">${esc(d[0])}</text><rect x="${left}" y="${y}" width="${w}" height="${bh}" rx="6" class="cb"/><text x="${left+w+6}" y="${y+bh/2+5}" class="cv">${d[1]}</text>`}).join("")+
+    `</svg></figure>`;
+}
+function runExam(id){
+  const E=SETS[id];openSheet(E.title,E.s);S.drafts=S.drafts||{};const D=S.drafts[id]=S.drafts[id]||{};
+  const parts=[];E.qs.forEach((q,qi)=>q.parts.forEach((p,pi)=>parts.push({qi,pi,key:qi+"."+pi,p})));
+  const total=parts.reduce((a,x)=>a+x.p.pts,0);
+  const intro=()=>{
+    body().innerHTML=`<div class="examhead"><div class="big">📝</div><h2>${esc(E.title)}</h2><p>${esc(E.sub)}</p>
+      <ul class="rules"><li>Bütün sorular <b>açık uçlu</b>: cevabını kendi cümlelerinle yaz.</li><li>${E.listen?"Önce metni dinle (en fazla 2 kez). Metin ekranda görünmez.":"Gerçek sınav gibi "+E.mins+" dakikan var."}</li>
+      <li>Bitirince <b>cevap anahtarı</b> ve <b>puanlama ölçütleri</b> açılır; cevabını ölçütlerle karşılaştırıp kendini puanla.</li><li>Yazdıkların kaydedilir; çıkıp sonra devam edebilirsin.</li></ul>
+      ${S.best[id]!=null?`<p class="mute">En iyi puanın: ${S.best[id]} / 100</p>`:""}</div>
+      <div class="row center"><button class="btn" id="st">${Object.keys(D).length?"Devam et →":"Sınava başla →"}</button>${Object.keys(D).length?'<button class="btn quiet" id="clr">Boş kâğıtla başla</button>':""}</div>`;
+    $("#st").onclick=paper;if($("#clr"))$("#clr").onclick=()=>{S.drafts[id]={};save();runExam(id)};
+  };
+  const paper=()=>{
+    const end=Date.now()+E.mins*60e3;let plays=0;
+    body().innerHTML=`<div class="examtimer" id="et"></div>
+      ${E.listen?`<div class="listenbox"><button class="play" id="pl" aria-label="Metni dinle">▶</button><p class="hint" id="pc">Sesi aç ve dinle. Not almak serbest!</p></div>`:""}
+      <ol class="paper">${E.qs.map((q,qi)=>`<li class="pq"><div class="pqh"><span class="qn">${qi+1}</span><span class="kz">${esc(q.k)} · ${q.parts.reduce((a,p)=>a+p.pts,0)} puan</span></div>
+        ${q.text||""}${q.chart?barChart(q.chart):""}
+        ${q.parts.map((p,pi)=>`<div class="pp"><label for="a${qi}_${pi}"><span>${p.q}</span><em>(${p.pts} puan)</em></label><textarea id="a${qi}_${pi}" data-k="${qi}.${pi}" rows="3" placeholder="Cevabını buraya yaz…">${esc(D[qi+"."+pi]||"")}</textarea></div>`).join("")}</li>`).join("")}</ol>
+      <div class="row center"><button class="btn" id="fin">Sınavı bitir ve kontrol et ✓</button></div>`;
+    body().querySelectorAll("textarea").forEach(t=>t.oninput=()=>{D[t.dataset.k]=t.value;save()});
+    const tick=()=>{const left=Math.max(0,end-Date.now()),m=Math.floor(left/6e4),s=Math.floor(left%6e4/1e3);const el=$("#et");if(!el)return;
+      el.textContent=left?`⏱ ${m}:${pad(s)}`:"⏱ Süre bitti! Cevaplarını kontrol edebilirsin.";el.classList.toggle("late",left<5*60e3)};
+    const iv=setInterval(tick,1000);tick();
+    let stopSpeak=()=>{};
+    if(E.listen){
+      const can="speechSynthesis" in window;
+      if(!can){$("#pc").innerHTML="Bu cihaz sesli okuyamıyor. Birinden metni sana iki kez okumasını iste:<br><i>"+esc(E.listen)+"</i>"}
+      else{speechSynthesis.getVoices();stopSpeak=()=>speechSynthesis.cancel();
+        $("#pl").onclick=()=>{if(speechSynthesis.speaking){speechSynthesis.cancel();$("#pl").textContent="▶";return}
+          if(plays>=2&&!$("#pl").dataset.ok){$("#pc").innerHTML='Gerçek sınavda metin genellikle 2 kez okunur. <button class="linkbtn" id="again">Yine de dinle</button>';$("#again").onclick=()=>{$("#pl").dataset.ok=1;$("#pl").click()};return}
+          const u=new SpeechSynthesisUtterance(E.listen);u.lang=E.lang;u.rate=.88;const vs=speechSynthesis.getVoices(),l=E.lang.toLowerCase();
+          const v=vs.find(v=>v.lang.toLowerCase().replace("_","-")===l)||vs.find(v=>v.lang.toLowerCase().startsWith(l.slice(0,2)));if(v)u.voice=v;
+          u.onstart=()=>{$("#pl")&&($("#pl").textContent="⏸")};u.onend=()=>{$("#pl")&&($("#pl").textContent="▶")};
+          speechSynthesis.speak(u);plays++;$("#pc").textContent=`${plays}. dinleme`}}
+    }
+    cleanup=()=>{clearInterval(iv);stopSpeak()};
+    $("#fin").onclick=()=>{if(cleanup){cleanup();cleanup=null}grade()};
+  };
+  const grade=()=>{
+    const G=S.drafts[id+"#g"]=S.drafts[id+"#g"]||{};
+    body().innerHTML=`<div class="notes"><h3>Kendini puanla</h3><p>Her sorunun altında senin cevabın ve <b>cevap anahtarı</b> var. Cevabında olan her ölçütü işaretle. Dürüst ol, sınavda öğretmen de böyle puanlar!</p></div>
+      ${E.listen?`<details class="notes"><summary><b>Dinleme metnini göster</b></summary><p>${esc(E.listen)}</p></details>`:""}
+      <ol class="paper">${E.qs.map((q,qi)=>`<li class="pq"><div class="pqh"><span class="qn">${qi+1}</span><span class="kz">${esc(q.k)}</span></div>
+        ${q.parts.map((p,pi)=>{const k=qi+"."+pi;return `<div class="pp graded"><div class="pq2">${p.q}</div>
+          <div class="yours"><b>Senin cevabın:</b> ${D[k]?esc(D[k]).replace(/\n/g,"<br>"):'<span class="mute">(boş)</span>'}</div>
+          <div class="model"><b>Cevap anahtarı:</b> ${esc(p.model)}</div>
+          <div class="rubric">${p.rub.map((r,ri)=>`<label><input type="checkbox" data-g="${k}.${ri}" data-pts="${r[1]}" ${G[k+"."+ri]?"checked":""}><span>${esc(r[0])}</span><b>${r[1]}</b></label>`).join("")}</div></div>`}).join("")}</li>`).join("")}</ol>
+      <div class="scorebar"><span>Puanın: <b id="sc">0</b> / ${total}</span><button class="btn" id="save">Puanımı kaydet</button></div>`;
+    const upd=()=>{let s=0;body().querySelectorAll("[data-g]").forEach(c=>{G[c.dataset.g]=c.checked;if(c.checked)s+=+c.dataset.pts});$("#sc").textContent=s;save();return s};
+    body().querySelectorAll("[data-g]").forEach(c=>c.onchange=upd);upd();
+    $("#save").onclick=()=>{
+      const s=Math.round(upd()/total*100),prev=S.best[id];S.best[id]=Math.max(prev||0,s);S.stats.exams=(S.stats.exams||0)+1;if(s>=85)S.stats.examHigh=true;
+      addXP(Math.round(s/2));finishTask();if(s>=85)confetti();
+      body().innerHTML=`<div class="result"><div class="big">${s}</div><p>/ 100 · +${Math.round(s/2)} XP</p>
+        <p>${s>=85?"Harika! Bu sınava hazırsın. 🌟":s>=70?"Çok iyi! Kaçırdığın ölçütlere bir daha bak.":s>=50?"İyi bir başlangıç. Konu anlatımını tekrar et, sonra yeniden dene.":"Önce konu anlatımını oku, sonra boş kâğıtla tekrar dene."}</p>
+        ${prev!=null?`<p class="mute">Önceki en iyi puanın: ${prev}</p>`:""}</div>
+        <div class="row center"><button class="btn quiet" id="again">Boş kâğıtla tekrar çöz</button><button class="btn" id="cl">Bitir</button></div>`;
+      $("#again").onclick=()=>{S.drafts[id]={};S.drafts[id+"#g"]={};save();runExam(id)};$("#cl").onclick=closeSheet;
+    };
+  };
+  intro();
+}
+
+WIDGETS.chart5a=el=>{el.innerHTML='<div class="wtitle">📊 Örnek grafik</div>'+barChart({title:"5-A sınıfı: en sevilen oyun (28 öğrenci)",data:[["Saklambaç",9],["Futbol",7],["Mendil kapmaca",5],["Seksek",4],["Satranç",3]]})};
+
+// ---------- speaking practice ----------
+function runSpeak(id){
+  const X=SETS[id];openSheet(X.title,X.s);let i=0,rec=null,chunks=[],url=null,recog=null;
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const stopAll=()=>{try{rec&&rec.state==="recording"&&rec.stop()}catch(e){}try{recog&&recog.stop()}catch(e){}if("speechSynthesis" in window)speechSynthesis.cancel()};
+  cleanup=stopAll;
+  const sayModel=t=>{if(!("speechSynthesis" in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="en-GB";u.rate=.9;
+    const v=speechSynthesis.getVoices().find(v=>/^en[-_]GB/i.test(v.lang))||speechSynthesis.getVoices().find(v=>/^en/i.test(v.lang));if(v)u.voice=v;speechSynthesis.speak(u)};
+  const show=()=>{
+    stopAll();if(i>=X.tasks.length)return done();
+    const T=X.tasks[i];
+    body().innerHTML=`<div class="dots">${X.tasks.map((_,k)=>`<i class="${k<i?"past":k===i?"now":""}"></i>`).join("")}<span>Task ${i+1} / ${X.tasks.length}</span></div>
+      <article class="lesson"><h2>🎤 ${esc(T.t)}</h2><p class="task-p">${esc(T.p)}</p>
+      <div class="box"><b>Useful phrases</b><ul>${T.ph.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
+      <div class="speakctl"><div class="timer small" id="sp">0:30</div><p class="hint" id="sph">Press <b>Prepare</b>: 30 seconds to think, then speak for about 1 minute.</p>
+      <div class="row center"><button class="btn" id="prep">⏳ Prepare (30 s)</button><button class="btn quiet" id="go">🎙️ Start speaking</button></div>
+      <div id="recarea"></div><p class="transcript" id="tr" hidden></p></div>
+      <details class="notes"><summary><b>Sample answer</b> (listen or read after you try)</summary><p>${esc(T.m)}</p><button class="btn small quiet" id="hear">🔊 Listen to the sample</button></details>
+      <div class="box"><b>Check yourself</b>${["I answered every part of the task.","I spoke for about one minute.","I used full sentences.","I used some of the useful phrases.","I spoke clearly, not too fast."].map((c,k)=>`<label class="ck"><input type="checkbox" data-c="${k}"> ${c}</label>`).join("")}</div></article>
+      <div class="row lessonnav">${i?'<button class="btn quiet" id="pv">← Back</button>':""}<button class="btn" id="nx">${i+1<X.tasks.length?"Next task →":"Finish ✓"}</button></div>`;
+    $("#hear").onclick=()=>sayModel(T.m);
+    let iv=null;const countdown=(sec,label,after)=>{clearInterval(iv);let left=sec;$("#sp").textContent=Math.floor(left/60)+":"+pad(left%60);$("#sph").textContent=label;
+      iv=setInterval(()=>{left--;$("#sp")&&($("#sp").textContent=Math.floor(left/60)+":"+pad(left%60));if(left<=0){clearInterval(iv);after&&after()}},1000)};
+    const prevClean=cleanup;cleanup=()=>{clearInterval(iv);stopAll()};
+    $("#prep").onclick=()=>countdown(30,"Think about what you will say. You can look at the useful phrases.",()=>{$("#sph").textContent="Time to speak!";startSpeak()});
+    $("#go").onclick=()=>startSpeak();
+    const startSpeak=async()=>{
+      countdown(60,"Speak now! Talk for about one minute.",()=>stopSpeak());
+      $("#recarea").innerHTML="";
+      try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});chunks=[];rec=new MediaRecorder(stream);
+        rec.ondataavailable=e=>chunks.push(e.data);
+        rec.onstop=()=>{stream.getTracks().forEach(t=>t.stop());if(url)URL.revokeObjectURL(url);url=URL.createObjectURL(new Blob(chunks,{type:rec.mimeType||"audio/webm"}));
+          $("#recarea")&&($("#recarea").innerHTML=`<p class="hint">Listen to yourself:</p><audio controls src="${url}"></audio>`)};
+        rec.start();$("#recarea").innerHTML='<p class="recdot">● Recording… <button class="btn small quiet" id="stopr">Stop</button></p>';$("#stopr").onclick=()=>stopSpeak();
+      }catch(e){$("#recarea").innerHTML='<p class="hint">Recording isn’t available here. That’s fine: speak out loud, maybe to someone at home, and use the checklist.</p>'}
+      if(SR){try{recog=new SR();recog.lang="en-GB";recog.continuous=true;recog.interimResults=true;
+        recog.onresult=ev=>{let t="";for(const r of ev.results)t+=r[0].transcript+" ";const el=$("#tr");if(el){el.hidden=false;el.textContent="What the device heard: "+t}};recog.onerror=()=>{};recog.start()}catch(e){}}
+    };
+    const stopSpeak=()=>{clearInterval(iv);try{rec&&rec.state==="recording"&&rec.stop()}catch(e){}try{recog&&recog.stop()}catch(e){}$("#sph")&&($("#sph").textContent="Well done! Listen to yourself, then compare with the sample answer.")};
+    if(i)$("#pv").onclick=()=>{i--;show()};
+    $("#nx").onclick=()=>{const ticked=body().querySelectorAll("[data-c]:checked").length;addXP(5+ticked*3);i++;show();$("#sheet").scrollTop=0};
+    void prevClean;
+  };
+  const done=()=>{S.stats.spoke=true;finishTask();confetti();
+    body().innerHTML=`<div class="result"><div class="big">🎤</div><p><b>Speaking practice complete!</b></p><p class="mute">Tip: do it again tomorrow morning, out loud, without looking at the phrases.</p></div>
+      <div class="row center"><button class="btn quiet" id="ra">Practise again</button><button class="btn" id="cl">Finish</button></div>`;
+    $("#ra").onclick=()=>{i=0;show()};$("#cl").onclick=closeSheet};
+  show();
 }
 
 // ---------- start ----------
