@@ -382,9 +382,9 @@ const EXAMS=[
   {d:"2026-11-10",t:"10.15–10.55",s:"tr",name:"Türkçe – Dinleme Sınavı"},
   {d:"2026-11-11",t:"09.20–10.00",s:"brk",name:"Kültür ve Medeniyetimize Yön Verenler",skip:true},
   {d:"2026-11-11",t:"11.10–11.50",s:"fen",name:"Cambridge Fen Bilimleri"},
-  {d:"2026-11-12",t:"09.20–10.00",s:"en",name:"Yabancı Dil / İngilizce"},
+  {d:"2026-11-12",t:"09.20–10.00",s:"en",name:"Yabancı Dil / İngilizce (MEB, Theme 1–2)"},
   {d:"2026-11-12",t:"10.15–10.55",s:"en",name:"İngilizce – Dinleme Sınavı"},
-  {d:"2026-11-13",t:"09.20–10.00",s:"en",name:"Cambridge İngiliz Dili"},
+  {d:"2026-11-13",t:"09.20–10.00",s:"en",name:"Cambridge İngiliz Dili (Units 1–2)"},
   {d:"2026-11-13",t:"10.15–10.55",s:"din",name:"Din Kültürü ve Ahlak Bilgisi"}
 ];
 const DONE_ALREADY=["Matematik","Cambridge Matematik","Fen Bilimleri","Sosyal Bilgiler","Almanca","Türkçe konuşma sınavı"];
@@ -420,19 +420,7 @@ qs:[
  {q:"Hangisinde “ki” yanlış yazılmıştır?",o:["Öyle çok çalıştıki sınavı kazandı.","Duydum ki yarın tatilmiş.","Masadaki kitabı uzatır mısın?","Öyle güzel konuştu ki herkes alkışladı."],e:"Bağlaç olan “ki” ayrı yazılır: “çalıştı ki”."},
  {q:"Hangisinde büyük harf yanlış kullanılmıştır?",o:["Bugün Okula erken gittik.","Annem Ankara’da doğdu.","Kedimin adı Pamuk.","Van Gölü çok büyüktür."],e:"“okul” özel isim değildir, küçük harfle yazılır."},
  {q:"“Pazardan şunları aldık __ domates, biber, patlıcan.” Boşluğa hangi işaret gelir?",o:["İki nokta (:)","Nokta (.)","Soru işareti (?)","Ünlem (!)"],e:"Örnek/açıklama sıralanacaksa iki nokta konur."}
-,
-  {set:"ex-fen-cam",min:40,desc:"📝 Open-ended practice exam for tomorrow"},
-  {lesson:"L-en-meb",min:8,desc:"Clubs, countries, national days, rules, a/an/the"},
-  {set:"en-meb",min:6,desc:"Quiz on the MEB school-life topics"},
-  {set:"ex-en-meb",min:40,desc:"📝 Open-ended practice exam (MEB Themes 1–2)"},
-  {set:"ex-en-dinle",min:15,desc:"🎧 Practice for the English listening exam"},
-  {set:"en-speak",min:15,desc:"🎤 Speak out loud, record yourself, compare with the sample"},
-  {set:"ex-en-cam",min:40,desc:"📝 Open-ended practice exam for Cambridge English"},
-  {set:"ex-din-1",min:40,desc:"📝 Din Kültürü practice exam (Senaryo 4)"},
-  {set:"ex-din-2",min:40,desc:"📝 A second Din Kültürü practice exam"},
-  {set:"ex-fen-mix",min:35,desc:"📊 Mixed exam: table, evaporation chart, matching, gaps + written"},
-  {set:"ex-en-mix",min:35,desc:"📊 Mixed exam: table, clubs chart, matching, gaps + writing"},
-  {set:"ex-din-mix",min:35,desc:"📊 Karma deneme: tablo, besin zinciri grafiği, eşleştirme, boşluk + yazılı"}]},
+]},
 "tr-yazim-cards":{s:"tr",kind:"cards",title:"Doğru yazım kartları",cards:[
  {f:"herkez / herkes ?",b:"<b>herkes</b>"},{f:"yanlız / yalnız ?",b:"<b>yalnız</b>"},{f:"yalnış / yanlış ?",b:"<b>yanlış</b>"},
  {f:"hiç bir / hiçbir ?",b:"<b>hiçbir</b> (bitişik)"},{f:"her şey / herşey ?",b:"<b>her şey</b> (ayrı)"},{f:"bir kaç / birkaç ?",b:"<b>birkaç</b> (bitişik)"},
@@ -1515,26 +1503,37 @@ const DAYS=[
   {lesson:"L-en-will",min:10,desc:"Rules, forms and the decision machine"},
   {set:"en-will",min:12,desc:"Will or be going to: notes and quiz"},
   {set:"en-will-sort",min:5,desc:"Sort the sentences: will or going to?"},
-  {set:"en-nature-match",min:5,desc:"Unit 1 nature words"}]},
- {d:"2026-11-11",note:"Tomorrow: English 09.20 and the English listening exam 10.15. The topics sheet lists MEB Themes 1–2 (school life, classroom life) and the Cambridge units (nature, past tenses, will/going to). Ask your teacher which exam has which, and practise both!",tasks:[
+  {set:"en-nature-match",min:5,desc:"Unit 1 nature words"},
+  {set:"ex-fen-cam",min:40,desc:"📝 Open-ended practice exam for tomorrow"},
+  {set:"ex-fen-mix",min:35,desc:"📊 Mixed exam: table, evaporation chart, matching, gaps + written"}]},
+ {d:"2026-11-11",note:"Tomorrow: MEB English 09.20 (Themes 1–2: school life, classroom life) and the English listening exam 10.15. Today is all about those topics.",tasks:[
+  {lesson:"L-en-meb",min:8,desc:"Clubs, countries, national days, rules, a/an/the"},
+  {set:"en-meb",min:6,desc:"Quiz on the MEB school-life topics"},
+  {set:"en-country-match",min:4,desc:"Countries and nationalities"},
+  {lesson:"L-en-school",min:6,desc:"Rules, likes and the interactive clock"},
+  {set:"en-school",min:12,desc:"Rules, likes and telling the time"},
+  {set:"en-time",min:6,desc:"Clock game: read the clock in English"},
+  {set:"en-school-match",min:5,desc:"School and classroom words"},
+  {brk:1,min:5},
+  {set:"ex-en-meb",min:40,desc:"📝 Open-ended practice exam (MEB Themes 1–2)"},
+  {set:"ex-en-dinle",min:15,desc:"🎧 Practice for tomorrow’s English listening exam"},
+  {set:"en-dinle",min:6,desc:"🎧 One more listening: Emma's trip"},
+  {set:"en-speak",min:15,desc:"🎤 Speak out loud, record yourself, compare with the sample"},
+  {lesson:"L-din-duzen",min:6,desc:"Düzen, akıl yürütme ve tevhid"},
+  {set:"din-duzen",min:10,desc:"Start Din Kültürü for Friday"}]},
+ {d:"2026-11-12",note:"Last study day! Tomorrow: Cambridge English 09.20 (Units 1–2: nature, past tenses, conditionals, will / going to) and Din Kültürü 10.15.",tasks:[
+  {lesson:"L-en-will",min:8,desc:"Will or be going to: rules and the decision machine"},
   {set:"en-will-type",min:10,desc:"Type the answers yourself"},
   {set:"en-will-speed",min:3,desc:"60-second will vs going to challenge"},
   {set:"en-will-dinle",min:8,desc:"Listening: Deniz's summer plans"},
-  {lesson:"L-en-grammar",min:6,desc:"Stative verbs and if-sentences"},
-  {set:"en-verbs",min:8,desc:"Stative and action verbs"},
   {lesson:"L-en-past",min:6,desc:"The timeline of past tenses"},
   {set:"en-past",min:10,desc:"Was reading when … rang"},
-  {set:"en-cond",min:10,desc:"If …, will / would"},
-  {brk:1,min:5},
-  {set:"en-dinle",min:6,desc:"Listening: Emma's trip"},
-  {lesson:"L-din-duzen",min:6,desc:"Düzen, akıl yürütme ve tevhid"},
-  {set:"din-duzen",min:10,desc:"Start Din Kültürü for Friday"}]},
- {d:"2026-11-12",note:"Last study day! Tomorrow: Cambridge English 09.20 and Din Kültürü 10.15.",tasks:[
-  {lesson:"L-en-school",min:6,desc:"Rules, likes and the interactive clock"},
-  {set:"en-school",min:12,desc:"Cambridge English: rules, likes and the time"},
-  {set:"en-time",min:8,desc:"Clock game: read the clock in English"},
-  {set:"en-school-match",min:5,desc:"School and classroom words"},
-  {set:"en-will-speed",min:3,desc:"Will vs going to: beat your best score"},
+  {lesson:"L-en-grammar",min:6,desc:"Stative verbs and if-sentences"},
+  {set:"en-verbs",min:8,desc:"Stative and action verbs"},
+  {set:"en-cond",min:10,desc:"If …, will / would; goals and jobs"},
+  {set:"en-nature-match",min:5,desc:"Unit 1 nature words"},
+  {set:"ex-en-cam",min:40,desc:"📝 Open-ended practice exam for Cambridge English"},
+  {set:"ex-en-mix",min:35,desc:"📊 Mixed exam: table, chart, matching, gaps + writing"},
   {brk:1,min:5},
   {lesson:"L-din-esma",min:8,desc:"İsimler ve hangi durumda kullanıldıkları"},
   {set:"din-esma-match",min:5,desc:"Match the names and meanings"},
@@ -1542,9 +1541,12 @@ const DAYS=[
   {lesson:"L-din-ihlas",min:6,desc:"Ayet ayet anlamı"},
   {set:"din-ihlas",min:10,desc:"İhlas: reading, meaning and facts"},
   {set:"din-ihlas-order",min:5,desc:"Put the verses in order"},
-  {set:"din-tf",min:3,desc:"60-second true or false"}]},
+  {set:"din-tf",min:3,desc:"60-second true or false"},
+  {set:"ex-din-1",min:40,desc:"📝 Din Kültürü practice exam (Senaryo 4)"},
+  {set:"ex-din-mix",min:35,desc:"📊 Karma deneme: tablo, besin zinciri grafiği, eşleştirme, boşluk + yazılı"},
+  {set:"ex-din-2",min:40,desc:"📝 A second Din Kültürü practice exam (if you have time)"}]},
  {d:"2026-11-13",note:"Exam day! Just a short warm-up at breakfast. Good luck! 🍀",tasks:[
-  {set:"en-time",min:4,desc:"Quick warm-up for Cambridge English"},
+  {set:"en-will-speed",min:3,desc:"Quick warm-up for Cambridge English"},
   {set:"din-esma-speed",min:3,desc:"Quick warm-up for Din Kültürü"}]}
 ];
 // Each task's id is its day plus what it is (2026-11-09#tr-okuma), never its position.
@@ -1565,7 +1567,13 @@ if(!S.v){const OLD_LAYOUT={"2026-11-08":["tr-yazim","tr-yazim-cards","break","tr
     if(!m){moved[id]=S.done[id];return}
     const list=OLD_LAYOUT[m[1]];if(!list||list[+m[2]]==null)return;
     const k=list[+m[2]],n=list.slice(0,+m[2]+1).filter(x=>x===k).length;moved[m[1]+"#"+k+(n>1?"#"+n:"")]=true});
-  S.done=moved;S.v=2;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}S.stats=Object.assign({perfect:0,maxStreak:0,streak:0},S.stats||{});
+  S.done=moved;S.v=2;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+// 11 Nov: MEB English moved to Wednesday (exam Thursday), the Cambridge units to Thursday (exam Friday).
+// Ticks follow their task to its new day.
+if(S.v<3){[["2026-11-11","2026-11-12",["en-will-type","en-will-speed","en-will-dinle","lesson:L-en-grammar","en-verbs","lesson:L-en-past","en-past","en-cond"]],
+  ["2026-11-12","2026-11-11",["lesson:L-en-school","en-school","en-time","en-school-match"]]].forEach(([from,to,ks])=>ks.forEach(k=>{
+    if(S.done[from+"#"+k]){delete S.done[from+"#"+k];S.done[to+"#"+k]=true}}));
+  S.v=3;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}S.stats=Object.assign({perfect:0,maxStreak:0,streak:0},S.stats||{});
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
 
 // ---------- helpers ----------

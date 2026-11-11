@@ -1,5 +1,5 @@
 // Newest version when online, saved copy when offline. Bump VERSION when files change.
-const VERSION = 'yazili-v6';
+const VERSION = 'yazili-v7';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/apple-touch-icon.png'];
 self.addEventListener('install', e => e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())));
 self.addEventListener('activate', e => e.waitUntil(caches.keys()
