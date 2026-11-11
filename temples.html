@@ -438,7 +438,6 @@ const PATS={
   function*(b){const p=P(),n=b.enraged?9:6;for(let i=0;i<n;i++){const a=rand(0,TAU),r=i===0?0:rand(40,170);mark(p.x+Math.cos(a)*r,p.y+Math.sin(a)*r,44,.9,{col:'#ff6a2b',dmg:4,then:'flame'})}yield 1.2},
  ],
  wind:[
-  function*(b){b.hold=true;for(let k=0;k<(b.enraged?4:3);k++){const a=angTo(b,P());b.tele={a,len:520,w:44};yield .42;b.tele=null;b.dash={vx:Math.cos(a)*820,vy:Math.sin(a)*820};sfx(500,.25,'sine',-300,.05);yield .38;b.dash=null;yield .15}},
   function*(b){for(let i=0;i<(b.enraged?4:2);i++){shot(b.x,b.y,angTo(b,P())+rand(-1,1),120,{r:16,dmg:2,col:'#e8f6ff',kind:'tornado',home:1.4,life:5.5,push:true});yield .3}yield .4},
   function*(b){b.hold=true;const arms=b.enraged?3:2;let a=rand(0,TAU);for(let i=0;i<24;i++){for(let k=0;k<arms;k++)shot(b.x,b.y,a+k*TAU/arms,200,{r:6,dmg:3,col:'#cfeeff',kind:'gust'});a+=.23;if(i%3===0)sfx(700,.04,'sine',-200,.03);yield .07}},
  ],
