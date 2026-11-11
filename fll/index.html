@@ -523,20 +523,40 @@ async function sync(){
       if(error)throw error;rows.forEach(r=>server[r.kind+'/'+r.id]=r);if(rows.length<1000)break;
     }
     // 2. send this device's changes, unless someone saved a newer version
-    const out=localItems().filter(it=>{const k=it.kind+'/'+it.id,srv=server[k];
-      return sigOf(it.d,it.del)!==synced[k]&&mayWrite(it)&&!(srv&&Date.parse(srv.updated_at)>=it.u)&&!(srv&&sigOf(obj(srv.data),srv.deleted)===sigOf(it.d,it.del))});
+    const out=localItems().filter(it=>{const k=it.kind+'/'+it.id;return mayWrite(it)&&shouldSend(it,server[k],synced[k])});
     const sent=new Set();
     for(let i=0;i<out.length;i+=200){
       const part=out.slice(i,i+200);
-      const {error}=await sb.from('items').upsert(part.map(it=>({group_id:team.gid,kind:it.kind,id:it.id,data:it.d,deleted:it.del,updated_by:team.mid,updated_at:new Date(it.u||now()).toISOString()})),{onConflict:'group_id,kind,id'});
+      const {error}=await sb.from('items').upsert(part.map(it=>({group_id:team.gid,kind:it.kind,id:it.id,data:it.d,deleted:it.del,updated_by:team.mid,updated_at:new Date(Math.max(it.u||now(),server[it.kind+'/'+it.id]?Date.parse(server[it.kind+'/'+it.id].updated_at)+1:0)).toISOString()})),{onConflict:'group_id,kind,id'});
       if(error)throw error;part.forEach(it=>{const k=it.kind+'/'+it.id;synced[k]=sigOf(it.d,it.del);sent.add(k)});
     }
     // 3. take everyone else's changes
     for(const [k,row] of Object.entries(server)){if(sent.has(k))continue;applyRow(row);synced[k]=sigOf(obj(row.data),row.deleted)}
     saveSynced();saveLocal();dirty=false;lastSync=now();syncState='';
   }catch(e){syncState=errText(e);if(/join the group again|removed|deleted/.test(String(e.message)))syncState=e.message}
-  syncing=false;await applyRoles();setTeamBtn();renderAll();
+  syncing=false;await applyRoles();setTeamBtn();safeRender();
 }
+// Send a local change when the server copy is still the one this device last synced, whatever the
+// clocks say: a computer whose clock runs a little behind used to lose its changes and had to click again.
+// Only when someone else changed the same thing since then does the newer time win.
+function shouldSend(it,srv,last){
+  const mine=sigOf(it.d,it.del);
+  if(mine===last)return false;                 // nothing changed here
+  if(!srv)return true;                         // new on the server
+  const theirs=sigOf(obj(srv.data),srv.deleted);
+  if(theirs===mine)return false;               // already the same
+  if(last!==undefined&&theirs===last)return true; // only this device changed it
+  return !(Date.parse(srv.updated_at)>=it.u);  // both changed it: newest wins
+}
+// Redrawing replaces buttons and inputs, so wait while a button is held down or a field is being typed in.
+let pointerHeld=false,renderWaiting=false;
+const typing=()=>{const a=document.activeElement;return !!a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)&&!$('teamSheet').contains(a)};
+function safeRender(){if(pointerHeld||typing()){renderWaiting=true;return}renderWaiting=false;renderAll()}
+const flushRender=()=>{if(renderWaiting&&!pointerHeld&&!typing())setTimeout(safeRender,0)};
+addEventListener('pointerdown',()=>{pointerHeld=true},true);
+addEventListener('pointerup',()=>{pointerHeld=false;setTimeout(flushRender,0)},true);
+addEventListener('pointercancel',()=>{pointerHeld=false;flushRender()},true);
+addEventListener('focusout',()=>setTimeout(flushRender,0),true);
 // wait a moment after changes so several taps share one sync
 function changed(){data.updatedAt=now();saveLocal();if(!team)return;dirty=true;setTeamBtn();clearTimeout(syncTimer);syncTimer=setTimeout(sync,2500)}
 function setTeamBtn(busy){
