@@ -39,6 +39,7 @@ header{padding-block:16px 6px;display:flex;align-items:center;gap:12px;flex-wrap
 .brand img{width:40px;height:40px;border-radius:11px}
 .brand h1{font-size:23px}
 .brand p{margin:0;font-size:13px;color:var(--mute)}
+.ver{display:inline-block;vertical-align:4px;font-size:13px;font-weight:700;background:var(--gold);color:#241a00;border-radius:99px;padding:2px 9px;margin-left:4px}
 .next{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:8px 14px;font-size:14px;line-height:1.3}
 .next b{font-family:var(--display);font-weight:600;font-size:16px;display:block}
 .tabs{display:flex;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:5px;margin:12px 0}
@@ -333,7 +334,7 @@ details.notes summary{cursor:pointer}
   <header>
     <a class="brand" href="../" aria-label="Back to Kuzey Arcade">
       <img src="icons/icon-192.png" alt="">
-      <div><h1>Yazılı Planı</h1><p>1. Dönem 1. Yazılılar · 5. sınıf</p></div>
+      <div><h1>Yazılı Planı <span class="ver" title="Version 2">v2</span></h1><p>Version 2 · 1. Dönem 1. Yazılılar · 5. sınıf</p></div>
     </a>
     <div class="next" id="next"></div>
     <div class="xp" id="xp"></div>
@@ -1460,6 +1461,130 @@ Object.assign(SETS,{
 ]}
 });
 
+// ---------- version 2 (11 Nov): more Cambridge English (Units 1–2) and Din Kültürü practice ----------
+const P_RES="Natural resources are things from nature that people use. Some of them are renewable: the sun, the wind and water will never run out. Others are non-renewable: coal, oil and natural gas took millions of years to form, and one day they will run out. Today, people use a lot of fossil fuels, and this causes air pollution. Many countries are building solar panels and wind turbines because they are cleaner. We can all help: we can switch off lights, recycle paper and plastic, and walk or cycle instead of going by car.";
+const P_DREAM="Selin is eleven and she has a big dream: she wants to be an astronaut. Last year, while she was watching a documentary about space, she decided to work hard at science and maths. Now she is going to join the science club at school, and next summer she is going to attend a space camp. Her teacher says, \"If you keep studying, you will reach your goal.\" Selin thinks people will live on the Moon one day. \"If I were an astronaut, I would plant a garden on the Moon!\" she says.";
+Object.assign(SETS,{
+"cam-nature-read":{s:"en",kind:"quiz",title:"Cambridge reading: natural resources",qs:[
+ {p:P_RES,q:"What are natural resources?",o:["Things from nature that people use","Things made in factories","Only fossil fuels","Plastic and paper"],e:"First sentence."},
+ {p:P_RES,q:"Which group is renewable?",o:["sun, wind, water","coal, oil, gas","plastic, paper, glass","cars, bikes, buses"],e:"They will never run out."},
+ {p:P_RES,q:"Why will coal and oil run out one day?",o:["They took millions of years to form.","People don't like them.","They are too cheap.","They are renewable."],e:"Non-renewable resources form very slowly."},
+ {p:P_RES,q:"What problem do fossil fuels cause?",o:["Air pollution","More water","Stronger wind","Less sunshine"],e:"“this causes air pollution”"},
+ {p:P_RES,q:"Why are countries building solar panels and wind turbines?",o:["Because they are cleaner","Because they are cheaper than bikes","Because coal is renewable","Because people hate oil"],e:"“because they are cleaner”"},
+ {p:P_RES,q:"Which is NOT a way to help, according to the text?",o:["Going everywhere by car","Switching off lights","Recycling paper and plastic","Walking or cycling"],e:"The text says walk or cycle instead of going by car."}
+]},
+"cam-stative-sort":{s:"en",kind:"sort",title:"Stative or action verb?",ask:"Is the verb in capitals stative (no -ing) or an action verb?",buckets:["Stative","Action"],items:[
+ {t:"I KNOW the answer.",k:0},{t:"She is RUNNING in the park.",k:1},{t:"We NEED more water.",k:0},{t:"They are BUILDING a treehouse.",k:1},
+ {t:"This soup TASTES great.",k:0},{t:"He BELIEVES in his dream.",k:0},{t:"Mum is COOKING dinner.",k:1},{t:"I LOVE this song.",k:0},
+ {t:"The birds are FLYING south.",k:1},{t:"Do you UNDERSTAND the question?",k:0},{t:"We are PLANTING trees today.",k:1},{t:"This book BELONGS to me.",k:0},
+ {t:"Look! It is SNOWING.",k:1},{t:"I WANT a new bike.",k:0}
+]},
+"cam-past-type":{s:"en",kind:"type",title:"Type it: past simple or past continuous",ask:"Write the verb in brackets in the past simple or the past continuous.",items:[
+ {t:"I ___ (read) when the lights went out.",a:["was reading"],h:"A long action in progress.",e:"was reading"},
+ {t:"When the bell ___ (ring), we stopped writing.",a:["rang"],h:"A short action. ring is irregular.",e:"rang"},
+ {t:"While they ___ (play) football, it started to rain.",a:["were playing"],h:"while + long action; they →",e:"were playing"},
+ {t:"Yesterday we ___ (go) to the forest.",a:["went"],h:"Finished action, irregular verb.",e:"went"},
+ {t:"At 8 o'clock last night, my sister ___ (watch) TV.",a:["was watching"],h:"In progress at a time in the past.",e:"was watching"},
+ {t:"I ___ (see) a deer while I was walking in the woods.",a:["saw"],h:"Short action, irregular.",e:"saw"},
+ {t:"They ___ (not / sleep) when I called them.",a:["weren't sleeping","were not sleeping"],h:"Negative past continuous.",e:"weren't sleeping"},
+ {t:"___ you ___ (finish) your homework yesterday? (Write both words: Did … finish)",a:["did finish","did you finish"],h:"Question: Did + subject + base verb.",e:"Did you finish"},
+ {t:"The children ___ (make) a poster about recycling when the teacher came in.",a:["were making"],h:"Long action interrupted.",e:"were making"},
+ {t:"Last summer my family ___ (buy) solar panels.",a:["bought"],h:"buy is irregular.",e:"bought"}
+]},
+"cam-irregular-speed":{s:"en",kind:"speed",title:"Irregular verbs: 60-second challenge",how:"60 seconds! Pick the right past simple form.",items:[
+ {q:"go →",o:["went","goed"]},{q:"see →",o:["saw","seed"]},{q:"have →",o:["had","haved"]},{q:"come →",o:["came","comed"]},{q:"ring →",o:["rang","ringed"]},
+ {q:"eat →",o:["ate","eated"]},{q:"take →",o:["took","taked"]},{q:"make →",o:["made","maked"]},{q:"buy →",o:["bought","buyed"]},{q:"write →",o:["wrote","writed"]},
+ {q:"find →",o:["found","finded"]},{q:"fall →",o:["fell","falled"]},{q:"fly →",o:["flew","flied"]},{q:"grow →",o:["grew","growed"]},{q:"swim →",o:["swam","swimmed"]},
+ {q:"run →",o:["ran","runned"]},{q:"think →",o:["thought","thinked"]},{q:"build →",o:["built","builded"]},{q:"leave →",o:["left","leaved"]},{q:"begin →",o:["began","beginned"]},
+ {q:"break →",o:["broke","breaked"]},{q:"drink →",o:["drank","drinked"]},{q:"give →",o:["gave","gived"]},{q:"know →",o:["knew","knowed"]}
+]},
+"cam-cond-sort":{s:"en",kind:"sort",title:"First or second conditional?",ask:"Is this a real possibility (first) or imaginary (second)?",buckets:["First (if + present, will)","Second (if + past, would)"],items:[
+ {t:"If it rains, we will stay inside.",k:0},{t:"If I had wings, I would fly to school.",k:1},{t:"If you recycle, you will help the planet.",k:0},
+ {t:"If I were a fish, I would live in the ocean.",k:1},{t:"If she studies, she will pass the test.",k:0},{t:"If we lived on Mars, we would need space suits.",k:1},
+ {t:"If you don't hurry, you will miss the bus.",k:0},{t:"If I met a dinosaur, I would run away!",k:1},{t:"If the weather is nice, we will plant trees.",k:0},
+ {t:"If I could talk to animals, I would ask them questions.",k:1}
+]},
+"cam-cond-type":{s:"en",kind:"type",title:"Type it: first and second conditional",ask:"Write the verb in brackets in the correct form.",items:[
+ {t:"If we ___ (protect) the forests, animals will have homes.",a:["protect"],h:"First conditional: if + present simple.",e:"protect"},
+ {t:"If we plant more trees, the air ___ (be) cleaner.",a:["will be","'ll be"],h:"If + present, will + verb.",e:"will be"},
+ {t:"If I ___ (have) a million dollars, I would build a zoo.",a:["had"],h:"Second conditional: if + past simple.",e:"had"},
+ {t:"If I were a teacher, I ___ (give) no homework!",a:["would give","'d give"],h:"would + base verb.",e:"would give"},
+ {t:"If it ___ (snow) tomorrow, we will make a snowman.",a:["snows"],h:"he/she/it + -s in the present.",e:"snows"},
+ {t:"If people ___ (not / recycle), there will be more rubbish.",a:["don't recycle","do not recycle"],h:"Negative present simple.",e:"don't recycle"},
+ {t:"If I ___ (be) an astronaut, I would visit the Moon.",a:["were","was"],h:"If I were…",e:"were"},
+ {t:"If you work hard, you ___ (achieve) your goals.",a:["will achieve","'ll achieve"],h:"Real possibility → will.",e:"will achieve"}
+]},
+"cam-jobs-match":{s:"en",kind:"match",title:"Jobs and dreams match",pairs:[["vet","looks after sick animals"],["architect","designs buildings"],["astronaut","travels into space"],["engineer","builds machines and bridges"],
+ ["pilot","flies planes"],["chef","cooks in a restaurant"],["journalist","writes the news"],["scientist","does experiments"],["firefighter","puts out fires"],["dentist","looks after teeth"]]},
+"cam-dream-read":{s:"en",kind:"quiz",title:"Cambridge reading: Selin's dream",qs:[
+ {p:P_DREAM,q:"What is Selin's dream job?",o:["Astronaut","Teacher","Scientist","Gardener"],e:"“she wants to be an astronaut”"},
+ {p:P_DREAM,q:"What was Selin doing when she decided to work hard?",o:["She was watching a documentary about space.","She was reading a book.","She was at space camp.","She was planting a garden."],e:"Past continuous: was watching."},
+ {p:P_DREAM,q:"What is Selin going to do next summer?",o:["Attend a space camp","Visit the Moon","Join the art club","Write a book"],e:"A plan → going to."},
+ {p:P_DREAM,q:"Which sentence from the text is a prediction?",o:["People will live on the Moon one day.","She is going to join the science club.","She was watching a documentary.","She is eleven."],e:"Opinion about the future → will."},
+ {p:P_DREAM,q:"“If I were an astronaut, I would plant a garden on the Moon.” What kind of sentence is this?",o:["Second conditional (imaginary)","First conditional (real)","Past continuous","A plan with going to"],e:"If + past, would + verb."},
+ {p:P_DREAM,q:"What does her teacher say?",o:["If she keeps studying, she will reach her goal.","She is too young to dream.","She should be a teacher.","Space is boring."],e:"First conditional: If you keep studying, you will reach your goal."}
+]},
+"ex-en-cam2":{s:"en",kind:"exam",mixed:true,title:"Cambridge English Mixed Exam 2",sub:"Units 1–2 · tables, matching, gaps + writing · 100 points",mins:40,qs:[
+ {k:"Vocabulary",text:"",parts:[{type:"table",q:"Complete the table: is it renewable or non-renewable?",pts:12,head:["Resource","Renewable / non-renewable"],rows:[
+  ["sunlight",{a:["renewable"]}],["coal",{a:["non-renewable","nonrenewable","non renewable"]}],["wind",{a:["renewable"]}],["oil",{a:["non-renewable","nonrenewable","non renewable"]}],["water",{a:["renewable"]}],["natural gas",{a:["non-renewable","nonrenewable","non renewable"]}]]}]},
+ {k:"Jobs",text:"",parts:[{type:"match",q:"Match the job to what the person does.",pts:10,pairs:[["vet","looks after sick animals"],["architect","designs buildings"],["pilot","flies planes"],["journalist","writes the news"],["engineer","builds machines and bridges"]]}]},
+ {k:"Grammar",text:"",parts:[{type:"gaps",q:"Write the correct form of the verb in brackets.",pts:24,items:[
+  {t:"I ___ (know) the answer. (stative verb)",a:[["know"]]},{t:"Look! The children ___ (plant) trees.",a:[["are planting"]]},
+  {t:"I was reading when the phone ___ (ring).",a:[["rang"]]},{t:"While we ___ (walk) home, it started to rain.",a:[["were walking"]]},
+  {t:"If it rains tomorrow, we ___ (stay) at home.",a:[["will stay","'ll stay"]]},{t:"If I ___ (have) wings, I would fly.",a:[["had"]]},
+  {t:"Look at the clouds! It ___ rain. (be going to)",a:[["is going to","'s going to"]]},{t:"I think robots ___ (help) us in the future.",a:[["will help","'ll help"]]}]}]},
+ {k:"Past tenses",text:"",parts:[{q:"4. Write two sentences about something that happened to you. Use the past continuous and the past simple together (when / while).",pts:14,rub:[["Uses was/were + -ing correctly",5],["Uses a past simple verb correctly",5],["Uses when or while",4]],model:"I was walking to school when I saw a cat in a tree. While my brother was playing football, he fell over."}]},
+ {k:"Nature",text:"",parts:[{q:"5. Write three things people can do to protect nature. Use 'If we …, we will …' at least once.",pts:16,rub:[["Three good ideas",8],["Correct first conditional",8]],model:"We can recycle plastic, switch off lights and plant trees. If we recycle, we will have less rubbish. If we plant trees, animals will have homes."}]},
+ {k:"Dreams",text:"",parts:[{q:"6. What is your dream? Write 4 sentences: what you want to be, what you are going to do to achieve it, a prediction with will, and a second conditional (If I were …).",pts:24,rub:[["Says the dream job and why",6],["going to for a plan",6],["will for a prediction",6],["Correct second conditional",6]],model:"I want to be an engineer because I love building things. I'm going to join the robotics club. I think I will build robots one day. If I were an engineer, I would build a bridge across the sea."}]}
+]},
+"din-duzen-sort":{s:"din",kind:"sort",title:"Evrendeki düzene örnek mi?",ask:"Bu durum evrendeki düzene bir örnek midir?",buckets:["Düzene örnek","Örnek değil"],items:[
+ {t:"Güneş’in her sabah doğudan doğması",k:0},{t:"Mevsimlerin hep aynı sırayla gelmesi",k:0},{t:"Odanın dağınık kalması",k:1},{t:"Arıların altıgen petek yapması",k:0},
+ {t:"Kalbin durmadan çalışması",k:0},{t:"Bir oyunda kaybetmek",k:1},{t:"Ay’ın evrelerinin her ay tekrarlanması",k:0},{t:"Kalemin kırılması",k:1},
+ {t:"Besin zincirinde her canlının bir görevi olması",k:0},{t:"Dünya’nın Güneş’e yaşamaya uygun uzaklıkta olması",k:0},{t:"Otobüsün geç kalması",k:1},{t:"Göçmen kuşların her yıl aynı yuvaya dönmesi",k:0}
+]},
+"din-esma-type":{s:"din",kind:"type",title:"Yaz bakalım: hangi isim?",ask:"Duruma uygun güzel ismi yaz (ör. Alîm). “El-, Er-, Es-” yazmasan da olur.",items:[
+ {t:"Allah içimizden geçenleri bile bilir. → ___",a:["alim","el-alim","el alim"],h:"“Bilen” anlamındaki isim.",e:"El-Alîm"},
+ {t:"Allah sessizce ettiğimiz duayı da işitir. → ___",a:["semi","es-semi","es semi","semî"],h:"“İşiten”",e:"Es-Semî"},
+ {t:"Allah karanlıktaki karıncayı bile görür. → ___",a:["basir","el-basir","el basir"],h:"“Gören”",e:"El-Basîr"},
+ {t:"Allah’ın gücü her şeye yeter. → ___",a:["kadir","el-kadir","el kadir"],h:"“Gücü yeten”",e:"El-Kadîr"},
+ {t:"Allah bütün canlılara rızık verir. → ___",a:["rezzak","er-rezzak","er rezzak"],h:"“Rızık veren”",e:"Er-Rezzâk"},
+ {t:"Allah pişman olanların günahlarını bağışlar. → ___",a:["gafur","el-gafur","el gafur","rahim","er-rahim"],h:"“Bağışlayan”",e:"El-Gafûr (Er-Rahîm de kabul)"},
+ {t:"Allah her şeyi yoktan yaratır. → ___",a:["halik","el-halik","el halik"],h:"“Yaratan”",e:"El-Hâlık"},
+ {t:"Allah dünyada bütün canlılara merhamet eder. → ___",a:["rahman","er-rahman","er rahman"],h:"“Bütün canlılara merhamet eden”",e:"Er-Rahmân"},
+ {t:"Allah bir ve tektir, benzeri yoktur. → ___",a:["ehad","el-ehad","vahid","el-vahid"],h:"“Bir ve tek olan”",e:"El-Ehad / El-Vâhid"},
+ {t:"Allah hiçbir şeye muhtaç değildir. → ___",a:["samed","es-samed","es samed"],h:"İhlas suresinde de geçer.",e:"Es-Samed"}
+]},
+"din-ihlas-match":{s:"din",kind:"match",title:"İhlas: ayet ve anlamı",pairs:[["Kul hüvallâhü ehad.","De ki: O, Allah’tır, bir tektir."],["Allâhüs-samed.","Her şey O’na muhtaçtır, O hiçbir şeye muhtaç değildir."],["Lem yelid ve lem yûled.","O, doğurmamış ve doğurulmamıştır."],["Ve lem yekün lehû küfüven ehad.","Hiçbir şey O’na denk değildir."]]},
+"din-ihlas-type":{s:"din",kind:"type",title:"İhlas: eksik kelimeyi yaz",ask:"Ayetteki eksik kelimeyi yaz.",items:[
+ {t:"Kul hüvallâhü ___.",a:["ehad"],h:"“bir, tek”",e:"ehad"},{t:"Allâhüs-___.",a:["samed"],h:"“hiçbir şeye muhtaç olmayan”",e:"samed"},
+ {t:"Lem yelid ve lem ___.",a:["yuled","yûled"],h:"“doğurulmamış”",e:"yûled"},{t:"Ve lem yekün lehû küfüven ___.",a:["ehad"],h:"Birinci ayetin son kelimesi ile aynı.",e:"ehad"},
+ {t:"İhlas suresi Kur’an’ın ___. suresidir.",a:["112"],h:"Kur’an’ın sonlarına doğru.",e:"112"},{t:"İhlas suresi ___ ayettir.",a:["4","dört"],h:"Saydın mı?",e:"4"}
+]},
+"din-ayet-quiz":{s:"din",kind:"quiz",title:"Ayetler ve kavramlar",qs:[
+ {q:"“Güneş ve ay bir hesaba göre hareket etmektedir.” ayeti hangi surededir?",o:["Rahmân suresi, 5. ayet","Enbiyâ suresi, 22. ayet","Nahl suresi, 68. ayet","İhlas suresi, 1. ayet"],e:"Rahmân 5."},
+ {q:"“Eğer yerde ve gökte Allah’tan başka ilahlar olsaydı, ikisinin de düzeni bozulurdu.” ayeti neyi anlatır?",o:["Allah’ın birliğini (tevhid)","Arıların hayatını","Mevsimleri","Namazı"],e:"Enbiyâ 22: tevhid."},
+ {q:"Nahl suresinin 68. ayetinde hangi canlıdan söz edilir?",o:["Bal arısı","Karınca","Kartal","Balık"],e:"“Rabbin bal arısına şöyle vahyetti…”"},
+ {q:"Gördüğümüz düzenden yola çıkarak bir yaratıcının varlığına ulaşmaya ne denir?",o:["Akıl yürütme","Tesadüf","Ezber","Tahmin"],e:"Düzen → düzenleyen."},
+ {q:"Dünya’nın kendi etrafında dönmesinin sonucu nedir?",o:["Gece ve gündüz","Mevsimler","Ay’ın evreleri","Gelgit"],e:"Yaklaşık 24 saatte bir döner."},
+ {q:"Dünya’nın Güneş etrafında dolanmasının sonucu nedir?",o:["Yıl ve mevsimler","Gece ve gündüz","Rüzgâr","Deprem"],e:"Yaklaşık 365 günde dolanır."},
+ {q:"Besin zincirinde bir halka yok olursa ne olur?",o:["Bütün zincir etkilenir, denge bozulur.","Hiçbir şey olmaz.","Sadece o canlı etkilenir.","Canlılar çoğalır."],e:"Canlılar birbirine bağlıdır."},
+ {q:"“Esmaü’l-Hüsna” ne demektir?",o:["Allah’ın en güzel isimleri","Peygamberlerin isimleri","Surelerin isimleri","Meleklerin isimleri"],e:"En güzel isimler."},
+ {q:"Hangisi “Ya + isim + anlamı + istek” kuralına uygun bir duadır?",o:["“Ya Semî! Duamı işitirsin; hasta dedeme şifa ver.”","“Ya Semî! Bana yemek ver.”","“Semî güzel bir isimdir.”","“Ya Basîr! Bugün hava güzel.”"],e:"İsim, anlamı ve istek birbirine uygun."},
+ {q:"Hangisi İhlas suresinin ana mesajıdır?",o:["Allah birdir ve hiçbir şeye muhtaç değildir.","Namaz kılmalıyız.","Peygamberimiz Mekke’de doğdu.","Ramazanda oruç tutulur."],e:"Tevhid."}
+]},
+"ex-din-mix2":{s:"din",kind:"exam",mixed:true,title:"Din Kültürü Karma Deneme 2",sub:"Tablo, eşleştirme, boşluk doldurma + yazılı · 100 puan",mins:40,qs:[
+ {k:"DKAB.5.1.1",text:"",parts:[{type:"table",q:"Dünya’nın hareketlerini ve sonuçlarını tabloya yazınız.",pts:12,head:["Hareket","Süresi (yaklaşık)","Sonucu"],rows:[
+  ["Kendi etrafında dönme",{a:["24 saat","24","1 gün","bir gün"]},{a:["gece ve gündüz","gece gündüz","gece-gündüz"]}],["Güneş etrafında dolanma",{a:["365 gün","365","1 yıl","bir yıl"]},{a:["mevsimler","yıl","mevsimler ve yıl","yıl ve mevsimler"]}]]}]},
+ {k:"DKAB.5.1.3",text:"",parts:[{type:"match",q:"Durumları uygun isimle eşleştiriniz.",pts:12,pairs:[["Sessizce ettiğim duayı duyar.","Es-Semî"],["Karanlıktaki karıncayı görür.","El-Basîr"],["Kalbimden geçeni bilir.","El-Alîm"],["Bütün canlıları besler.","Er-Rezzâk"],["Her şeye gücü yeter.","El-Kadîr"],["Pişman olanı bağışlar.","El-Gafûr"]]}]},
+ {k:"DKAB.5.1.4",text:"",parts:[{type:"gaps",q:"İhlas suresindeki eksik kelimeleri yazınız.",pts:12,items:[{t:"Kul hüvallâhü ___.",a:[["ehad"]]},{t:"Allâhüs-___.",a:[["samed"]]},{t:"Lem yelid ve lem ___.",a:[["yûled","yuled"]]},{t:"Ve lem yekün lehû küfüven ___.",a:[["ehad"]]}]}]},
+ {k:"DKAB.5.1.2",text:"",parts:[{type:"gaps",q:"Boşlukları doldurunuz.",pts:12,items:[{t:"Allah’ın bir olduğuna inanmaya ___ denir.",a:[["tevhid","tevhit"]]},
+  {t:"“Rabbin bal ___ şöyle vahyetti…” (Nahl, 68)",a:[["arısına"]]},{t:"Evrendeki düzen kendiliğinden oluşamaz; onu yaratan ___’ın varlığını gösterir.",a:[["allah"]]}]}]},
+ {k:"DKAB.5.1.2",text:"<blockquote>“Eğer yerde ve gökte Allah’tan başka ilahlar olsaydı, ikisinin de düzeni bozulurdu.” <span class=\"ex\">(Enbiyâ, 22)</span></blockquote>",parts:[{q:"5. Ayeti günlük hayattan bir örnekle açıklayınız.",pts:16,rub:[["Birden fazla yönetici olunca düzenin bozulacağı fikri",8],["Uygun bir günlük hayat örneği (ör. iki kaptan, iki öğretmen)",8]],model:"Bir gemide iki kaptan farklı yönlere gitmek isterse gemi yoluna devam edemez. Evrende de birden fazla ilah olsaydı düzen bozulurdu. Düzenin sürmesi Allah’ın bir olduğunu gösterir."}]},
+ {k:"DKAB.5.1.1",text:"",parts:[{q:"6. Evrendeki düzene üç örnek yazınız ve bu örneklerden hangi sonuca ulaştığınızı açıklayınız.",pts:16,rub:[["Üç uygun örnek",9],["Sonuç: düzen tesadüf değildir, Allah’ın varlığını gösterir",7]],model:"Gece ve gündüzün oluşması, mevsimlerin sırayla gelmesi, arıların altıgen petek yapması. Bu düzen tesadüfen oluşamaz; onu yaratan Allah’ın varlığını gösterir."}]},
+ {k:"DKAB.5.1.3",text:"",parts:[{q:"7. Hasta olan dedeniz için Allah’ın güzel isimlerinden birini kullanarak bir dua yazınız.",pts:20,rub:[["Uygun isim",6],["İsmin anlamını duada kullandı",7],["Duruma uygun istek",7]],model:"“Ya Rahmân! Merhametin bütün canlılara yeter; dedeme şifa ver.” ya da “Ya Kadîr! Her şeye gücün yeter; dedemi iyileştir.”"}]}
+]}
+});
+
 // ---------- the plan: about an hour a day ----------
 const DAYS=[
  {d:"2026-11-08",note:"Türkçe is on Tuesday, so start with it. Finished fast? Do the bonus games below and collect XP!",tasks:[
@@ -1506,7 +1631,7 @@ const DAYS=[
   {set:"en-nature-match",min:5,desc:"Unit 1 nature words"},
   {set:"ex-fen-cam",min:40,desc:"📝 Open-ended practice exam for tomorrow"},
   {set:"ex-fen-mix",min:35,desc:"📊 Mixed exam: table, evaporation chart, matching, gaps + written"}]},
- {d:"2026-11-11",note:"Tomorrow: MEB English 09.20 (Themes 1–2: school life, classroom life) and the English listening exam 10.15. Today is all about those topics.",tasks:[
+ {d:"2026-11-11",note:"Tomorrow: MEB English 09.20 (Themes 1–2: school life, classroom life) and the English listening exam 10.15. Today is all about those topics. ✨ Version 2: you have more time today, so there are extra Cambridge English and Din Kültürü exercises at the bottom.",tasks:[
   {lesson:"L-en-meb",min:8,desc:"Clubs, countries, national days, rules, a/an/the"},
   {set:"en-meb",min:6,desc:"Quiz on the MEB school-life topics"},
   {set:"en-country-match",min:4,desc:"Countries and nationalities"},
@@ -1520,7 +1645,22 @@ const DAYS=[
   {set:"en-dinle",min:6,desc:"🎧 One more listening: Emma's trip"},
   {set:"en-speak",min:15,desc:"🎤 Speak out loud, record yourself, compare with the sample"},
   {lesson:"L-din-duzen",min:6,desc:"Düzen, akıl yürütme ve tevhid"},
-  {set:"din-duzen",min:10,desc:"Start Din Kültürü for Friday"}]},
+  {set:"din-duzen",min:10,desc:"Start Din Kültürü for Friday"},
+  {set:"cam-nature-read",min:6,desc:"✨ v2 · Cambridge Unit 1 reading: natural resources"},
+  {set:"cam-stative-sort",min:5,desc:"✨ v2 · Sort: stative or action verb?"},
+  {set:"cam-past-type",min:8,desc:"✨ v2 · Type the past simple / past continuous"},
+  {set:"cam-irregular-speed",min:3,desc:"✨ v2 · 60 seconds of irregular verbs"},
+  {set:"cam-cond-sort",min:5,desc:"✨ v2 · Sort: first or second conditional?"},
+  {set:"cam-cond-type",min:6,desc:"✨ v2 · Type the conditional forms"},
+  {set:"cam-jobs-match",min:4,desc:"✨ v2 · Unit 2 jobs match"},
+  {set:"cam-dream-read",min:6,desc:"✨ v2 · Cambridge Unit 2 reading: Selin's dream"},
+  {set:"ex-en-cam2",min:35,desc:"✨ v2 · 📊 Cambridge mixed exam 2: table, matching, gaps + writing"},
+  {set:"din-duzen-sort",min:4,desc:"✨ v2 · Sort: evrendeki düzene örnek mi?"},
+  {set:"din-ayet-quiz",min:6,desc:"✨ v2 · Ayetler ve kavramlar (Rahmân 5, Enbiyâ 22, Nahl 68)"},
+  {set:"din-esma-type",min:6,desc:"✨ v2 · Durumu oku, ismi yaz"},
+  {set:"din-ihlas-match",min:3,desc:"✨ v2 · İhlas: ayet ve anlam eşleştirme"},
+  {set:"din-ihlas-type",min:4,desc:"✨ v2 · İhlas: eksik kelimeyi yaz"},
+  {set:"ex-din-mix2",min:35,desc:"✨ v2 · 📊 Din karma deneme 2: tablo, eşleştirme, boşluk + yazılı"}]},
  {d:"2026-11-12",note:"Last study day! Tomorrow: Cambridge English 09.20 (Units 1–2: nature, past tenses, conditionals, will / going to) and Din Kültürü 10.15.",tasks:[
   {lesson:"L-en-will",min:8,desc:"Will or be going to: rules and the decision machine"},
   {set:"en-will-type",min:10,desc:"Type the answers yourself"},
@@ -1952,7 +2092,7 @@ function runSpeed(id,set){
 }
 
 // type: write the answer yourself
-const norm=s=>s.toLowerCase().replace(/[’‘`´]/g,"'").replace(/[.!?,]/g,"").replace(/\s+/g," ").trim();
+const norm=s=>s.toLocaleLowerCase("tr").replace(/ı/g,"i").replace(/â/g,"a").replace(/î/g,"i").replace(/û/g,"u").replace(/[’‘`´]/g,"'").replace(/[.!?,]/g,"").replace(/\s+/g," ").trim();
 const SUBJW=["i","you","he","she","it","we","they"];
 function typeOK(inp,ans){
   const n=norm(inp),A=ans.map(norm);if(A.includes(n))return true;
@@ -2386,6 +2526,7 @@ function runSpeak(id){
 
 // ---------- start ----------
 renderNext();renderPlan();renderXP();updateRewardDot();
+if(!S.seenV2){S.seenV2=true;save();setTimeout(()=>toast("✨ Version 2: 15 new Cambridge English and Din Kültürü exercises in today’s plan!"),600)}
 setInterval(renderNext,60e3);
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#sheet").hidden)closeSheet()});
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r=>r.update()).catch(()=>{});
