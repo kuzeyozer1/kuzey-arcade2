@@ -42,3 +42,5 @@ lists at the top of the script in `yazili/index.html`.
 - `minecraft/` — Food Vending Machine schematics (.litematic, Java 1.21.1) with setup steps.
 - `snake-arena.html` — Snake Arena (live multiplayer only works inside Claude; solo here).
 - `app-forge.html` — App Forge (AI app making only works inside Claude).
+
+- `craft.html` — Kuzey Craft: a 3D block world (survival/creative, medium or endless worlds, monsters or peaceful, animals, farming, tools, Elemental ores). Uses three.js 0.160.0 from jsDelivr.

@@ -46,10 +46,14 @@ h1{font-family:var(--display);font-weight:900;font-size:clamp(34px,9vw,64px);lin
 <div class="wrap">
   <header>
     <h1>KUZEY ARCADE</h1>
-    <p class="sub">Six games, made with Claude. They work offline once you've opened them.</p>
+    <p class="sub">Seven games, made with Claude. They work offline once you've opened them.</p>
   </header>
 
   <div class="games">
+    <a class="game" href="craft.html" style="--acc:#ffd23f">
+      <canvas id="c7" width="160" height="90" aria-hidden="true"></canvas>
+      <div class="info"><h2>Kuzey Craft</h2><p>NEW! A 3D block world: mine, build, craft tools, farm, tame the night and find Elemental ores. Survival or Creative.</p><span class="play">PLAY</span></div>
+    </a>
     <a class="game" href="bandit.html" style="--acc:#7bd88f">
       <canvas id="c6" width="160" height="90" aria-hidden="true"></canvas>
       <div class="info"><h2>Pine Lake Bandit</h2><p>BIG UPDATE! Snowy Peak, a harbour, a carnival and a spooky swamp. Cook, make animal friends, dodge storms and animal control!</p><span class="play">PLAY</span></div>
@@ -141,7 +145,12 @@ function banditP(t){const x=c6;x.fillStyle='#4e7d34';x.fillRect(0,0,160,90);x.fi
   const px=still?70:60+Math.sin(t/700)*20;x.fillStyle='rgba(255,230,120,.25)';x.beginPath();x.moveTo(150,80);x.arc(150,80,60,Math.PI*1.05,Math.PI*1.45);x.closePath();x.fill();
   x.fillStyle='#8e8e98';x.beginPath();x.ellipse(px,52,7,6,0,0,7);x.fill();x.fillStyle='#a8a8b2';x.beginPath();x.arc(px,44,6,0,7);x.fill();x.fillStyle='#26262e';x.fillRect(px-5,42,10,3);
   for(let i=0;i<3;i++){x.fillStyle=i%2?'#3a3a42':'#a8a8b2';x.beginPath();x.arc(px-9-i*3,54,3,0,7);x.fill()}}
-function loop(t){snake(t);temple(t);stackP(t);dodgeP(t);wordP(t);banditP(t);if(!still)requestAnimationFrame(loop)}requestAnimationFrame(loop);
+const c7=document.getElementById('c7').getContext('2d');
+function craftP(t){const x=c7;const g=x.createLinearGradient(0,0,0,90);g.addColorStop(0,'#8ec8ff');g.addColorStop(1,'#cfe8ff');x.fillStyle=g;x.fillRect(0,0,160,90);
+  const off=still?0:(t/60)%20;for(let i=-1;i<10;i++){const h=[3,4,4,5,3,2,3,4,5,5,4][(i+11)%11],bx=i*20-off;for(let j=0;j<h;j++){const y=90-(j+1)*12;x.fillStyle=j===h-1?'#5ea23a':j>h-3?'#7a5534':'#8a8a8a';x.fillRect(bx,y,20,12);x.fillStyle='rgba(0,0,0,.15)';x.fillRect(bx,y+10,20,2)}}
+  x.fillStyle='#6b4a2a';x.fillRect(104-off*0,22,8,22);x.fillStyle='#3f8f2f';x.fillRect(92,8,32,18);
+  x.fillStyle='#fff3a8';x.fillRect(20,10,12,12);if(Math.floor(t/400)%2){x.fillStyle='#5ff0e6';x.fillRect(64,74,6,6)}}
+function loop(t){snake(t);temple(t);stackP(t);dodgeP(t);wordP(t);banditP(t);craftP(t);if(!still)requestAnimationFrame(loop)}requestAnimationFrame(loop);
 if(matchMedia('(display-mode: standalone)').matches||navigator.standalone){document.getElementById('help').innerHTML='<h2 class="installed">INSTALLED</h2><p class="sub" style="margin:0">Kuzey Arcade is on your home screen. Have fun!</p>'}
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
