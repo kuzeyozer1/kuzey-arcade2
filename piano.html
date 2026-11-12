@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0820">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Piano</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Chakra+Petch:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="lab.css">
+<style>
+/* Layout: controls panel, then a two-octave keyboard that fills the width (scrolls on small phones). */
+:root{--acc:#3ef0ff}
+.kbwrap{overflow-x:auto;padding-bottom:6px}
+.kb{position:relative;height:220px;min-width:620px;user-select:none;-webkit-user-select:none;touch-action:none}
+.key{position:absolute;top:0;border-radius:0 0 8px 8px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding-bottom:8px;font-size:12px;font-weight:700;cursor:pointer}
+.w{background:linear-gradient(#f4f4fb,#dcdcea);color:#45407a;height:100%;border:1px solid #9994c4;z-index:1}
+.b{background:linear-gradient(#2a2650,#0a0820);color:#bdb7f0;height:62%;z-index:2;border:1px solid #000}
+.key.down.w{background:linear-gradient(#ffe79a,#ffd23f)}
+.key.down.b{background:linear-gradient(#5b4bb0,#3a2e85)}
+.key.hint.w{background:linear-gradient(#d6fff7,#7ff2dd)}
+.key.hint.b{background:linear-gradient(#2fa894,#13695c)}
+.key small{opacity:.6;font-size:10px}
+#songBar{font-size:15px;min-height:22px;color:var(--mute)}
+#songBar b{color:var(--gold)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><h1>PIANO</h1><a class="back" href="./">← ARCADE</a></header>
+<p class="sub">Play with your fingers, or with the keyboard (A S D F G H J K for white keys, W E T Y U for black keys). Record a song, or learn one step by step.</p>
+<div class="panel">
+  <div class="row"><label for="inst">Sound</label><select id="inst"><option value="piano">🎹 Piano</option><option value="organ">⛪ Organ</option><option value="synth">🎛️ Synth</option><option value="bells">🔔 Bells</option><option value="flute">🪈 Flute</option></select>
+    <button class="btn alt small" id="rec">● RECORD</button><button class="btn alt small" id="playRec" disabled>▶ PLAY RECORDING</button></div>
+  <div class="row" style="margin-top:10px"><label for="song">Learn a song</label><select id="song"><option value="">Choose…</option></select><button class="btn alt small" id="demo" disabled>▶ LISTEN</button></div>
+  <p id="songBar" aria-live="polite"></p>
+</div>
+<div class="panel kbwrap"><div class="kb" id="kb"></div></div>
+</div>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const NAMES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'],SOLF=['Do','','Re','','Mi','Fa','','Sol','','La','','Si'];
+const KEYS='a w s e d f t g y h u j k o l p ; \''.split(' ');// C4..F5
+const START=60,COUNT=24;// C4..B5
+const freq=m=>440*Math.pow(2,(m-69)/12);
+let ac=null;const voices={};
+function A(){if(!ac)ac=new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();return ac}
+function start(m){const a=A(),t=a.currentTime,inst=$('inst').value,g=a.createGain(),out=a.createGain();out.connect(a.destination);g.connect(out);
+  const shapes={piano:['triangle',[1,.4,.15]],organ:['square',[.5]],synth:['sawtooth',[.5]],bells:['sine',[1,.5,.25]],flute:['sine',[1,.1]]}[inst];
+  const oscs=shapes[1].map((amp,k)=>{const o=a.createOscillator();o.type=shapes[0];o.frequency.value=freq(m)*(inst==='bells'?[1,2.76,5.4][k]:k+1);const og=a.createGain();og.gain.value=amp;o.connect(og);og.connect(g);o.start(t);return o});
+  if(inst==='synth'){const f=a.createBiquadFilter();f.type='lowpass';f.frequency.value=1800;g.disconnect();g.connect(f);f.connect(out)}
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(inst==='flute'?.18:.28,t+(inst==='flute'?.06:.008));
+  if(inst==='piano'||inst==='bells')g.gain.exponentialRampToValueAtTime(.001,t+(inst==='bells'?2.4:1.6));
+  voices[m]={oscs,g,a};press(m,true);rec(m)}
+function stop(m){const v=voices[m];if(!v)return;const t=v.a.currentTime;v.g.gain.cancelScheduledValues(t);v.g.gain.setValueAtTime(Math.max(.0001,v.g.gain.value),t);v.g.gain.exponentialRampToValueAtTime(.0001,t+.25);v.oscs.forEach(o=>o.stop(t+.3));delete voices[m];press(m,false)}
+function tap(m,dur=.35){start(m);setTimeout(()=>stop(m),dur*1000)}
+/* keyboard drawing */
+const whiteIdx=[0,2,4,5,7,9,11];let html='',wi=0;const nW=COUNT/12*7;
+for(let i=0;i<COUNT;i++){const m=START+i,n=i%12,isW=whiteIdx.includes(n),oct=4+Math.floor(i/12),kk=KEYS[i]?KEYS[i].toUpperCase():'';
+  if(isW){html+=`<div class="key w" data-m="${m}" style="left:${wi/nW*100}%;width:${100/nW}%">${NAMES[n]}${oct}<small>${SOLF[n]}${kk?' · '+kk:''}</small></div>`;wi++}
+  else html+=`<div class="key b" data-m="${m}" style="left:${(wi/nW-.3/nW)*100}%;width:${.6/nW*100}%"><small>${kk}</small></div>`}
+$('kb').innerHTML=html;
+const kb=$('kb'),ptr={};
+kb.addEventListener('pointerdown',e=>{const k=e.target.closest('.key');if(!k)return;e.preventDefault();kb.setPointerCapture(e.pointerId);const m=+k.dataset.m;ptr[e.pointerId]=m;start(m)});
+kb.addEventListener('pointermove',e=>{if(ptr[e.pointerId]===undefined)return;const el=document.elementFromPoint(e.clientX,e.clientY),k=el&&el.closest('.key');if(k&&+k.dataset.m!==ptr[e.pointerId]){stop(ptr[e.pointerId]);ptr[e.pointerId]=+k.dataset.m;start(+k.dataset.m)}});
+const up=e=>{if(ptr[e.pointerId]!==undefined){stop(ptr[e.pointerId]);delete ptr[e.pointerId]}};kb.addEventListener('pointerup',up);kb.addEventListener('pointercancel',up);
+const down=new Set();
+addEventListener('keydown',e=>{if(e.target.tagName==='SELECT')return;const i=KEYS.indexOf(e.key.toLowerCase());if(i<0||i>=COUNT||down.has(i))return;down.add(i);start(START+i)});
+addEventListener('keyup',e=>{const i=KEYS.indexOf(e.key.toLowerCase());if(i<0)return;down.delete(i);stop(START+i)});
+function press(m,on){const k=kb.querySelector(`[data-m="${m}"]`);if(k)k.classList.toggle('down',on);if(on)learnCheck(m)}
+/* recording */
+let recording=false,recNotes=[],recT0=0;
+function rec(m){if(recording)recNotes.push([performance.now()-recT0,m])}
+$('rec').onclick=()=>{recording=!recording;$('rec').textContent=recording?'■ STOP':'● RECORD';$('rec').classList.toggle('on',recording);if(recording){recNotes=[];recT0=performance.now()}else $('playRec').disabled=!recNotes.length};
+$('playRec').onclick=()=>recNotes.forEach(([t,m])=>setTimeout(()=>tap(m),t));
+/* songs: [midi, beats] */
+const SONGS={
+ 'Twinkle Twinkle Little Star':'60 60 67 67 69 69 67:2 65 65 64 64 62 62 60:2 67 67 65 65 64 64 62:2 67 67 65 65 64 64 62:2 60 60 67 67 69 69 67:2 65 65 64 64 62 62 60:2',
+ 'Ode to Joy':'64 64 65 67 67 65 64 62 60 60 62 64 64:1.5 62:.5 62:2 64 64 65 67 67 65 64 62 60 60 62 64 62:1.5 60:.5 60:2',
+ 'Happy Birthday':'60:.75 60:.25 62 60 65 64:2 60:.75 60:.25 62 60 67 65:2 60:.75 60:.25 72 69 65 64 62:2 70:.75 70:.25 69 65 67 65:2',
+ 'Jingle Bells':'64 64 64:2 64 64 64:2 64 67 60:1.5 62:.5 64:4 65 65 65:1.5 65:.5 65 64 64 64:.5 64:.5 64 62 62 64 62:2 67:2',
+ 'Mary Had a Little Lamb':'64 62 60 62 64 64 64:2 62 62 62:2 64 67 67:2 64 62 60 62 64 64 64 64 62 62 64 62 60:4'};
+const parse=s=>s.split(' ').map(x=>{const [m,b]=x.split(':');return[+m,+(b||1)]});
+let learn=null;
+$('song').innerHTML+=Object.keys(SONGS).map(k=>`<option>${k}</option>`).join('');
+function showHint(){kb.querySelectorAll('.hint').forEach(k=>k.classList.remove('hint'));if(!learn)return;if(learn.i>=learn.n.length){$('songBar').innerHTML='🎉 <b>You played the whole song!</b> Choose another one or play it again.';learn=null;return}
+  const m=learn.n[learn.i][0];kb.querySelector(`[data-m="${m}"]`).classList.add('hint');$('songBar').innerHTML=`Press the <b>glowing key</b> (${NAMES[m%12]} · ${SOLF[m%12]}). Note ${learn.i+1} of ${learn.n.length}`}
+function learnCheck(m){if(!learn)return;if(m===learn.n[learn.i][0]){learn.i++;showHint()}}
+$('song').onchange=e=>{const s=SONGS[e.target.value];$('demo').disabled=!s;learn=s?{n:parse(s),i:0}:null;if(!s)$('songBar').textContent='';showHint()};
+$('demo').onclick=()=>{const s=SONGS[$('song').value];if(!s)return;let t=0;const beat=.42;parse(s).forEach(([m,b])=>{setTimeout(()=>tap(m,b*beat*.9),t*1000);t+=b*beat});const l=learn;learn=null;setTimeout(()=>{learn=l&&{n:l.n,i:0};showHint()},t*1000+300)};
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>

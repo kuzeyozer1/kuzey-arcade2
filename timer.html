@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0820">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Study Timer</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Chakra+Petch:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="lab.css">
+<style>
+/* Layout: tabs, then one big clock face per mode with its buttons centred underneath. */
+:root{--acc:#ff8a1f}
+.face{text-align:center;padding:20px 10px}
+.clock{font-family:var(--display);font-weight:900;font-size:clamp(48px,15vw,120px);line-height:1;letter-spacing:.02em;font-variant-numeric:tabular-nums}
+.clock small{font-size:.4em;color:var(--mute)}
+.ring{width:min(78vw,300px);aspect-ratio:1;margin:0 auto 10px;position:relative}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring .clock{position:absolute;inset:0;display:grid;place-items:center;font-size:clamp(40px,11vw,64px)}
+.center{justify-content:center;margin-top:14px}
+.laps{max-height:220px;overflow:auto;margin-top:12px;font-variant-numeric:tabular-nums}
+.laps div{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding:6px 4px}
+.phase{font-family:var(--display);font-size:16px;letter-spacing:.1em;margin-bottom:6px}
+.dots{font-size:22px;letter-spacing:6px;margin-top:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><h1>STUDY TIMER</h1><a class="back" href="./">← ARCADE</a></header>
+<p class="sub">A stopwatch, a countdown timer, and a Pomodoro timer for focused homework time.</p>
+<div class="tabs"><button data-t="pomo" class="on">POMODORO</button><button data-t="count">COUNTDOWN</button><button data-t="stop">STOPWATCH</button></div>
+
+<section id="pomo" class="panel face">
+  <div class="phase" id="pPhase">FOCUS TIME</div>
+  <div class="ring"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="none" stroke="#2c2468" stroke-width="7"/><circle id="pArc" cx="50" cy="50" r="45" fill="none" stroke="#ff8a1f" stroke-width="7" stroke-linecap="round" stroke-dasharray="282.7" stroke-dashoffset="0"/></svg><div class="clock" id="pClock">25:00</div></div>
+  <div class="row center"><button class="btn" id="pStart">START</button><button class="btn alt" id="pSkip">SKIP</button><button class="btn alt" id="pReset">RESET</button></div>
+  <div class="row center" style="margin-top:12px"><label>Focus <select id="pF"><option>15</option><option>20</option><option selected>25</option><option>30</option><option>45</option></select> min</label><label>Break <select id="pB"><option>3</option><option selected>5</option><option>10</option></select> min</label></div>
+  <div class="dots" id="pDots" aria-label="Focus sessions finished today"></div>
+  <p class="note">Work with full focus until the timer rings, then take a short break. Every 4 focus sessions you get a longer break.</p>
+</section>
+
+<section id="count" class="panel face" hidden>
+  <div class="ring"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="none" stroke="#2c2468" stroke-width="7"/><circle id="cArc" cx="50" cy="50" r="45" fill="none" stroke="#3ef0ff" stroke-width="7" stroke-linecap="round" stroke-dasharray="282.7" stroke-dashoffset="0"/></svg><div class="clock" id="cClock">05:00</div></div>
+  <div class="row center" id="presets"></div>
+  <div class="row center" style="margin-top:10px"><label>Minutes <input type="number" id="cMin" min="0" max="180" value="5" style="width:80px"></label><label>Seconds <input type="number" id="cSec" min="0" max="59" value="0" style="width:80px"></label></div>
+  <div class="row center"><button class="btn" id="cStart">START</button><button class="btn alt" id="cReset">RESET</button></div>
+</section>
+
+<section id="stop" class="panel face" hidden>
+  <div class="clock" id="sClock">00:00<small>.00</small></div>
+  <div class="row center"><button class="btn" id="sStart">START</button><button class="btn alt" id="sLap" disabled>LAP</button><button class="btn alt" id="sReset">RESET</button></div>
+  <div class="laps" id="laps"></div>
+</section>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const mmss=s=>{s=Math.max(0,Math.ceil(s));const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return(h?h+':'+String(m).padStart(2,'0'):String(m).padStart(2,'0'))+':'+String(x).padStart(2,'0')};
+let ac=null;function ring(n=3){if(!ac)ac=new (window.AudioContext||window.webkitAudioContext)();const a=ac;a.resume&&a.resume();for(let i=0;i<n;i++)[880,1320].forEach((f,k)=>{const o=a.createOscillator(),g=a.createGain(),t=a.currentTime+i*.6+k*.15;o.frequency.value=f;g.gain.setValueAtTime(.001,t);g.gain.exponentialRampToValueAtTime(.3,t+.02);g.gain.exponentialRampToValueAtTime(.001,t+.5);o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+.55)});if(navigator.vibrate)navigator.vibrate([300,150,300])}
+function unlock(){if(!ac)ac=new (window.AudioContext||window.webkitAudioContext)();ac.resume&&ac.resume()}
+let toastT;function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),3500)}
+/* pomodoro: end time based, so it stays correct if the tab sleeps */
+const P={phase:'focus',end:0,left:25*60,total:25*60,run:false,done:0};
+try{const d=JSON.parse(localStorage.getItem('pomoDone'));if(d&&d.day===new Date().toDateString())P.done=d.n}catch(e){}
+function pLen(ph){return(ph==='focus'?+$('pF').value:ph==='long'?15:+$('pB').value)*60}
+function pSet(ph){P.phase=ph;P.total=P.left=pLen(ph);P.run=false;$('pStart').textContent='START';pDraw()}
+function pDraw(){$('pClock').textContent=mmss(P.left);$('pPhase').textContent=P.phase==='focus'?'🎯 FOCUS TIME':P.phase==='long'?'🌴 LONG BREAK':'☕ SHORT BREAK';$('pArc').style.stroke=P.phase==='focus'?'#ff8a1f':'#5cf2b4';$('pArc').style.strokeDashoffset=282.7*(1-P.left/P.total);$('pDots').textContent='🍅'.repeat(P.done)||' ';document.title=P.run?`${mmss(P.left)} · Study Timer`:'Study Timer'}
+function pNext(){if(P.phase==='focus'){P.done++;try{localStorage.setItem('pomoDone',JSON.stringify({day:new Date().toDateString(),n:P.done}))}catch(e){}pSet(P.done%4===0?'long':'short');toast('Great focus! Time for a break 🎉')}else{pSet('focus');toast('Break over. Back to work! 💪')}}
+$('pStart').onclick=()=>{unlock();P.run=!P.run;if(P.run)P.end=Date.now()+P.left*1000;$('pStart').textContent=P.run?'PAUSE':'START';pDraw()};
+$('pSkip').onclick=()=>pNext();$('pReset').onclick=()=>pSet('focus');
+$('pF').onchange=$('pB').onchange=()=>{if(!P.run)pSet(P.phase)};
+/* countdown */
+const C={end:0,left:300,total:300,run:false};
+$('presets').innerHTML=[1,3,5,10,15,30].map(m=>`<button class="btn alt small" data-m="${m}">${m} MIN</button>`).join('');
+$('presets').onclick=e=>{const b=e.target.closest('button');if(!b)return;$('cMin').value=b.dataset.m;$('cSec').value=0;cSet()};
+function cSet(){C.run=false;C.total=C.left=Math.max(1,(+$('cMin').value||0)*60+(+$('cSec').value||0));$('cStart').textContent='START';cDraw()}
+function cDraw(){$('cClock').textContent=mmss(C.left);$('cArc').style.strokeDashoffset=282.7*(1-C.left/C.total)}
+$('cMin').oninput=$('cSec').oninput=cSet;
+$('cStart').onclick=()=>{unlock();if(C.left<=0)cSet();C.run=!C.run;if(C.run)C.end=Date.now()+C.left*1000;$('cStart').textContent=C.run?'PAUSE':'START'};
+$('cReset').onclick=cSet;
+/* stopwatch */
+const W={start:0,acc:0,run:false,laps:[]};
+const swT=()=>W.acc+(W.run?Date.now()-W.start:0);
+function swFmt(ms){const s=Math.floor(ms/1000),cs=Math.floor(ms%1000/10);return`${mmss(s).replace(/^(\d+:\d+:\d+)$/,'$1')}<small>.${String(cs).padStart(2,'0')}</small>`}
+$('sStart').onclick=()=>{if(W.run){W.acc+=Date.now()-W.start;W.run=false}else{W.start=Date.now();W.run=true}$('sStart').textContent=W.run?'STOP':'START';$('sLap').disabled=!W.run};
+$('sLap').onclick=()=>{const t=swT(),prev=W.laps.length?W.laps[0].t:0;W.laps.unshift({t,d:t-prev});$('laps').innerHTML=W.laps.map((l,i)=>`<div><span>Lap ${W.laps.length-i}</span><span>+${(l.d/1000).toFixed(2)} s</span><b>${(l.t/1000).toFixed(2)} s</b></div>`).join('')};
+$('sReset').onclick=()=>{W.acc=0;W.run=false;W.laps=[];$('laps').innerHTML='';$('sStart').textContent='START';$('sLap').disabled=true};
+function tick(){const now=Date.now();
+  if(P.run){P.left=(P.end-now)/1000;if(P.left<=0){P.left=0;ring();pNext()}pDraw()}
+  if(C.run){C.left=(C.end-now)/1000;if(C.left<=0){C.left=0;C.run=false;$('cStart').textContent='START';ring(4);toast('⏰ Time is up!')}cDraw()}
+  $('sClock').innerHTML=swFmt(swT());requestAnimationFrame(tick)}
+document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-t]').forEach(x=>x.classList.toggle('on',x===b));['pomo','count','stop'].forEach(s=>$(s).hidden=s!==b.dataset.t)});
+pSet('focus');cSet();tick();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>

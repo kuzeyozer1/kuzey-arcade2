@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0820">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Element Explorer</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Chakra+Petch:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="lab.css">
+<style>
+/* Layout: search + legend, the 18-column periodic table (scrolls sideways on phones), and a detail card for the tapped element. */
+:root{--acc:#5cf2b4}
+.tablewrap{overflow-x:auto;padding-bottom:6px}
+.pt{display:grid;grid-template-columns:repeat(18,minmax(44px,1fr));gap:3px;min-width:860px}
+.el{aspect-ratio:1/1.1;border-radius:6px;border:1px solid rgba(255,255,255,.08);padding:3px;cursor:pointer;color:#0b0820;display:flex;flex-direction:column;justify-content:space-between;text-align:left;font-family:var(--body);transition:transform .1s,opacity .2s}
+.el:hover{transform:scale(1.08);z-index:2}
+.el i{font-style:normal;font-size:10px;font-weight:700;opacity:.75}
+.el b{font-size:17px;line-height:1}
+.el small{font-size:8px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.el.dim{opacity:.18}
+.el.sel{outline:3px solid #fff;outline-offset:1px}
+.ph{display:grid;place-items:center;font-size:10px;color:var(--mute);border:1px dashed var(--line);border-radius:6px}
+.legend{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.legend button{border:0;border-radius:999px;padding:5px 10px;font:700 12px var(--body);color:#0b0820;cursor:pointer}
+.legend button.off{opacity:.3}
+.detail{display:grid;grid-template-columns:150px 1fr;gap:16px;align-items:start}
+@media (max-width:560px){.detail{grid-template-columns:1fr}}
+.tile{border-radius:14px;color:#0b0820;padding:12px;aspect-ratio:1;display:flex;flex-direction:column;justify-content:space-between}
+.tile b{font-size:56px;font-family:var(--display);line-height:1}
+.facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-top:8px}
+.facts div{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 10px}.facts small{display:block;color:var(--mute);font-size:12px}
+.fun{margin-top:10px;background:#1a1440;border-left:3px solid var(--gold);border-radius:8px;padding:10px 12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><h1>ELEMENT EXPLORER</h1><a class="back" href="./">← ARCADE</a></header>
+<p class="sub">Everything around you is made of these 118 elements. Tap one to learn about it.</p>
+<div class="panel">
+  <div class="row"><input id="q" placeholder="Search: gold, Fe, 26, oksijen…" aria-label="Search elements" style="flex:1;min-width:200px"><button class="btn alt small" id="rnd">🎲 RANDOM ELEMENT</button></div>
+  <div class="legend" id="legend"></div>
+</div>
+<div class="panel detail" id="detail"></div>
+<div class="panel tablewrap"><div class="pt" id="pt"></div></div>
+</div>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const RAW=`H Hydrogen 1.008|He Helium 4.0026|Li Lithium 6.94|Be Beryllium 9.0122|B Boron 10.81|C Carbon 12.011|N Nitrogen 14.007|O Oxygen 15.999|F Fluorine 18.998|Ne Neon 20.180|Na Sodium 22.990|Mg Magnesium 24.305|Al Aluminium 26.982|Si Silicon 28.085|P Phosphorus 30.974|S Sulfur 32.06|Cl Chlorine 35.45|Ar Argon 39.948|K Potassium 39.098|Ca Calcium 40.078|Sc Scandium 44.956|Ti Titanium 47.867|V Vanadium 50.942|Cr Chromium 51.996|Mn Manganese 54.938|Fe Iron 55.845|Co Cobalt 58.933|Ni Nickel 58.693|Cu Copper 63.546|Zn Zinc 65.38|Ga Gallium 69.723|Ge Germanium 72.630|As Arsenic 74.922|Se Selenium 78.971|Br Bromine 79.904|Kr Krypton 83.798|Rb Rubidium 85.468|Sr Strontium 87.62|Y Yttrium 88.906|Zr Zirconium 91.224|Nb Niobium 92.906|Mo Molybdenum 95.95|Tc Technetium (98)|Ru Ruthenium 101.07|Rh Rhodium 102.91|Pd Palladium 106.42|Ag Silver 107.87|Cd Cadmium 112.41|In Indium 114.82|Sn Tin 118.71|Sb Antimony 121.76|Te Tellurium 127.60|I Iodine 126.90|Xe Xenon 131.29|Cs Caesium 132.91|Ba Barium 137.33|La Lanthanum 138.91|Ce Cerium 140.12|Pr Praseodymium 140.91|Nd Neodymium 144.24|Pm Promethium (145)|Sm Samarium 150.36|Eu Europium 151.96|Gd Gadolinium 157.25|Tb Terbium 158.93|Dy Dysprosium 162.50|Ho Holmium 164.93|Er Erbium 167.26|Tm Thulium 168.93|Yb Ytterbium 173.05|Lu Lutetium 174.97|Hf Hafnium 178.49|Ta Tantalum 180.95|W Tungsten 183.84|Re Rhenium 186.21|Os Osmium 190.23|Ir Iridium 192.22|Pt Platinum 195.08|Au Gold 196.97|Hg Mercury 200.59|Tl Thallium 204.38|Pb Lead 207.2|Bi Bismuth 208.98|Po Polonium (209)|At Astatine (210)|Rn Radon (222)|Fr Francium (223)|Ra Radium (226)|Ac Actinium (227)|Th Thorium 232.04|Pa Protactinium 231.04|U Uranium 238.03|Np Neptunium (237)|Pu Plutonium (244)|Am Americium (243)|Cm Curium (247)|Bk Berkelium (247)|Cf Californium (251)|Es Einsteinium (252)|Fm Fermium (257)|Md Mendelevium (258)|No Nobelium (259)|Lr Lawrencium (266)|Rf Rutherfordium (267)|Db Dubnium (268)|Sg Seaborgium (269)|Bh Bohrium (270)|Hs Hassium (277)|Mt Meitnerium (278)|Ds Darmstadtium (281)|Rg Roentgenium (282)|Cn Copernicium (285)|Nh Nihonium (286)|Fl Flerovium (289)|Mc Moscovium (290)|Lv Livermorium (293)|Ts Tennessine (294)|Og Oganesson (294)`;
+const TR={1:'Hidrojen',2:'Helyum',3:'Lityum',4:'Berilyum',5:'Bor',6:'Karbon',7:'Azot',8:'Oksijen',9:'Flor',10:'Neon',11:'Sodyum',12:'Magnezyum',13:'Alüminyum',14:'Silisyum',15:'Fosfor',16:'Kükürt',17:'Klor',18:'Argon',19:'Potasyum',20:'Kalsiyum',22:'Titanyum',24:'Krom',25:'Mangan',26:'Demir',27:'Kobalt',28:'Nikel',29:'Bakır',30:'Çinko',35:'Brom',36:'Kripton',47:'Gümüş',50:'Kalay',53:'İyot',54:'Ksenon',74:'Tungsten',78:'Platin',79:'Altın',80:'Cıva',82:'Kurşun',86:'Radon',88:'Radyum',92:'Uranyum',94:'Plütonyum'};
+const FUN={1:'The lightest element. About three quarters of all normal matter in the universe is hydrogen, and it is the fuel that makes the Sun shine.',2:'Helium makes balloons float. It was discovered in the light of the Sun before anyone found it on Earth.',3:'Lithium is the lightest metal. It is inside the rechargeable battery of phones and tablets.',6:'Diamonds and the graphite in your pencil are both made of pure carbon, just arranged differently. All living things contain carbon.',7:'About 78% of the air you breathe is nitrogen.',8:'About 21% of the air is oxygen, and your body needs it in every breath.',9:'Fluorine (as fluoride) is added to toothpaste to keep teeth strong.',10:'Neon glows bright red-orange in glass tubes, which is how neon signs got their name.',11:'Sodium is a soft metal that fizzes in water. Together with chlorine it makes table salt.',12:'Magnesium burns with a dazzling white light, which is why it is used in fireworks.',13:'Aluminium is the most common metal in Earth\'s crust. Drink cans are made from it.',14:'Silicon is the heart of computer chips, and it is a main part of sand and glass.',15:'Phosphorus is in match heads, and it is part of your DNA and bones.',16:'Sulfur is yellow and found near volcanoes. Some sulfur compounds smell like rotten eggs.',17:'Chlorine is used to keep swimming pools clean. With sodium, it makes salt.',18:'Argon is about 1% of the air. It is used inside some light bulbs.',19:'Bananas contain lots of potassium, which your muscles and nerves need.',20:'Your bones and teeth are full of calcium. Milk is a good source of it.',22:'Titanium is very strong but light, so it is used in airplanes and bike frames.',26:'Earth\'s core is mostly iron. Iron in your blood is what carries oxygen around your body.',29:'Copper carries electricity in wires. The Statue of Liberty is copper that turned green over time.',30:'Zinc coats steel so it does not rust.',31:'Gallium is a metal that melts in your hand! It turns liquid at about 30 °C.',35:'Bromine is the only non-metal that is a liquid at room temperature.',47:'Silver is the best conductor of electricity of all the elements.',53:'Your body needs a little iodine. That is why it is added to some table salt.',54:'Xenon gives some car headlights their bright blue-white light.',74:'Tungsten has the highest melting point of all metals: 3,422 °C.',78:'Platinum is a precious metal used in jewelry and in car exhaust systems to clean the gases.',79:'Gold never rusts. All the gold ever mined would fit into about 4 Olympic swimming pools.',80:'Mercury is the only metal that is liquid at room temperature.',82:'Lead is very heavy and blocks X-rays, so it is used in shields at the dentist.',86:'Radon is a radioactive gas that can build up in basements.',88:'Radium was discovered by Marie and Pierre Curie. It glows faintly in the dark.',92:'Uranium is the fuel used in nuclear power plants.',94:'Plutonium has powered spacecraft such as the Voyager probes far from the Sun.',101:'Mendelevium is named after Dmitri Mendeleev, who created the first periodic table in 1869.',117:'Tennessine is named after the US state of Tennessee.',118:'Oganesson is the heaviest element ever made. Only a few atoms have ever existed.'};
+const CATS={alkali:['Alkali metal','#ff8a80'],alkaline:['Alkaline earth metal','#ffcc80'],transition:['Transition metal','#ffe082'],post:['Post-transition metal','#c5e1a5'],metalloid:['Metalloid','#80deea'],nonmetal:['Non-metal','#a5d6a7'],halogen:['Halogen','#b39ddb'],noble:['Noble gas','#90caf9'],lanth:['Lanthanide','#f48fb1'],actin:['Actinide','#ce93d8']};
+const SETS={alkali:[3,11,19,37,55,87],alkaline:[4,12,20,38,56,88],noble:[2,10,18,36,54,86,118],halogen:[9,17,35,53,85,117],metalloid:[5,14,32,33,51,52],nonmetal:[1,6,7,8,15,16,34],post:[13,31,49,50,81,82,83,84,113,114,115,116]};
+const GAS=[1,2,7,8,9,10,17,18,36,54,86],LIQ=[35,80];
+const E=RAW.split('|').map((s,i)=>{const [sym,name,mass]=s.split(' ');const z=i+1;let cat='transition';for(const k in SETS)if(SETS[k].includes(z))cat=k;if(z>=57&&z<=71)cat='lanth';if(z>=89&&z<=103)cat='actin';
+  let row,col;const P=[[1,2],[3,10],[11,18],[19,36],[37,54],[55,86],[87,118]];const per=P.findIndex(([a,b])=>z>=a&&z<=b)+1;const k=z-P[per-1][0];
+  if(per===1){row=1;col=z===1?1:18}else if(per<=3){row=per;col=k<2?k+1:k+11}else if(per<=5){row=per;col=k+1}else{if(k<2){row=per;col=k+1}else if(k<17){row=per+3;col=k+1}else{row=per;col=k-13}}
+  return{z,sym,name,mass,cat,row,col,period:per}});
+let sel=79,filter=null;
+function render(){const q=$('q').value.trim().toLowerCase();let h='';
+  for(const e of E){const c=CATS[e.cat][1];const match=(!q||e.name.toLowerCase().includes(q)||e.sym.toLowerCase()===q||String(e.z)===q||(TR[e.z]||'').toLowerCase().includes(q))&&(!filter||e.cat===filter);
+    h+=`<button class="el ${match?'':'dim'} ${e.z===sel?'sel':''}" style="grid-row:${e.row};grid-column:${e.col};background:${c}" data-z="${e.z}" aria-label="${e.name}, ${e.z}"><i>${e.z}</i><b>${e.sym}</b><small>${e.name}</small></button>`}
+  h+=`<div class="ph" style="grid-row:6;grid-column:3">57–71</div><div class="ph" style="grid-row:7;grid-column:3">89–103</div><div style="grid-row:8;grid-column:1/-1;height:10px"></div>`;
+  $('pt').innerHTML=h}
+function detail(){const e=E[sel-1],c=CATS[e.cat];const state=GAS.includes(e.z)?'Gas':LIQ.includes(e.z)?'Liquid':e.z>=104?'Unknown (too short-lived)':'Solid';
+  $('detail').innerHTML=`<div class="tile" style="background:${c[1]}"><span>${e.z}</span><b>${e.sym}</b><span style="font-weight:700">${e.name}</span></div><div><h2 style="font-size:24px">${e.name}${TR[e.z]?` <span style="color:var(--mute);font-size:15px">· Türkçe: ${TR[e.z]}</span>`:''}</h2>
+  <div class="facts"><div><small>Atomic number</small><b>${e.z}</b></div><div><small>Symbol</small><b>${e.sym}</b></div><div><small>Atomic mass</small><b>${e.mass}</b></div><div><small>Group</small><b>${c[0]}</b></div><div><small>At room temperature</small><b>${state}</b></div><div><small>Protons and electrons</small><b>${e.z} each</b></div></div>
+  <div class="fun">${FUN[e.z]?'<b>Did you know?</b> '+FUN[e.z]:`<b>Row ${e.period}.</b> ${e.name} has ${e.z} protons in the middle of each atom. ${e.mass.startsWith('(')?'The number in brackets means it is radioactive and breaks down over time.':''}`}</div></div>`}
+$('pt').onclick=e=>{const b=e.target.closest('.el');if(!b)return;sel=+b.dataset.z;render();detail();$('detail').scrollIntoView({behavior:'smooth',block:'nearest'})};
+$('q').oninput=()=>{render();const q=$('q').value.trim().toLowerCase();const m=E.find(e=>e.sym.toLowerCase()===q||String(e.z)===q||e.name.toLowerCase()===q||(TR[e.z]||'').toLowerCase()===q);if(m){sel=m.z;detail();render()}};
+$('rnd').onclick=()=>{sel=1+Math.floor(Math.random()*118);render();detail()};
+$('legend').innerHTML=Object.entries(CATS).map(([k,[n,c]])=>`<button data-c="${k}" style="background:${c}">${n}</button>`).join('');
+$('legend').onclick=e=>{const b=e.target.closest('button');if(!b)return;filter=filter===b.dataset.c?null:b.dataset.c;$('legend').querySelectorAll('button').forEach(x=>x.classList.toggle('off',filter&&x.dataset.c!==filter));render()};
+render();detail();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>

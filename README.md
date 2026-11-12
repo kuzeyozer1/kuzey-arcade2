@@ -45,3 +45,15 @@ lists at the top of the script in `yazili/index.html`.
 
 - `craft.html` — Kuzey Craft: a 3D block world (survival/creative, medium or endless worlds, monsters or peaceful, animals, farming, tools, Elemental ores). Uses three.js 0.160.0 from jsDelivr.
 - `space.html` — Planet Lab: an interactive solar system explorer (orbits, NASA facts, weight on each planet, travel times, size comparison), English and Turkish.
+
+## Labs & Tools
+- `pixel.html` — Pixel Studio: Draw pixel art with a pen, fill bucket and mirror mode. Save a gallery and download your art.
+- `beats.html` — Beat Maker: A 16-step drum machine: kick, snare, hi-hat, clap and more. Make a beat and save it.
+- `piano.html` — Piano: Play a two-octave piano with 5 sounds, record yourself, and learn songs with glowing keys.
+- `elements.html` — Element Explorer: The periodic table: all 118 elements with facts, Turkish names and fun “did you know?” notes.
+- `codes.html` — Secret Codes: Morse code with beeps and a tap key, Caesar cipher, binary and an emoji alphabet.
+- `timer.html` — Study Timer: Pomodoro focus timer, countdown with alarm, and a stopwatch with laps.
+- `convert.html` — Unit Converter: Length, weight, temperature, speed, time, area, volume and computer data.
+- `weather.html` — Weather: Live weather, the next 24 hours and a 7-day forecast for any city.
+- `fractal.html` — Fractal Explorer: Tap to zoom forever into the Mandelbrot set and find seahorses and spirals.
+- `illusions.html` — Illusion Lab: 8 optical illusions that trick your brain, each with a button that shows the truth.

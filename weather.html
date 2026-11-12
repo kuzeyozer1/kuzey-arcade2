@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0820">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Weather</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Chakra+Petch:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="lab.css">
+<style>
+/* Layout: city search, a big "now" card, a sideways-scrolling hourly strip and a 7-day list. */
+:root{--acc:#3ef0ff}
+.now{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center}
+.now .ico{font-size:84px;line-height:1}
+.now .temp{font-family:var(--display);font-weight:900;font-size:clamp(46px,12vw,72px);line-height:1}
+.now h2{font-size:20px;margin:0}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-top:12px}
+.stats div{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 10px}.stats small{display:block;color:var(--mute);font-size:12px}
+.hours{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px}
+.hours div{flex:0 0 66px;text-align:center;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 4px;font-size:13px}
+.hours b{display:block;font-size:16px}.hours span{font-size:24px;display:block;margin:4px 0}
+.days div{display:grid;grid-template-columns:90px 34px 1fr 120px;gap:10px;align-items:center;border-top:1px solid var(--line);padding:9px 2px}
+.days div:first-child{border-top:0}
+.bar{height:8px;border-radius:4px;background:#1d1a48;position:relative}.bar u{position:absolute;top:0;bottom:0;border-radius:4px;background:linear-gradient(90deg,#3ef0ff,#ffd23f,#ff8a1f)}
+.res{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.res button{text-align:left;background:var(--panel2);border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:8px 10px;cursor:pointer;font:inherit}
+.tip{margin-top:10px;background:#10233a;border-left:3px solid var(--acc);border-radius:8px;padding:10px 12px}
+@media (max-width:520px){.days div{grid-template-columns:70px 28px 1fr 96px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><h1>WEATHER</h1><a class="back" href="./">← ARCADE</a></header>
+<p class="sub">Live weather and a 7-day forecast for any city in the world.</p>
+<div class="panel">
+  <div class="row"><input id="q" placeholder="Search a city: İstanbul, Ankara, London…" aria-label="City name" style="flex:1;min-width:200px"><button class="btn" id="go">SEARCH</button><button class="btn alt" id="geo">📍 MY LOCATION</button></div>
+  <div class="row" id="favs" style="margin-top:8px"></div>
+  <div class="res" id="res"></div>
+</div>
+<div id="out"><div class="panel"><p class="note">Loading…</p></div></div>
+<p class="note">Weather data from Open-Meteo.com.</p>
+</div>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const WMO={0:['☀️','Clear sky'],1:['🌤️','Mostly clear'],2:['⛅','Partly cloudy'],3:['☁️','Cloudy'],45:['🌫️','Fog'],48:['🌫️','Icy fog'],51:['🌦️','Light drizzle'],53:['🌦️','Drizzle'],55:['🌧️','Heavy drizzle'],56:['🌧️','Freezing drizzle'],57:['🌧️','Freezing drizzle'],61:['🌦️','Light rain'],63:['🌧️','Rain'],65:['🌧️','Heavy rain'],66:['🌧️','Freezing rain'],67:['🌧️','Freezing rain'],71:['🌨️','Light snow'],73:['🌨️','Snow'],75:['❄️','Heavy snow'],77:['🌨️','Snow grains'],80:['🌦️','Rain showers'],81:['🌧️','Rain showers'],82:['⛈️','Heavy showers'],85:['🌨️','Snow showers'],86:['❄️','Heavy snow showers'],95:['⛈️','Thunderstorm'],96:['⛈️','Thunderstorm with hail'],99:['⛈️','Thunderstorm with hail']};
+const W=(c,day=1)=>{const w=WMO[c]||['🌡️','—'];if(!day&&(c===0||c===1))return['🌙',w[1]];return w};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let place;try{place=JSON.parse(localStorage.getItem('wxPlace'))}catch(e){}place=place||{name:'İstanbul',country:'Türkiye',lat:41.0138,lon:28.9497};
+let favs;try{favs=JSON.parse(localStorage.getItem('wxFavs'))||[]}catch(e){favs=[]}
+function renderFavs(){$('favs').innerHTML=favs.map((f,i)=>`<button class="btn alt small" data-f="${i}">⭐ ${esc(f.name)}</button>`).join('')}
+$('favs').onclick=e=>{const b=e.target.closest('[data-f]');if(b)load(favs[+b.dataset.f])};
+async function search(){const q=$('q').value.trim();if(!q)return;$('res').innerHTML='<p class="note">Searching…</p>';
+  try{const r=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=6&language=en&format=json`);const j=await r.json();const list=j.results||[];
+    $('res').innerHTML=list.length?list.map((p,i)=>`<button data-i="${i}">${esc(p.name)}<span class="note"> · ${esc([p.admin1,p.country].filter(Boolean).join(', '))}</span></button>`).join(''):'<p class="note">No city found. Check the spelling.</p>';
+    $('res').onclick=e=>{const b=e.target.closest('[data-i]');if(!b)return;const p=list[+b.dataset.i];$('res').innerHTML='';$('q').value='';load({name:p.name,country:p.country||'',lat:p.latitude,lon:p.longitude})}}
+  catch(e){$('res').innerHTML='<p class="note">Could not search. Are you online?</p>'}}
+$('go').onclick=search;$('q').addEventListener('keydown',e=>{if(e.key==='Enter')search()});
+$('geo').onclick=()=>{if(!navigator.geolocation)return;navigator.geolocation.getCurrentPosition(p=>load({name:'My location',country:'',lat:p.coords.latitude,lon:p.coords.longitude}),()=>alert('Location was not allowed. You can search for your city instead.'))};
+function tip(c,t,uv,rain){if(c>=95)return'⛈️ Thunderstorms: stay indoors when you hear thunder.';if(c>=71&&c<=86&&c!==80&&c!==81&&c!==82)return'❄️ Snow! Wear warm boots and gloves.';if(rain>=60||c>=61)return'☔ Take an umbrella today.';if(uv>=6)return'🧴 Strong sun: wear sunscreen and a hat.';if(t<=5)return'🧣 It is cold. Wear a warm coat.';if(t>=30)return'💧 It is hot. Drink plenty of water.';return'😊 Nice weather. Have a great day!'}
+async function load(p){place=p;try{localStorage.setItem('wxPlace',JSON.stringify(p))}catch(e){}
+  $('out').innerHTML='<div class="panel"><p class="note">Loading weather…</p></div>';
+  try{const u=`https://api.open-meteo.com/v1/forecast?latitude=${p.lat}&longitude=${p.lon}&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,is_day&hourly=temperature_2m,weather_code,precipitation_probability,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max,uv_index_max&timezone=auto&forecast_days=7`;
+    const r=await fetch(u);const d=await r.json();if(d.error)throw new Error(d.reason);show(d)}
+  catch(e){$('out').innerHTML=`<div class="panel"><p class="note">Could not load the weather (${esc(e.message||'offline')}). Try again in a moment.</p><button class="btn small" id="retry">TRY AGAIN</button></div>`;$('retry').onclick=()=>load(place)}}
+function show(d){const c=d.current,dl=d.daily,h=d.hourly,[ico,txt]=W(c.weather_code,c.is_day);const isFav=favs.some(f=>f.name===place.name&&Math.abs(f.lat-place.lat)<.01);
+  const nowIdx=Math.max(0,h.time.findIndex(t=>t>=c.time.slice(0,13)));
+  const hrs=h.time.slice(nowIdx,nowIdx+24).map((t,i)=>{const k=nowIdx+i,[e]=W(h.weather_code[k],h.is_day?h.is_day[k]:1);return`<div><small>${i?t.slice(11,16):'Now'}</small><span>${e}</span><b>${Math.round(h.temperature_2m[k])}°</b><small>💧${h.precipitation_probability[k]??0}%</small></div>`}).join('');
+  const lo=Math.min(...dl.temperature_2m_min),hi=Math.max(...dl.temperature_2m_max);
+  const days=dl.time.map((t,i)=>{const dt=new Date(t+'T12:00'),[e,tx]=W(dl.weather_code[i]);const a=(dl.temperature_2m_min[i]-lo)/(hi-lo||1)*100,b=(dl.temperature_2m_max[i]-lo)/(hi-lo||1)*100;
+    return`<div><b>${i?dt.toLocaleDateString('en',{weekday:'short',day:'numeric'}):'Today'}</b><span title="${tx}" style="font-size:22px">${e}</span><div class="bar"><u style="left:${a}%;width:${Math.max(4,b-a)}%"></u></div><span>${Math.round(dl.temperature_2m_min[i])}° / <b>${Math.round(dl.temperature_2m_max[i])}°</b> 💧${dl.precipitation_probability_max[i]??0}%</span></div>`}).join('');
+  $('out').innerHTML=`<div class="panel"><div class="now"><div class="ico">${ico}</div><div><h2>${esc(place.name)}${place.country?`<span class="note"> · ${esc(place.country)}</span>`:''} <button class="btn alt small" id="fav">${isFav?'★ SAVED':'☆ SAVE'}</button></h2><div class="temp">${Math.round(c.temperature_2m)}°C</div><div>${txt}</div></div></div>
+    <div class="stats"><div><small>Feels like</small><b>${Math.round(c.apparent_temperature)}°C</b></div><div><small>Wind</small><b>${Math.round(c.wind_speed_10m)} km/h</b></div><div><small>Humidity</small><b>${c.relative_humidity_2m}%</b></div><div><small>Sunrise</small><b>${dl.sunrise[0].slice(11)}</b></div><div><small>Sunset</small><b>${dl.sunset[0].slice(11)}</b></div><div><small>UV index</small><b>${Math.round(dl.uv_index_max[0]??0)}</b></div></div>
+    <div class="tip">${tip(c.weather_code,c.temperature_2m,dl.uv_index_max[0]??0,dl.precipitation_probability_max[0]??0)}</div></div>
+    <div class="panel"><h2>NEXT 24 HOURS</h2><div class="hours">${hrs}</div></div><div class="panel"><h2>7 DAYS</h2><div class="days">${days}</div></div>`;
+  $('fav').onclick=()=>{const i=favs.findIndex(f=>f.name===place.name&&Math.abs(f.lat-place.lat)<.01);if(i>=0)favs.splice(i,1);else favs.push(place);try{localStorage.setItem('wxFavs',JSON.stringify(favs))}catch(e){}renderFavs();show(d)}}
+renderFavs();load(place);
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>

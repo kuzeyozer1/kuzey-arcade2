@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0820">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Fractal Explorer</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Chakra+Petch:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="lab.css">
+<style>
+/* Layout: the fractal fills a big panel; controls sit under it, explanation at the bottom. */
+:root{--acc:#ff3d9a}
+.stage{position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#000}
+#cv{display:block;width:100%;height:min(66vh,620px);cursor:zoom-in;touch-action:manipulation}
+.zoomtag{position:absolute;left:10px;top:10px;background:rgba(11,8,32,.75);border-radius:8px;padding:5px 9px;font-size:13px;pointer-events:none}
+.places{display:flex;gap:6px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><h1>FRACTAL EXPLORER</h1><a class="back" href="./">← ARCADE</a></header>
+<p class="sub">Tap anywhere on the picture to zoom in. However far you zoom, new patterns keep appearing!</p>
+<div class="stage"><canvas id="cv" aria-label="Mandelbrot fractal. Tap to zoom in."></canvas><div class="zoomtag" id="zt"></div></div>
+<div class="panel" style="margin-top:12px">
+  <div class="row"><button class="btn alt" id="out">🔍− ZOOM OUT</button><button class="btn alt" id="reset">↺ START OVER</button>
+    <label>Colors <select id="pal"><option value="0">Galaxy</option><option value="1">Fire</option><option value="2">Ocean</option><option value="3">Rainbow</option><option value="4">Candy</option></select></label>
+    <label>Detail <input type="range" id="it" min="100" max="2000" step="50" value="400"></label><button class="btn" id="save">⬇ SAVE PICTURE</button></div>
+  <div class="row" style="margin-top:10px"><span class="note">Visit a famous spot:</span><div class="places" id="places"></div></div>
+</div>
+<div class="panel"><h2>WHAT IS THIS?</h2><p class="note">This is the <b>Mandelbrot set</b>. For every dot, the computer repeats one tiny maths rule, z → z² + c, hundreds of times. If the numbers stay small, the dot is coloured black. If they shoot off to infinity, the colour shows how fast that happened. That one simple rule makes shapes that never end: seahorses, spirals and tiny copies of the whole picture hidden inside itself. Shapes like this are called <b>fractals</b>, and you can find them in nature too, in ferns, snowflakes, lightning and coastlines.</p></div>
+</div>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const cv=$('cv'),ctx=cv.getContext('2d');
+let cx=-.6,cy=0,scale=3.2,job=0;
+const PLACES=[['Seahorse Valley',-.7453,.1127,.012],['Elephant Valley',.2850,.0115,.01],['Spiral',-.7615,-.0847,.0011],['Mini Mandelbrot',-1.7549,0,.035],['Lightning tree',-.1011,.9563,.06]];
+function palette(i,t){t=t*2.4%1;const C=[[[0,7,100],[32,107,203],[237,255,255],[255,170,0],[0,2,0]],[[20,0,0],[180,30,0],[255,140,0],[255,240,120],[255,255,255]],[[0,10,40],[0,90,140],[0,200,200],[220,255,250],[0,40,90]],null,[[60,0,80],[255,61,154],[255,210,63],[62,240,255],[60,0,80]]][i];
+  if(!C){const h=t*6,k=h%1,q=[[255,k*255,0],[255*(1-k),255,0],[0,255,k*255],[0,255*(1-k),255],[k*255,0,255],[255,0,255*(1-k)]][Math.floor(h)%6];return q}
+  const p=t*(C.length-1),a=Math.floor(p),f=p-a,A=C[a],B=C[Math.min(a+1,C.length-1)];return[A[0]+(B[0]-A[0])*f,A[1]+(B[1]-A[1])*f,A[2]+(B[2]-A[2])*f]}
+function render(){const my=++job;const d=Math.min(2,devicePixelRatio||1)*.75,r=cv.getBoundingClientRect();const W=Math.floor(r.width*d),H=Math.floor(r.height*d);cv.width=W;cv.height=H;
+  const maxIt=+$('it').value,pal=+$('pal').value,img=ctx.createImageData(W,H),px=img.data,step=scale/W;let y=0;
+  $('zt').textContent=`Zoom ×${(3.2/scale).toLocaleString('en',{maximumFractionDigits:0})}`;
+  const LUT=[];for(let i=0;i<256;i++)LUT.push(palette(pal,i/256));
+  function rows(){if(my!==job)return;const t0=performance.now();
+    while(y<H&&performance.now()-t0<30){const ci=cy+(y-H/2)*step;for(let x=0;x<W;x++){const cr=cx+(x-W/2)*step;let zr=0,zi=0,n=0,zr2=0,zi2=0;
+        const q=(cr-.25)**2+ci*ci;if(q*(q+(cr-.25))<.25*ci*ci||(cr+1)**2+ci*ci<.0625)n=maxIt;else while(n<maxIt&&zr2+zi2<256){zi=2*zr*zi+ci;zr=zr2-zi2+cr;zr2=zr*zr;zi2=zi*zi;n++}
+        const o=(y*W+x)*4;if(n>=maxIt){px[o]=px[o+1]=px[o+2]=0}else{const sm=n+1-Math.log2(Math.log2(zr2+zi2)/2);const c=LUT[Math.floor((sm/40%1+1)%1*255)];px[o]=c[0];px[o+1]=c[1];px[o+2]=c[2]}px[o+3]=255}y++}
+    ctx.putImageData(img,0,0);if(y<H)requestAnimationFrame(rows)}
+  rows()}
+cv.addEventListener('click',e=>{const r=cv.getBoundingClientRect();cx+=(e.clientX-r.left-r.width/2)/r.width*scale;cy+=(e.clientY-r.top-r.height/2)/r.width*scale;if(scale>2e-13)scale/=3;else alert('That is as far as this computer can zoom!');render()});
+$('out').onclick=()=>{scale=Math.min(4,scale*3);render()};
+$('reset').onclick=()=>{cx=-.6;cy=0;scale=3.2;render()};
+$('pal').onchange=render;$('it').onchange=render;
+$('places').innerHTML=PLACES.map((p,i)=>`<button class="btn alt small" data-p="${i}">${p[0]}</button>`).join('');
+$('places').onclick=e=>{const b=e.target.closest('[data-p]');if(!b)return;const p=PLACES[+b.dataset.p];cx=p[1];cy=p[2];scale=p[3];render()};
+$('save').onclick=()=>{const a=document.createElement('a');a.href=cv.toDataURL('image/png');a.download='fractal.png';a.click()};
+let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(render,200)});
+render();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>

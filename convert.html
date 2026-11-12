@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0820">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Unit Converter</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Chakra+Petch:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="lab.css">
+<style>
+/* Layout: category chips, then a "from" box and "to" box side by side, then the value in every unit. */
+:root{--acc:#5cf2b4}
+.cats{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.cats button{background:var(--panel);border:1px solid var(--line);color:var(--ink);border-radius:999px;padding:8px 14px;font:700 14px var(--body);cursor:pointer}
+.cats button.on{background:var(--acc);color:#0b0820;border-color:var(--acc)}
+.conv{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:end}
+@media (max-width:620px){.conv{grid-template-columns:1fr}}
+.conv label{display:flex;flex-direction:column;gap:6px}
+.conv input{font-size:22px;font-family:var(--display);width:100%}
+.swap{font-size:22px;padding:10px 14px}
+.all{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-top:6px}
+.all div{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;cursor:pointer}
+.all small{display:block;color:var(--mute)}.all b{font-size:17px;word-break:break-all}
+.fun{margin-top:12px;background:#10233a;border-left:3px solid var(--acc);border-radius:8px;padding:10px 12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><h1>UNIT CONVERTER</h1><a class="back" href="./">← ARCADE</a></header>
+<p class="sub">Turn any measurement into another unit: centimetres to inches, kilograms to pounds, Celsius to Fahrenheit and more.</p>
+<div class="cats" id="cats"></div>
+<div class="panel">
+  <div class="conv">
+    <label>From<input id="v1" inputmode="decimal" value="1"><select id="u1"></select></label>
+    <button class="btn alt swap" id="swap" aria-label="Swap units">⇄</button>
+    <label>To<input id="v2" inputmode="decimal"><select id="u2"></select></label>
+  </div>
+  <div class="fun" id="fun"></div>
+</div>
+<div class="panel"><h2>IN EVERY UNIT</h2><div class="all" id="all"></div></div>
+</div>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+/* factor = how many base units in one of this unit */
+const U={
+ '📏 Length':{base:'m',u:[['mm','millimetre',.001],['cm','centimetre',.01],['m','metre',1],['km','kilometre',1000],['in','inch',.0254],['ft','foot',.3048],['yd','yard',.9144],['mi','mile',1609.344],['nmi','nautical mile',1852]],fun:'A football pitch is about 105 m long. A marathon is 42.195 km.'},
+ '⚖️ Weight':{base:'kg',u:[['mg','milligram',1e-6],['g','gram',.001],['kg','kilogram',1],['t','tonne',1000],['oz','ounce',.028349523125],['lb','pound',.45359237],['st','stone',6.35029318]],fun:'An adult African elephant can weigh about 6 tonnes. A paper clip is about 1 gram.'},
+ '🌡️ Temperature':{u:[['°C','Celsius'],['°F','Fahrenheit'],['K','Kelvin']],fun:'Water freezes at 0 °C (32 °F) and boils at 100 °C (212 °F). The coldest possible temperature is 0 K, which is −273.15 °C.'},
+ '🚀 Speed':{base:'m/s',u:[['m/s','metres per second',1],['km/h','kilometres per hour',1/3.6],['mph','miles per hour',.44704],['kn','knots',1852/3600],['Mach','speed of sound',343]],fun:'A cheetah can run about 110 km/h. Sound travels about 1,235 km/h (Mach 1).'},
+ '⏱️ Time':{base:'s',u:[['s','second',1],['min','minute',60],['h','hour',3600],['day','day',86400],['wk','week',604800],['yr','year (365.25 days)',31557600]],fun:'You have a birthday about every 31.6 million seconds!'},
+ '🟦 Area':{base:'m²',u:[['cm²','square centimetre',1e-4],['m²','square metre',1],['ha','hectare',1e4],['km²','square kilometre',1e6],['ft²','square foot',.09290304],['ac','acre',4046.8564224],['dönüm','dönüm',1000]],fun:'A football pitch is about 0.7 hectares. In Turkey, land is often measured in dönüm (1,000 m²).'},
+ '🧃 Volume':{base:'L',u:[['mL','millilitre',.001],['L','litre',1],['m³','cubic metre',1000],['tsp','teaspoon',.00492892],['tbsp','tablespoon',.0147868],['cup','US cup',.2365882365],['gal','US gallon',3.785411784]],fun:'An Olympic swimming pool holds about 2.5 million litres of water.'},
+ '💾 Data':{base:'B',u:[['bit','bit',.125],['B','byte',1],['KB','kilobyte',1e3],['MB','megabyte',1e6],['GB','gigabyte',1e9],['TB','terabyte',1e12]],fun:'One letter of text is about 1 byte. A song is about 4 MB, and a movie can be several GB.'}};
+let cat=Object.keys(U)[0];
+function toBase(c,u,v){if(c.includes('Temp'))return u==='°C'?v:u==='°F'?(v-32)*5/9:v-273.15;return v*U[c].u.find(x=>x[0]===u)[2]}
+function fromBase(c,u,v){if(c.includes('Temp'))return u==='°C'?v:u==='°F'?v*9/5+32:v+273.15;return v/U[c].u.find(x=>x[0]===u)[2]}
+const fmt=n=>{if(!isFinite(n))return'—';const a=Math.abs(n);if(a!==0&&(a<1e-4||a>=1e12))return n.toExponential(4).replace('e+','×10^').replace('e-','×10^-');return Number(n.toPrecision(8)).toLocaleString('en',{maximumFractionDigits:6})};
+const parse=s=>parseFloat(String(s).replace(/,/g,'.').replace(/\s/g,''));
+function opts(){const u=U[cat].u;const o=u.map(([k,n])=>`<option value="${k}">${n} (${k})</option>`).join('');$('u1').innerHTML=o;$('u2').innerHTML=o;$('u1').selectedIndex=Math.min(1,u.length-1);$('u2').selectedIndex=Math.min(2,u.length-1);
+  if(cat.includes('Temp')){$('u1').value='°C';$('u2').value='°F';$('v1').value=20}else if(cat.includes('Length')){$('u1').value='cm';$('u2').value='in';$('v1').value=100}else $('v1').value=1;$('fun').innerHTML='<b>Did you know?</b> '+U[cat].fun}
+function calc(from){const a=from===2?[$('v2'),$('u2'),$('v1'),$('u1')]:[$('v1'),$('u1'),$('v2'),$('u2')];const v=parse(a[0].value);if(isNaN(v)){a[2].value='';all(NaN);return}
+  const b=toBase(cat,a[1].value,v);a[2].value=fmt(fromBase(cat,a[3].value,b)).replace(/,/g,'');all(from===2?parse($('v1').value):v)}
+function all(v){const b=toBase(cat,$('u1').value,v);$('all').innerHTML=U[cat].u.map(([k,n])=>`<div data-u="${k}"><small>${n}</small><b>${isNaN(v)?'—':fmt(fromBase(cat,k,b))} ${k}</b></div>`).join('')}
+$('cats').innerHTML=Object.keys(U).map(k=>`<button class="${k===cat?'on':''}">${k}</button>`).join('');
+$('cats').onclick=e=>{const b=e.target.closest('button');if(!b)return;cat=b.textContent;$('cats').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));opts();calc(1)};
+$('v1').oninput=()=>calc(1);$('v2').oninput=()=>calc(2);$('u1').onchange=()=>calc(1);$('u2').onchange=()=>calc(1);
+$('swap').onclick=()=>{const a=$('u1').value;$('u1').value=$('u2').value;$('u2').value=a;calc(1)};
+$('all').onclick=e=>{const d=e.target.closest('[data-u]');if(d){$('u2').value=d.dataset.u;calc(1)}};
+opts();calc(1);
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>

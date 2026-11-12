@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0820">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Secret Codes</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Chakra+Petch:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="lab.css">
+<style>
+/* Layout: tabs for each code; each tab has a message box, controls, and the coded result. */
+:root{--acc:#a855f7}
+.out{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px;min-height:60px;font-family:ui-monospace,Menlo,monospace;font-size:18px;word-break:break-word;white-space:pre-wrap}
+#lamp{width:56px;height:56px;border-radius:50%;background:#2a2450;border:2px solid var(--line);transition:background .03s}
+#lamp.on{background:#fff6b0;box-shadow:0 0 30px #ffd23f}
+#tapKey{width:100%;padding:26px;font-size:18px}
+.chart{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:6px;margin-top:10px}
+.chart div{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-family:ui-monospace,Menlo,monospace}
+.chart b{font-family:var(--display);margin-right:6px;color:var(--gold)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><h1>SECRET CODES</h1><a class="back" href="./">← ARCADE</a></header>
+<p class="sub">Turn messages into secret codes and crack them again. Send one to a friend!</p>
+<div class="tabs"><button data-t="morse" class="on">MORSE</button><button data-t="caesar">CAESAR</button><button data-t="binary">BINARY</button><button data-t="emoji">EMOJI</button></div>
+
+<section id="morse">
+ <div class="panel"><label for="mIn">Your message (letters or dots and dashes)</label><textarea id="mIn">SOS</textarea>
+  <div class="row" style="margin:10px 0"><button class="btn" id="mPlay">▶ BEEP IT</button><div id="lamp" aria-hidden="true"></div><span class="note">Morse turns letters into short (·) and long (–) signals.</span></div>
+  <div class="out" id="mOut" aria-live="polite"></div></div>
+ <div class="panel"><h2>TAP YOUR OWN MORSE</h2><p class="note">Short tap = dot, long press = dash. Wait a moment between letters.</p><button class="btn alt" id="tapKey">PRESS HERE</button><div class="out" id="tapOut" style="margin-top:10px"></div><button class="btn alt small" id="tapClear" style="margin-top:8px">CLEAR</button></div>
+ <div class="panel"><h2>MORSE CHART</h2><div class="chart" id="chart"></div></div>
+</section>
+
+<section id="caesar" hidden>
+ <div class="panel"><label for="cIn">Your message</label><textarea id="cIn">MEET ME AT THE PARK</textarea>
+  <div class="row" style="margin:10px 0"><label for="shift">Shift each letter by</label><input type="range" id="shift" min="1" max="25" value="3"><b id="shiftV" class="big">3</b><button class="btn alt small" id="cDir">ENCODE ➜</button></div>
+  <div class="out" id="cOut" aria-live="polite"></div>
+  <p class="note">Julius Caesar used this code 2,000 years ago! With shift 3, A becomes D, B becomes E… To decode, shift back.</p>
+  <button class="btn alt small" id="crack">🕵️ CRACK A CODE (try every shift)</button><div class="out" id="crackOut" hidden style="margin-top:10px;font-size:14px"></div></div>
+</section>
+
+<section id="binary" hidden>
+ <div class="panel"><label for="bIn">Your message (or 0s and 1s)</label><textarea id="bIn">Hi!</textarea>
+  <div class="out" id="bOut" style="margin-top:10px;font-size:15px" aria-live="polite"></div>
+  <p class="note">Computers store every letter as a pattern of 8 ones and zeros called a byte. "A" is 01000001.</p></div>
+</section>
+
+<section id="emoji" hidden>
+ <div class="panel"><label for="eIn">Your message (or emoji code)</label><textarea id="eIn">secret plan</textarea>
+  <div class="out" id="eOut" style="margin-top:10px" aria-live="polite"></div>
+  <p class="note">Each letter has its own emoji. Paste an emoji message here to turn it back into words.</p><div class="chart" id="eChart"></div></div>
+</section>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const M={A:'.-',B:'-...',C:'-.-.',D:'-..',E:'.',F:'..-.',G:'--.',H:'....',I:'..',J:'.---',K:'-.-',L:'.-..',M:'--',N:'-.',O:'---',P:'.--.',Q:'--.-',R:'.-.',S:'...',T:'-',U:'..-',V:'...-',W:'.--',X:'-..-',Y:'-.--',Z:'--..',0:'-----',1:'.----',2:'..---',3:'...--',4:'....-',5:'.....',6:'-....',7:'--...',8:'---..',9:'----.','.':'.-.-.-',',':'--..--','?':'..--..','!':'-.-.--'};
+const R=Object.fromEntries(Object.entries(M).map(([a,b])=>[b,a]));
+const fold=s=>s.replace(/ç/gi,'C').replace(/ğ/gi,'G').replace(/ı/g,'I').replace(/İ/g,'I').replace(/ö/gi,'O').replace(/ş/gi,'S').replace(/ü/gi,'U').toUpperCase();
+const isMorse=s=>/^[\s.\-·–\/]+$/.test(s.trim())&&s.trim().length>0;
+function morse(){const s=$('mIn').value;if(isMorse(s)){$('mOut').textContent=s.trim().replace(/·/g,'.').replace(/–/g,'-').split(/\s*\/\s*|\s{3,}/).map(w=>w.trim().split(/\s+/).map(c=>R[c]||'?').join('')).join(' ');return}
+  $('mOut').textContent=fold(s).split(/\s+/).filter(Boolean).map(w=>[...w].map(c=>M[c]||'').filter(Boolean).join(' ')).join(' / ').replace(/\./g,'·').replace(/-/g,'–')}
+$('mIn').oninput=morse;
+let ac=null;const A=()=>{if(!ac)ac=new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();return ac};
+let playing=false;
+$('mPlay').onclick=()=>{if(playing)return;const code=isMorse($('mIn').value)?$('mIn').value.replace(/·/g,'.').replace(/–/g,'-'):fold($('mIn').value).split(/\s+/).map(w=>[...w].map(c=>M[c]||'').join(' ')).join(' / ');
+  const a=A(),u=.09;let t=a.currentTime+.05;const o=a.createOscillator(),g=a.createGain();o.frequency.value=650;g.gain.value=0;o.connect(g);g.connect(a.destination);o.start(t);const lamps=[];
+  for(const ch of code){if(ch==='.'||ch==='-'){const d=ch==='.'?u:u*3;g.gain.setValueAtTime(.25,t);g.gain.setValueAtTime(0,t+d);lamps.push([t,d]);t+=d+u}else if(ch===' ')t+=u*2;else if(ch==='/')t+=u*4}
+  o.stop(t+.1);playing=true;const t0=a.currentTime;lamps.forEach(([s,d])=>{setTimeout(()=>$('lamp').classList.add('on'),(s-t0)*1000);setTimeout(()=>$('lamp').classList.remove('on'),(s-t0+d)*1000)});setTimeout(()=>playing=false,(t-t0)*1000)};
+/* tap key */
+let down=0,cur='',word='',gapT=null,tone=null;
+function beep(on){const a=A();if(on){tone=a.createOscillator();const g=a.createGain();g.gain.value=.2;tone.frequency.value=650;tone.connect(g);g.connect(a.destination);tone.start()}else if(tone){tone.stop();tone=null}}
+function showTap(){$('tapOut').textContent=word+(cur?' ['+cur.replace(/\./g,'·').replace(/-/g,'–')+']':'')}
+$('tapKey').addEventListener('pointerdown',e=>{e.preventDefault();down=performance.now();clearTimeout(gapT);beep(true);$('lamp').classList.add('on')});
+const tup=()=>{if(!down)return;const d=performance.now()-down;down=0;beep(false);$('lamp').classList.remove('on');cur+=d<220?'.':'-';showTap();gapT=setTimeout(()=>{word+=R[cur]||'?';cur='';showTap();gapT=setTimeout(()=>{if(!word.endsWith(' '))word+=' ';showTap()},1400)},700)};
+$('tapKey').addEventListener('pointerup',tup);$('tapKey').addEventListener('pointerleave',tup);
+$('tapClear').onclick=()=>{word='';cur='';showTap()};
+$('chart').innerHTML=Object.entries(M).slice(0,36).map(([a,b])=>`<div><b>${a}</b>${b.replace(/\./g,'·').replace(/-/g,'–')}</div>`).join('');
+/* caesar */
+let enc=true;
+const shiftStr=(s,k)=>fold(s).replace(/[A-Z]/g,c=>String.fromCharCode((c.charCodeAt(0)-65+k+26)%26+65));
+function caesar(){const k=+$('shift').value;$('shiftV').textContent=k;$('cOut').textContent=shiftStr($('cIn').value,enc?k:-k)}
+$('cIn').oninput=caesar;$('shift').oninput=caesar;
+$('cDir').onclick=()=>{enc=!enc;$('cDir').textContent=enc?'ENCODE ➜':'⬅ DECODE';caesar()};
+$('crack').onclick=()=>{const s=$('cIn').value;$('crackOut').hidden=false;$('crackOut').textContent=Array.from({length:25},(_,i)=>`shift ${String(i+1).padStart(2)}: ${shiftStr(s,-(i+1))}`).join('\n')+'\n\nLook for the line that makes sense!'};
+/* binary */
+function binary(){const s=$('bIn').value;if(/^[01\s]+$/.test(s.trim())&&s.trim().length>=8){const bytes=s.trim().split(/\s+/).join('').match(/.{1,8}/g)||[];try{$('bOut').textContent='📖 '+new TextDecoder().decode(new Uint8Array(bytes.map(b=>parseInt(b,2))))}catch(e){$('bOut').textContent='?'}return}
+  $('bOut').textContent=[...new TextEncoder().encode(s)].map(b=>b.toString(2).padStart(8,'0')).join(' ')}
+$('bIn').oninput=binary;
+/* emoji */
+const EM=['🍎','🐝','🐱','🐶','🥚','🐸','🍇','🏠','🍦','🃏','🔑','🦁','🌙','🎵','🐙','🐼','👑','🌈','⭐','🌴','☂️','🎻','🐳','❌','🪀','⚡'];
+function emoji(){const s=$('eIn').value;const seg=[...new Intl.Segmenter().segment(s)].map(x=>x.segment);if(seg.some(c=>EM.includes(c))){$('eOut').textContent=seg.map(c=>{const i=EM.indexOf(c);return i>=0?String.fromCharCode(97+i):c}).join('');return}
+  $('eOut').textContent=fold(s).replace(/[A-Z]/g,c=>EM[c.charCodeAt(0)-65])}
+$('eIn').oninput=emoji;
+$('eChart').innerHTML=EM.map((e,i)=>`<div><b>${String.fromCharCode(65+i)}</b>${e}</div>`).join('');
+document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-t]').forEach(x=>x.classList.toggle('on',x===b));['morse','caesar','binary','emoji'].forEach(s=>$(s).hidden=s!==b.dataset.t)});
+document.querySelectorAll('.out').forEach(o=>{o.title='Tap to copy';o.style.cursor='copy';o.onclick=()=>{navigator.clipboard&&navigator.clipboard.writeText(o.textContent).then(()=>toast('Copied!')).catch(()=>{})}});
+let toastT;function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),1500)}
+morse();caesar();binary();emoji();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>

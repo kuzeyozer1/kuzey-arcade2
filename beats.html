@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0820">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Beat Maker</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Chakra+Petch:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="lab.css">
+<style>
+/* Layout: transport controls on top, then one row per drum with 16 step pads (scrolls sideways on phones). */
+:root{--acc:#ffd23f}
+.seq{overflow-x:auto}
+.grid{display:grid;grid-template-columns:110px repeat(16,minmax(30px,1fr));gap:5px;min-width:640px}
+.name{display:flex;align-items:center;gap:6px;font-weight:700;font-size:14px;background:none;border:0;color:var(--ink);cursor:pointer;text-align:left;padding:0}
+.pad{aspect-ratio:1;border-radius:7px;border:1px solid var(--line);background:var(--panel2);cursor:pointer;padding:0}
+.pad.beat4{background:#17133a}
+.pad.on{background:var(--c);border-color:var(--c);box-shadow:0 0 10px var(--c)}
+.pad.now{outline:2px solid #fff;outline-offset:1px}
+.tempo{display:flex;gap:10px;align-items:center;flex:1;min-width:200px}
+.tempo input{flex:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><h1>BEAT MAKER</h1><a class="back" href="./">← ARCADE</a></header>
+<p class="sub">Tap the squares to make a beat. Each row is a drum, and the music plays from left to right.</p>
+<div class="panel">
+  <div class="row"><button class="btn" id="play">▶ PLAY</button><div class="tempo"><label for="bpm">Tempo</label><input type="range" id="bpm" min="60" max="180" value="100"><b id="bpmV">100</b></div></div>
+  <div class="row" style="margin-top:10px"><select id="preset" aria-label="Example beats"><option value="">Load an example beat…</option></select><button class="btn alt small" id="clear">CLEAR</button><button class="btn alt small" id="rand">SURPRISE ME</button><button class="btn alt small" id="save">SAVE</button><button class="btn alt small" id="load">LOAD SAVED</button></div>
+</div>
+<div class="panel seq"><div class="grid" id="grid"></div><p class="note" style="margin-top:10px">Tip: tap a drum's name to hear it.</p></div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const DR=[{n:'Kick',e:'🥁',c:'#ff3d9a'},{n:'Snare',e:'🪘',c:'#ffd23f'},{n:'Hi-hat',e:'🔔',c:'#3ef0ff'},{n:'Clap',e:'👏',c:'#5cf2b4'},{n:'Tom',e:'🛢️',c:'#ff8a1f'},{n:'Cowbell',e:'🐄',c:'#a855f7'}];
+const S=16;let pat=DR.map(()=>Array(S).fill(0)),step=0,playing=false,ac=null,next=0,timer=null;
+const PRE={
+ 'Rock':['1000100010001000','0000100000001000','1010101010101010','0000000000000000','0000000000000011','0000000000000000'],
+ 'Hip hop':['1000001010000000','0000100000001000','1011101110111011','0000100000001000','0000000000000000','0000000000000000'],
+ 'Dance':['1000100010001000','0000100000001000','0010001000100010','0000100000001000','0000000000000000','0010000000100000'],
+ 'Funky':['1001001000100100','0000100100001001','1111111111111111','0000000000001000','0001000000000010','1000000010000000']};
+function ctx(){if(!ac)ac=new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();return ac}
+let nb=null;function noise(a){if(!nb){nb=a.createBuffer(1,a.sampleRate,a.sampleRate);const d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1}const s=a.createBufferSource();s.buffer=nb;return s}
+function env(a,t,peak,dur){const g=a.createGain();g.gain.setValueAtTime(peak,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);g.connect(a.destination);return g}
+function hit(i,t){const a=ctx();t=t||a.currentTime;
+  if(i===0){const o=a.createOscillator();o.frequency.setValueAtTime(150,t);o.frequency.exponentialRampToValueAtTime(40,t+.15);o.connect(env(a,t,1,.35));o.start(t);o.stop(t+.4)}
+  if(i===1){const n=noise(a),f=a.createBiquadFilter();f.type='highpass';f.frequency.value=1500;n.connect(f);f.connect(env(a,t,.6,.18));n.start(t);n.stop(t+.2);const o=a.createOscillator();o.type='triangle';o.frequency.value=190;o.connect(env(a,t,.4,.1));o.start(t);o.stop(t+.12)}
+  if(i===2){const n=noise(a),f=a.createBiquadFilter();f.type='highpass';f.frequency.value=7000;n.connect(f);f.connect(env(a,t,.35,.05));n.start(t);n.stop(t+.06)}
+  if(i===3){for(let k=0;k<3;k++){const n=noise(a),f=a.createBiquadFilter();f.type='bandpass';f.frequency.value=1200;f.Q.value=1.2;n.connect(f);f.connect(env(a,t+k*.012,.6,k===2?.15:.03));n.start(t+k*.012);n.stop(t+k*.012+.16)}}
+  if(i===4){const o=a.createOscillator();o.frequency.setValueAtTime(220,t);o.frequency.exponentialRampToValueAtTime(110,t+.25);o.connect(env(a,t,.7,.3));o.start(t);o.stop(t+.32)}
+  if(i===5){const f=a.createBiquadFilter();f.type='bandpass';f.frequency.value=800;f.connect(env(a,t,.35,.25));[540,800].forEach(fr=>{const o=a.createOscillator();o.type='square';o.frequency.value=fr;o.connect(f);o.start(t);o.stop(t+.27)})}}
+function render(){let h='<div></div>'+Array.from({length:S},(_,k)=>`<div style="text-align:center;font-size:11px;color:var(--mute)">${k%4===0?k/4+1:''}</div>`).join('');
+  DR.forEach((d,i)=>{h+=`<button class="name" data-hear="${i}">${d.e} ${d.n}</button>`;for(let k=0;k<S;k++)h+=`<button class="pad ${k%8<4?'beat4':''} ${pat[i][k]?'on':''} ${playing&&k===step?'now':''}" style="--c:${d.c}" data-i="${i}" data-k="${k}" aria-label="${d.n} step ${k+1} ${pat[i][k]?'on':'off'}" aria-pressed="${!!pat[i][k]}"></button>`});$('grid').innerHTML=h}
+$('grid').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.hear!==undefined){hit(+b.dataset.hear);return}const i=+b.dataset.i,k=+b.dataset.k;pat[i][k]^=1;if(pat[i][k])hit(i);render()};
+function mark(){document.querySelectorAll('.pad.now').forEach(p=>p.classList.remove('now'));document.querySelectorAll(`.pad[data-k="${step}"]`).forEach(p=>p.classList.add('now'))}
+function sched(){const a=ctx(),dur=60/+$('bpm').value/4;while(next<a.currentTime+.12){const s=step;pat.forEach((r,i)=>{if(r[s])hit(i,next)});const delay=Math.max(0,(next-a.currentTime)*1000);setTimeout(()=>{if(playing){step=s;mark()}},delay);next+=dur;step=(step+1)%S}}
+$('play').onclick=()=>{playing=!playing;$('play').textContent=playing?'■ STOP':'▶ PLAY';if(playing){const a=ctx();step=0;next=a.currentTime+.05;timer=setInterval(sched,25)}else{clearInterval(timer);document.querySelectorAll('.pad.now').forEach(p=>p.classList.remove('now'))}};
+$('bpm').oninput=e=>$('bpmV').textContent=e.target.value;
+$('preset').innerHTML+=Object.keys(PRE).map(k=>`<option>${k}</option>`).join('');
+$('preset').onchange=e=>{const p=PRE[e.target.value];if(p){pat=p.map(r=>[...r].map(Number));render()}e.target.value=''};
+$('clear').onclick=()=>{pat=DR.map(()=>Array(S).fill(0));render()};
+$('rand').onclick=()=>{const prob=[.3,.18,.55,.12,.1,.08];pat=DR.map((d,i)=>Array.from({length:S},(_,k)=>+(Math.random()<prob[i]+(i===0&&k%4===0?.5:0)+(i===1&&k%8===4?.6:0))));render()};
+$('save').onclick=()=>{try{localStorage.setItem('beatSaved',JSON.stringify({pat,bpm:$('bpm').value}));toast('Beat saved!')}catch(e){}};
+$('load').onclick=()=>{try{const s=JSON.parse(localStorage.getItem('beatSaved'));if(!s){toast('No saved beat yet.');return}pat=s.pat;$('bpm').value=s.bpm;$('bpmV').textContent=s.bpm;render();toast('Loaded your beat!')}catch(e){}};
+let toastT;function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),1800)}
+pat=PRE.Rock.map(r=>[...r].map(Number));render();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>

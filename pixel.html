@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0820">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Pixel Studio</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Chakra+Petch:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="lab.css">
+<style>
+/* Layout: canvas on the left (top on phones), tools + palette on the right, gallery underneath. */
+:root{--acc:#ff3d9a}
+.studio{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:12px}
+@media (max-width:760px){.studio{grid-template-columns:1fr}}
+.board{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px;display:grid;place-items:center}
+#cv{width:min(100%,560px);aspect-ratio:1;image-rendering:pixelated;touch-action:none;cursor:crosshair;border-radius:6px;background:repeating-conic-gradient(#2a2650 0 25%,#1d1a40 0 50%) 0 0/20px 20px}
+.pal{display:grid;grid-template-columns:repeat(8,1fr);gap:4px}
+.pal button{aspect-ratio:1;border-radius:6px;border:2px solid transparent;cursor:pointer;padding:0}
+.pal button.on{border-color:#fff;box-shadow:0 0 0 2px var(--gold)}
+.tools{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0}
+.tools button{padding:9px 0;font-size:18px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;color:var(--ink);cursor:pointer}
+.tools button.on{border-color:var(--acc);background:#2a1035}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
+.gallery figure{margin:0;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:6px;text-align:center}
+.gallery img{width:100%;image-rendering:pixelated;aspect-ratio:1;cursor:pointer}
+.gallery button{background:none;border:0;color:var(--mute);cursor:pointer;font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><h1>PIXEL STUDIO</h1><a class="back" href="./">← ARCADE</a></header>
+<p class="sub">Draw pixel art one square at a time. Save it to your gallery or download it as a picture.</p>
+<div class="studio">
+  <div class="board"><canvas id="cv" width="16" height="16" aria-label="Drawing canvas"></canvas></div>
+  <div class="panel" style="margin:0">
+    <h2>TOOLS</h2>
+    <div class="tools" role="group" aria-label="Tools">
+      <button data-tool="pen" class="on" title="Pen" aria-label="Pen">✏️</button><button data-tool="erase" title="Eraser" aria-label="Eraser">🧽</button><button data-tool="fill" title="Fill bucket" aria-label="Fill bucket">🪣</button><button data-tool="pick" title="Color picker" aria-label="Color picker">💧</button>
+    </div>
+    <div class="row" style="margin-bottom:10px"><label><input type="checkbox" id="mirror"> Mirror ↔</label><label><input type="checkbox" id="grid" checked> Grid</label></div>
+    <h2>COLORS</h2>
+    <div class="pal" id="pal"></div>
+    <div class="row" style="margin-top:8px"><label for="custom">Your color</label><input type="color" id="custom" value="#ff8800" style="padding:0;width:48px;height:34px"></div>
+    <h2 style="margin-top:14px">CANVAS</h2>
+    <div class="row"><select id="size" aria-label="Canvas size"><option value="16">16 × 16</option><option value="24">24 × 24</option><option value="32">32 × 32</option></select><button class="btn alt small" id="undo">UNDO</button><button class="btn alt small" id="clear">CLEAR</button></div>
+    <div class="row" style="margin-top:10px"><button class="btn" id="save">SAVE</button><button class="btn alt" id="dl">DOWNLOAD</button></div>
+  </div>
+</div>
+<div class="panel" style="margin-top:12px"><h2>MY GALLERY</h2><div class="gallery" id="gal"></div></div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const COLORS=['#000000','#ffffff','#9a9a9a','#5a5a5a','#ff3b3b','#ff8a1f','#ffd23f','#7bd88f','#2fbf71','#3ef0ff','#3b82f6','#1e3a8a','#a855f7','#ff3d9a','#8b5a2b','#f5c9a0'];
+let N=16,px=[],undo=[],color='#000000',tool='pen',drawing=false;
+const cv=$('cv'),ctx=cv.getContext('2d'),ov=document.createElement('canvas');
+function blank(){px=Array(N*N).fill(null)}
+function draw(){ctx.clearRect(0,0,cv.width,cv.height);const s=cv.width/N;px.forEach((c,i)=>{if(c){ctx.fillStyle=c;ctx.fillRect((i%N)*s,Math.floor(i/N)*s,s,s)}});
+  if($('grid').checked){ctx.strokeStyle='rgba(255,255,255,.12)';ctx.lineWidth=1;ctx.beginPath();for(let k=1;k<N;k++){ctx.moveTo(k*s+.5,0);ctx.lineTo(k*s+.5,cv.height);ctx.moveTo(0,k*s+.5);ctx.lineTo(cv.width,k*s+.5)}ctx.stroke()}}
+function setSize(n,keep){N=n;cv.width=cv.height=N*20;if(!keep)blank();draw()}
+function cell(e){const r=cv.getBoundingClientRect();const x=Math.floor((e.clientX-r.left)/r.width*N),y=Math.floor((e.clientY-r.top)/r.height*N);return x>=0&&y>=0&&x<N&&y<N?[x,y]:null}
+function put(x,y,c){px[y*N+x]=c;if($('mirror').checked)px[y*N+(N-1-x)]=c}
+function fill(x,y,c){const t=px[y*N+x];if(t===c)return;const st=[[x,y]];while(st.length){const [a,b]=st.pop();if(a<0||b<0||a>=N||b>=N||px[b*N+a]!==t)continue;px[b*N+a]=c;st.push([a+1,b],[a-1,b],[a,b+1],[a,b-1])}}
+function act(e){const p=cell(e);if(!p)return;const [x,y]=p;
+  if(tool==='pick'){const c=px[y*N+x];if(c){setColor(c);toast('Picked '+c)}return}
+  if(tool==='fill'){fill(x,y,color);if($('mirror').checked)fill(N-1-x,y,color)}else put(x,y,tool==='erase'?null:color);draw()}
+cv.addEventListener('pointerdown',e=>{undo.push(px.slice());if(undo.length>40)undo.shift();drawing=true;cv.setPointerCapture(e.pointerId);act(e)});
+cv.addEventListener('pointermove',e=>{if(drawing&&(tool==='pen'||tool==='erase'))act(e)});
+addEventListener('pointerup',()=>{drawing=false;autosave()});
+function setColor(c){color=c;document.querySelectorAll('.pal button').forEach(b=>b.classList.toggle('on',b.dataset.c===c));if(tool!=='fill')setTool('pen')}
+function setTool(t){tool=t;document.querySelectorAll('[data-tool]').forEach(b=>b.classList.toggle('on',b.dataset.tool===t))}
+$('pal').innerHTML=COLORS.map(c=>`<button data-c="${c}" style="background:${c}" aria-label="Color ${c}"></button>`).join('');
+$('pal').onclick=e=>{const b=e.target.closest('button');if(b)setColor(b.dataset.c)};
+$('custom').oninput=e=>setColor(e.target.value);
+document.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>setTool(b.dataset.tool));
+$('grid').onchange=draw;
+$('undo').onclick=()=>{if(undo.length){px=undo.pop();draw();autosave()}};
+$('clear').onclick=()=>{undo.push(px.slice());blank();draw();autosave()};
+$('size').onchange=e=>{if(px.some(Boolean)&&!confirm('Change size? This clears your drawing.')){e.target.value=N;return}setSize(+e.target.value)};
+function picture(scale){const c=document.createElement('canvas');c.width=c.height=N*scale;const x=c.getContext('2d');px.forEach((col,i)=>{if(col){x.fillStyle=col;x.fillRect((i%N)*scale,Math.floor(i/N)*scale,scale,scale)}});return c}
+$('dl').onclick=()=>{const a=document.createElement('a');a.href=picture(Math.max(8,Math.floor(512/N))).toDataURL('image/png');a.download='pixel-art.png';a.click()};
+const GK='pixelGallery';
+function gallery(){try{return JSON.parse(localStorage.getItem(GK))||[]}catch(e){return[]}}
+function renderGal(){const g=gallery();$('gal').innerHTML=g.length?g.map((a,i)=>`<figure><img src="${a.img}" alt="Saved drawing ${i+1}" data-i="${i}"><button data-del="${i}">delete</button></figure>`).join(''):'<p class="note">Nothing saved yet. Draw something and press SAVE!</p>'}
+$('save').onclick=()=>{if(!px.some(Boolean)){toast('Draw something first!');return}const g=gallery();g.unshift({n:N,px:px.slice(),img:picture(4).toDataURL()});try{localStorage.setItem(GK,JSON.stringify(g.slice(0,40)));toast('Saved to your gallery!')}catch(e){toast('Gallery is full. Delete some drawings.')}renderGal()};
+$('gal').onclick=e=>{const d=e.target.dataset;if(d.del!==undefined){const g=gallery();g.splice(+d.del,1);localStorage.setItem(GK,JSON.stringify(g));renderGal()}else if(d.i!==undefined){const a=gallery()[+d.i];undo.push(px.slice());$('size').value=a.n;setSize(a.n,true);px=a.px.slice();draw();scrollTo({top:0,behavior:'smooth'});toast('Opened! Keep drawing.')}};
+function autosave(){try{localStorage.setItem('pixelWork',JSON.stringify({n:N,px}))}catch(e){}}
+let toastT;function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),1800)}
+try{const w=JSON.parse(localStorage.getItem('pixelWork'));if(w&&w.px){$('size').value=w.n;setSize(w.n,true);px=w.px}else setSize(16)}catch(e){setSize(16)}
+draw();setColor('#000000');renderGal();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>
