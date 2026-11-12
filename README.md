@@ -44,3 +44,4 @@ lists at the top of the script in `yazili/index.html`.
 - `app-forge.html` — App Forge (AI app making only works inside Claude).
 
 - `craft.html` — Kuzey Craft: a 3D block world (survival/creative, medium or endless worlds, monsters or peaceful, animals, farming, tools, Elemental ores). Uses three.js 0.160.0 from jsDelivr.
+- `space.html` — Planet Lab: an interactive solar system explorer (orbits, NASA facts, weight on each planet, travel times, size comparison), English and Turkish.

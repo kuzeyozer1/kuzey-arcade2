@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05061a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Kuzey Arcade">
+<title>Planet Lab</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Chakra+Petch:wght@400;600;700&display=swap">
+<style>
+/* Layout: a header with the language switch, then tabs. "Explore" is a live orbit view with a
+   facts card for the tapped planet; "My weight" and "Space trip" are calculators listing every planet. Dark only. */
+:root{--bg:#05061a;--panel:#11102e;--line:#2a2760;--ink:#ecebff;--mute:#9a94c9;--gold:#ffd23f;--cyan:#3ef0ff;--pink:#ff3d9a;
+  --display:'Orbitron',ui-monospace,monospace;--body:'Chakra Petch',system-ui,sans-serif;color-scheme:dark}
+[hidden]{display:none!important}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);min-height:100vh}
+.wrap{max-width:980px;margin:0 auto;padding:calc(14px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 40px max(16px,env(safe-area-inset-left,0px))}
+header{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+h1{font-family:var(--display);font-weight:900;font-size:clamp(26px,6vw,40px);margin:0;flex:1;background:linear-gradient(90deg,var(--cyan),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
+.back{color:var(--mute);text-decoration:none;font-family:var(--display);font-size:12px;letter-spacing:.1em}
+.sub{color:var(--mute);margin:6px 0 14px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.seg button{background:transparent;color:var(--ink);border:0;padding:8px 14px;font:700 14px var(--body);cursor:pointer}
+.seg button.on{background:var(--gold);color:#05061a}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.tabs button{flex:1;min-width:120px;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:11px;font:900 13px var(--display);letter-spacing:.06em;cursor:pointer}
+.tabs button.on{border-color:var(--cyan);color:var(--cyan)}
+.stage{position:relative;background:radial-gradient(circle at 50% 50%,#0d0f33,#05061a 70%);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+canvas{display:block;width:100%;height:min(62vh,560px);touch-action:manipulation;cursor:pointer}
+.ctrl{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 12px;border-top:1px solid var(--line);font-size:14px;color:var(--mute)}
+.ctrl input[type=range]{flex:1;min-width:140px;accent-color:var(--gold)}
+.ctrl button{background:transparent;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:7px 12px;font:700 13px var(--body);cursor:pointer}
+.hint{position:absolute;left:12px;top:10px;font-size:13px;color:var(--mute);pointer-events:none}
+.card{margin-top:12px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;grid-template-columns:110px 1fr;gap:14px;align-items:start}
+.card canvas{width:110px;height:110px;cursor:default}
+.card h2{font-family:var(--display);margin:0 0 4px;font-size:22px}
+.card p{margin:0 0 10px;color:var(--mute)}
+.facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.fact{background:#0a0a24;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.fact small{display:block;color:var(--mute);font-size:12px}.fact b{font-size:16px}
+.wow{grid-column:1/-1;background:#1a1440;border-left:3px solid var(--gold);border-radius:8px;padding:10px 12px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+.panel label{font-weight:700;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.panel input,.panel select{font:inherit;background:#0a0a24;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:9px 10px}
+.panel input{width:110px}
+.rows{display:flex;flex-direction:column;gap:6px;margin-top:14px}
+.r{display:grid;grid-template-columns:34px 110px 1fr auto;gap:10px;align-items:center;background:#0a0a24;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.r i{display:block;width:26px;height:26px;border-radius:50%}
+.r .bar{height:10px;border-radius:5px;background:#1d1a48;overflow:hidden}.r .bar u{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--gold))}
+.r b{font-family:var(--display);font-size:14px;white-space:nowrap}
+.note{color:var(--mute);font-size:13px;margin-top:10px}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+@media (max-width:560px){.card{grid-template-columns:1fr}.r{grid-template-columns:30px 80px 1fr;}.r b{grid-column:2/-1}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><h1>PLANET LAB</h1><div class="seg" role="group" aria-label="Language"><button data-l="en" class="on">EN</button><button data-l="tr">TR</button></div><a class="back" href="./" id="back">← ARCADE</a></header>
+  <p class="sub" id="sub"></p>
+  <div class="tabs" role="tablist"><button data-t="explore" class="on" id="tExplore"></button><button data-t="weight" id="tWeight"></button><button data-t="trip" id="tTrip"></button><button data-t="size" id="tSize"></button></div>
+
+  <section id="explore">
+    <div class="stage"><canvas id="sky" aria-label="Animated solar system"></canvas><div class="hint" id="hint"></div>
+      <div class="ctrl"><span id="lSpeed"></span><input type="range" id="speed" min="0" max="100" value="35"><button id="pause"></button><span id="clock"></span></div></div>
+    <div class="card" id="card"><canvas id="pic" width="220" height="220"></canvas><div><h2 id="pName"></h2><p id="pDesc"></p><div class="facts" id="facts"></div></div></div>
+  </section>
+
+  <section id="weight" hidden><div class="panel"><label><span id="lWeight"></span><input type="number" id="kg" min="1" max="300" value="35" inputmode="decimal"> kg</label><div class="rows" id="wRows"></div><p class="note" id="wNote"></p></div></section>
+
+  <section id="trip" hidden><div class="panel"><label><span id="lVeh"></span><select id="veh"></select></label><div class="rows" id="tRows"></div><p class="note" id="tNote"></p></div></section>
+
+  <section id="size" hidden><div class="panel"><p class="note" id="sNote" style="margin-top:0"></p><div class="stage" style="margin-top:10px"><canvas id="sizes" style="height:min(46vh,380px)" aria-label="Planet sizes compared"></canvas></div></div></section>
+</div>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+/* Data: NASA planetary fact sheets. Distances are average distance from the Sun. */
+const P=[
+ {id:'sun',c:'#ffcc33',c2:'#ff8a00',d:0,km:1392700,g:274,day:609.1,year:0,moons:null,t:5500,
+  en:['Sun','A star: a giant ball of hot gas. It holds 99.8% of all the mass in the solar system.','About 1.3 million Earths could fit inside the Sun!'],
+  tr:['Güneş','Bir yıldız: dev bir sıcak gaz topu. Güneş sistemindeki kütlenin %99,8\'i onda.','Güneş\'in içine yaklaşık 1,3 milyon Dünya sığabilir!']},
+ {id:'mercury',c:'#b5b5b5',c2:'#7a7a7a',d:57.9,km:4879,g:3.7,day:1407.6,year:88,moons:0,t:167,
+  en:['Mercury','The smallest planet and the closest to the Sun.','A year on Mercury is only 88 Earth days, but one day (sunrise to sunrise) lasts 176 Earth days!'],
+  tr:['Merkür','En küçük gezegen ve Güneş\'e en yakın olanı.','Merkür\'de bir yıl sadece 88 Dünya günü, ama bir gün (gün doğumundan gün doğumuna) 176 Dünya günü sürer!']},
+ {id:'venus',c:'#e8c37a',c2:'#b8873c',d:108.2,km:12104,g:8.9,day:5832.5,year:224.7,moons:0,t:464,
+  en:['Venus','The hottest planet, wrapped in thick clouds. It spins backwards!','Venus is hotter than Mercury even though it is farther from the Sun, because its thick air traps heat. It is hot enough to melt lead.'],
+  tr:['Venüs','Kalın bulutlarla kaplı en sıcak gezegen. Ters yöne döner!','Venüs, Güneş\'e Merkür\'den uzak olmasına rağmen daha sıcaktır çünkü kalın atmosferi ısıyı hapseder. Kurşunu eritecek kadar sıcak.']},
+ {id:'earth',c:'#3f8ff0',c2:'#2fbf71',d:149.6,km:12756,g:9.8,day:24,year:365.25,moons:1,t:15,
+  en:['Earth','Our home! The only planet we know of with life and liquid water on the surface.','Earth travels around the Sun at about 107,000 km/h. You are zooming through space right now!'],
+  tr:['Dünya','Evimiz! Yüzeyinde sıvı su ve canlılar olduğunu bildiğimiz tek gezegen.','Dünya, Güneş\'in etrafında saatte yaklaşık 107.000 km hızla döner. Şu an uzayda hızla ilerliyorsun!']},
+ {id:'mars',c:'#d9603b',c2:'#9a3a1f',d:227.9,km:6792,g:3.7,day:24.7,year:687,moons:2,t:-65,
+  en:['Mars','The red planet. Its red color comes from rusty dust.','Mars has Olympus Mons, the biggest volcano in the solar system. It is about 2.5 times taller than Mount Everest.'],
+  tr:['Mars','Kızıl gezegen. Kırmızı rengi paslı tozdan gelir.','Mars\'ta güneş sisteminin en büyük yanardağı Olympus Mons var. Everest Dağı\'ndan yaklaşık 2,5 kat daha yüksek.']},
+ {id:'jupiter',c:'#d9b38c',c2:'#a8724a',d:778.5,km:142984,g:23.1,day:9.9,year:4331,moons:'95+',t:-110,ring:0,
+  en:['Jupiter','The biggest planet: a gas giant made mostly of hydrogen and helium.','The Great Red Spot on Jupiter is a giant storm bigger than the whole Earth, and it has been raging for hundreds of years.'],
+  tr:['Jüpiter','En büyük gezegen: çoğunlukla hidrojen ve helyumdan oluşan bir gaz devi.','Jüpiter\'deki Büyük Kırmızı Leke, tüm Dünya\'dan büyük dev bir fırtına ve yüzlerce yıldır sürüyor.']},
+ {id:'saturn',c:'#e8d39a',c2:'#b89a5a',d:1432,km:120536,g:9,day:10.7,year:10747,moons:'270+',t:-140,ring:1,
+  en:['Saturn','Famous for its beautiful rings made of ice and rock.','Saturn is so light for its size that it would float in a giant bathtub of water!'],
+  tr:['Satürn','Buz ve kayadan oluşan güzel halkalarıyla ünlü.','Satürn, boyutuna göre o kadar hafif ki dev bir su küvetinde yüzerdi!']},
+ {id:'uranus',c:'#9fe3e8',c2:'#5fb8c4',d:2867,km:51118,g:8.7,day:17.2,year:30589,moons:'28+',t:-195,ring:2,
+  en:['Uranus','An ice giant that spins tipped over on its side.','Because Uranus is tilted on its side, each pole gets about 42 years of sunlight followed by 42 years of darkness.'],
+  tr:['Uranüs','Yan yatmış şekilde dönen bir buz devi.','Uranüs yan yattığı için her kutbu yaklaşık 42 yıl güneş ışığı, sonra 42 yıl karanlık yaşar.']},
+ {id:'neptune',c:'#4a6ff0',c2:'#2a3fb0',d:4515,km:49528,g:11,day:16.1,year:59800,moons:16,t:-200,
+  en:['Neptune','The farthest planet: a dark, cold and very windy ice giant.','Neptune has the fastest winds in the solar system, about 2,000 km/h. It takes 165 Earth years to go around the Sun once.'],
+  tr:['Neptün','En uzak gezegen: karanlık, soğuk ve çok rüzgârlı bir buz devi.','Neptün\'de güneş sisteminin en hızlı rüzgârları eser, saatte yaklaşık 2.000 km. Güneş\'in etrafında bir turu 165 Dünya yılı sürer.']}
+];
+const T={
+ en:{sub:'Explore the solar system with real facts from NASA.',explore:'EXPLORE',weight:'MY WEIGHT',trip:'SPACE TRIP',size:'SIZES',hint:'Tap a planet to learn about it',speed:'Speed',pause:'Pause',play:'Play',
+  clock:d=>`${d.toLocaleString('en')} Earth days passed`,dist:'Distance from Sun',diam:'Diameter',grav:'Gravity',dayL:'One spin (day)',yearL:'One orbit (year)',moonsL:'Moons',temp:'Average temperature',wow:'WOW!',
+  hours:'hours',days:'days',years:'Earth years',mkm:'million km',noMoons:'none',
+  lWeight:'Your weight on Earth:',wNote:'Your mass stays the same everywhere. What changes is how hard each planet pulls on you (gravity). The Sun is not a planet, and you could never stand on it!',
+  lVeh:'Travel by:',tNote:'Times are for the shortest trip, when the planet is closest to Earth. Real rockets curve around the Sun, so real trips take longer.',
+  veh:[['walk','🚶 Walking (5 km/h)',5],['car','🚗 Car (100 km/h)',100],['plane','✈️ Airplane (900 km/h)',900],['rocket','🚀 Fast space probe (58,000 km/h)',58000],['light','💡 Speed of light',1079252849]],
+  y:'years',d:'days',h:'hours',m:'minutes',s:'seconds',sNote:'All planets drawn at the same scale. Look how tiny Earth is next to Jupiter, and the Sun is far too big to fit here: it would be about 10 times wider than Jupiter!',back:'← ARCADE'},
+ tr:{sub:'Güneş sistemini NASA\'nın gerçek bilgileriyle keşfet.',explore:'KEŞFET',weight:'AĞIRLIĞIM',trip:'UZAY YOLCULUĞU',size:'BOYUTLAR',hint:'Bir gezegene dokunup öğren',speed:'Hız',pause:'Durdur',play:'Oynat',
+  clock:d=>`${d.toLocaleString('tr')} Dünya günü geçti`,dist:'Güneş\'e uzaklık',diam:'Çap',grav:'Yerçekimi',dayL:'Bir dönüş (gün)',yearL:'Bir tur (yıl)',moonsL:'Uydular',temp:'Ortalama sıcaklık',wow:'VAY!',
+  hours:'saat',days:'gün',years:'Dünya yılı',mkm:'milyon km',noMoons:'yok',
+  lWeight:'Dünya\'daki ağırlığın:',wNote:'Kütlen her yerde aynı kalır. Değişen, her gezegenin seni ne kadar güçlü çektiğidir (yerçekimi). Güneş bir gezegen değil ve üstünde asla duramazsın!',
+  lVeh:'Ne ile gidiyorsun:',tNote:'Süreler, gezegen Dünya\'ya en yakın olduğundaki en kısa yolculuk için. Gerçek roketler Güneş\'in etrafında kıvrılarak gider, bu yüzden gerçek yolculuklar daha uzun sürer.',
+  veh:[['walk','🚶 Yürüyerek (5 km/sa)',5],['car','🚗 Araba (100 km/sa)',100],['plane','✈️ Uçak (900 km/sa)',900],['rocket','🚀 Hızlı uzay sondası (58.000 km/sa)',58000],['light','💡 Işık hızı',1079252849]],
+  y:'yıl',d:'gün',h:'saat',m:'dakika',s:'saniye',sNote:'Bütün gezegenler aynı ölçekte çizildi. Jüpiter\'in yanında Dünya ne kadar küçük! Güneş buraya sığmayacak kadar büyük: Jüpiter\'den yaklaşık 10 kat daha geniş olurdu!',back:'← ARCADE'}
+};
+let L=localStorage.getItem('planetLang')||'en',sel=3,tab='explore';
+const t=k=>T[L][k];
+const num=(n,dp=0)=>Number(n).toLocaleString(L==='tr'?'tr':'en',{maximumFractionDigits:dp});
+
+/* ---------- drawing a planet ---------- */
+function drawPlanet(x,cx,cy,r,p,glow){
+  if(p.ring){x.save();x.translate(cx,cy);x.rotate(p.ring===2?1.35:-.35);x.strokeStyle=p.ring===2?'rgba(170,230,240,.55)':'rgba(230,210,150,.8)';x.lineWidth=Math.max(1,r*.28);x.beginPath();x.ellipse(0,0,r*2.1,r*.6,0,Math.PI,2*Math.PI);x.stroke();x.restore()}
+  const g=x.createRadialGradient(cx-r*.35,cy-r*.35,r*.1,cx,cy,r);g.addColorStop(0,p.c);g.addColorStop(1,p.c2);
+  if(glow){x.shadowColor=p.c;x.shadowBlur=r*1.2}x.fillStyle=g;x.beginPath();x.arc(cx,cy,r,0,7);x.fill();x.shadowBlur=0;
+  if(p.id==='jupiter'||p.id==='saturn'){x.save();x.beginPath();x.arc(cx,cy,r,0,7);x.clip();x.fillStyle='rgba(120,70,30,.25)';for(let i=-3;i<=3;i++)x.fillRect(cx-r,cy+i*r*.28,r*2,r*.1);if(p.id==='jupiter'){x.fillStyle='#c2502e';x.beginPath();x.ellipse(cx+r*.3,cy+r*.35,r*.22,r*.12,0,0,7);x.fill()}x.restore()}
+  if(p.id==='earth'){x.save();x.beginPath();x.arc(cx,cy,r,0,7);x.clip();x.fillStyle='#2fbf71';[[-.3,-.2,.35],[.35,.25,.3],[.1,-.5,.2]].forEach(([a,b,s])=>{x.beginPath();x.arc(cx+a*r,cy+b*r,s*r,0,7);x.fill()});x.restore()}
+  if(p.ring){x.save();x.translate(cx,cy);x.rotate(p.ring===2?1.35:-.35);x.strokeStyle=p.ring===2?'rgba(170,230,240,.55)':'rgba(230,210,150,.8)';x.lineWidth=Math.max(1,r*.28);x.beginPath();x.ellipse(0,0,r*2.1,r*.6,0,0,Math.PI);x.stroke();x.restore()}}
+
+/* ---------- orbit view ---------- */
+const cv=$('sky'),ctx=cv.getContext('2d');let W=0,H=0;
+const stars=[...Array(160)].map(()=>[Math.random(),Math.random(),Math.random()*1.4+.3,Math.random()*6]);
+function size(){const r=cv.getBoundingClientRect(),d=Math.min(2,devicePixelRatio||1);W=r.width;H=r.height;cv.width=W*d;cv.height=H*d;ctx.setTransform(d,0,0,d,0,0)}
+addEventListener('resize',()=>{size();drawSizes()});
+let days=0,paused=false,last=0;const ang=P.map((p,i)=>i*1.7);
+function orbitR(p){const maxR=Math.min(W*.48,H*.47*1.6),min=Math.min(W,H)*.09;return min+(maxR-min)*Math.log(p.d/40)/Math.log(4515/40)}
+function bodyR(p){if(p.id==='sun')return Math.min(W,H)*.045;return Math.max(3.2,Math.sqrt(p.km)/24*Math.min(1,W/700)+1.5)}
+function pos(i){const p=P[i];if(!i)return[W/2,H/2];const r=orbitR(p);return[W/2+Math.cos(ang[i])*r,H/2+Math.sin(ang[i])*r*.62]}
+function frame(tm){const dt=Math.min(.05,(tm-last)/1000||0);last=tm;
+  const spd=paused?0:Math.pow(+$('speed').value/100,2.2)*400;days+=dt*spd;
+  P.forEach((p,i)=>{if(i)ang[i]+=dt*spd/p.year*Math.PI*2});
+  ctx.clearRect(0,0,W,H);stars.forEach(([a,b,s,ph])=>{ctx.globalAlpha=.4+.4*Math.sin(tm/900+ph);ctx.fillStyle='#fff';ctx.fillRect(a*W,b*H,s,s)});ctx.globalAlpha=1;
+  P.forEach((p,i)=>{if(!i)return;const r=orbitR(p);ctx.strokeStyle=i===sel?'rgba(255,210,63,.55)':'rgba(154,148,201,.22)';ctx.lineWidth=i===sel?1.6:1;ctx.beginPath();ctx.ellipse(W/2,H/2,r,r*.62,0,0,7);ctx.stroke()});
+  const order=P.map((p,i)=>i).sort((a,b)=>pos(a)[1]-pos(b)[1]);
+  order.forEach(i=>{const p=P[i],[x,y]=pos(i),r=bodyR(p);drawPlanet(ctx,x,y,r,p,!i);
+    if(i===sel){ctx.strokeStyle='#ffd23f';ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,r+6,0,7);ctx.stroke()}
+    if(W>520||i===sel){ctx.fillStyle=i===sel?'#ffd23f':'#cfcaf5';ctx.font='600 12px Chakra Petch, sans-serif';ctx.textAlign='center';ctx.fillText(p[L][0],x,y+r+15)}});
+  $('clock').textContent=t('clock')(Math.floor(days));
+  requestAnimationFrame(frame)}
+cv.addEventListener('click',e=>{const r=cv.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;let best=-1,bd=40;P.forEach((p,i)=>{const [x,y]=pos(i),d=Math.hypot(x-mx,y-my)-bodyR(p);if(d<bd){bd=d;best=i}});if(best>=0){sel=best;showCard()}});
+$('pause').onclick=()=>{paused=!paused;$('pause').textContent=paused?t('play'):t('pause')};
+
+/* ---------- facts card ---------- */
+function dur(h){return h<72?`${num(h,1)} ${t('hours')}`:h/24<1000?`${num(h/24,1)} ${t('days')}`:`${num(h/24/365.25,1)} ${t('years')}`}
+function showCard(){const p=P[sel],x=$('pic').getContext('2d');x.clearRect(0,0,220,220);drawPlanet(x,110,110,p.ring?48:70,p,p.id==='sun');
+  $('pName').textContent=p[L][0];$('pName').style.color=p.c;$('pDesc').textContent=p[L][1];
+  const f=[[t('dist'),p.d?`${num(p.d,1)} ${t('mkm')}`:'—'],[t('diam'),`${num(p.km)} km`],[t('grav'),`${num(p.g,1)} m/s²`],[t('dayL'),dur(p.day)],[t('yearL'),p.year?dur(p.year*24):'—'],[t('moonsL'),p.moons===null?'—':p.moons===0?t('noMoons'):p.moons],[t('temp'),`${num(p.t)} °C`]];
+  $('facts').innerHTML=f.map(([a,b])=>`<div class="fact"><small>${a}</small><b>${b}</b></div>`).join('')+`<div class="wow"><b>${t('wow')}</b> ${p[L][2]}</div>`}
+
+/* ---------- weight ---------- */
+function renderWeight(){const kg=Math.max(0,+$('kg').value||0);const max=Math.max(...P.map(p=>p.g));
+  $('wRows').innerHTML=P.map(p=>{const w=kg*p.g/9.8;return`<div class="r"><i style="background:radial-gradient(circle at 35% 35%,${p.c},${p.c2})"></i><span>${p[L][0]}</span><div class="bar"><u style="width:${Math.min(100,p.g/max*100)}%"></u></div><b>${num(w,1)} kg</b></div>`}).join('')}
+$('kg').addEventListener('input',renderWeight);
+
+/* ---------- trip ---------- */
+function timeStr(h){if(h<1/60)return`${num(h*3600,1)} ${t('s')}`;if(h<1)return`${num(h*60,1)} ${t('m')}`;if(h<48)return`${num(h,1)} ${t('h')}`;if(h<24*365*2)return`${num(h/24)} ${t('d')}`;return`${num(h/24/365.25)} ${t('y')}`}
+function renderTrip(){const v=T[L].veh,sel=$('veh').value||'rocket';$('veh').innerHTML=v.map(([k,n])=>`<option value="${k}" ${k===sel?'selected':''}>${n}</option>`).join('');
+  const sp=v.find(x=>x[0]===sel)[2],E=P[3].d;const list=P.filter(p=>p.id!=='earth');const maxD=Math.log10(4515);
+  $('tRows').innerHTML=list.map(p=>{const dkm=(p.id==='sun'?E:Math.abs(p.d-E))*1e6,h=dkm/sp;return`<div class="r"><i style="background:radial-gradient(circle at 35% 35%,${p.c},${p.c2})"></i><span>${p[L][0]}</span><div class="bar"><u style="width:${Math.max(4,Math.log10(dkm/1e6+1)/maxD*100)}%"></u></div><b>${timeStr(h)}</b></div>`}).join('')}
+$('veh').addEventListener('change',renderTrip);
+
+/* ---------- sizes ---------- */
+function drawSizes(){const c=$('sizes');if(c.offsetParent===null)return;const r=c.getBoundingClientRect(),d=Math.min(2,devicePixelRatio||1);c.width=r.width*d;c.height=r.height*d;const x=c.getContext('2d');x.setTransform(d,0,0,d,0,0);
+  const w=r.width,h=r.height,pl=P.slice(1),gap=18,extra=p=>p.ring===1?1.15:p.ring===2?.25:0;
+  const units=pl.reduce((a,p)=>a+p.km*(1+extra(p)),0),scale=Math.min((w-60-gap*pl.length)/units,(h-80)/142984);
+  x.fillStyle='rgba(255,204,51,.25)';x.beginPath();x.arc(-1392700*scale/2+26,h/2,1392700*scale/2,0,7);x.fill();
+  let cx=40;pl.forEach((p,i)=>{const rr=p.km*scale/2,ex=rr*extra(p);cx+=rr+ex;drawPlanet(x,cx,h/2-10,Math.max(1.5,rr),p,false);
+    const small=rr<14,ly=small?(i%2?h/2-10-rr-12:h/2-10+rr+20):h/2-10+rr+(p.ring===1?rr*.6:0)+20;
+    x.fillStyle='#cfcaf5';x.font='600 12px Chakra Petch, sans-serif';x.textAlign='center';x.fillText(p[L][0],cx,ly);cx+=rr+ex+gap})}
+/* ---------- language & tabs ---------- */
+function applyLang(){document.documentElement.lang=L;document.querySelectorAll('[data-l]').forEach(b=>b.classList.toggle('on',b.dataset.l===L));
+  $('sub').textContent=t('sub');$('tExplore').textContent=t('explore');$('tWeight').textContent=t('weight');$('tTrip').textContent=t('trip');$('tSize').textContent=t('size');
+  $('hint').textContent=t('hint');$('lSpeed').textContent=t('speed');$('pause').textContent=paused?t('play'):t('pause');$('lWeight').textContent=t('lWeight');$('wNote').textContent=t('wNote');$('lVeh').textContent=t('lVeh');$('tNote').textContent=t('tNote');$('sNote').textContent=t('sNote');$('back').textContent=t('back');
+  showCard();renderWeight();renderTrip();drawSizes()}
+document.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>{L=b.dataset.l;try{localStorage.setItem('planetLang',L)}catch(e){}applyLang()});
+document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{tab=b.dataset.t;document.querySelectorAll('[data-t]').forEach(x=>x.classList.toggle('on',x===b));['explore','weight','trip','size'].forEach(s=>$(s).hidden=s!==tab);if(tab==='explore')size();if(tab==='size')drawSizes()});
+$('veh').value='rocket';size();applyLang();requestAnimationFrame(frame);
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>
