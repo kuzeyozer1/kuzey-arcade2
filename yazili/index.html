@@ -320,6 +320,22 @@ details.notes summary{cursor:pointer}
 .badge-n{position:absolute;top:-8px;right:-8px;min-width:22px;height:22px;border-radius:99px;background:var(--c);color:#141033;font-size:13px;font-weight:800;display:grid;place-items:center;padding:0 5px}
 .badge-n:empty{display:none}
 .autobox{background:var(--panel-hi);border-radius:10px;padding:10px 12px}.autobox ul{list-style:none;padding:0;margin:6px 0 0;display:flex;flex-direction:column;gap:4px}
+.enhero{display:flex;gap:14px;flex-wrap:wrap;align-items:center;justify-content:space-between;background:var(--panel);border:1px solid var(--line);border-left:6px solid var(--en);border-radius:16px;padding:14px 16px;margin-bottom:18px}
+.enhero h2{font-size:24px;color:var(--en)}.enhero p{margin:4px 0 0}
+.enquick{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;flex:1 1 320px}
+.engroup{margin-bottom:24px}.engroup>h2{font-size:21px;color:var(--en);margin-bottom:6px}
+.enhead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;justify-content:space-between}.enhead h2{font-size:21px;color:var(--en)}
+.engroup h3{font-size:16px;margin:14px 0 8px;color:var(--mute)}
+.ready{display:flex;align-items:center;gap:10px;margin-top:6px}.ready b{color:var(--gold)}.ready .bar{flex:1}
+.set.done{border-top-color:var(--good)}
+#wbq{width:100%;background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:10px 12px;font:inherit;color:var(--ink);margin:8px 0}
+#wbq:focus{outline:none;border-color:var(--en)}
+.wbt .chip{border-color:var(--en);padding:6px 12px;font-size:14px}.wbt .chip.on{background:var(--en);color:#141033}
+.wb{display:flex;flex-direction:column;gap:6px;max-height:440px;overflow-y:auto;margin-top:8px;padding-right:4px}
+.wbrow{display:grid;grid-template-columns:40px minmax(0,1fr) minmax(0,1.4fr) auto;gap:8px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 10px}
+.wbrow small{color:var(--mute);font-size:12px}.say{border:0;background:var(--panel-hi);border-radius:8px;width:34px;height:34px;cursor:pointer;font-size:16px;color:inherit}
+.gram{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin-bottom:8px}.gram summary{cursor:pointer;font-weight:800}.gram p{margin:6px 0}.gram .ex{color:var(--mute);font-style:italic}
+@media (max-width:520px){.wbrow{grid-template-columns:36px minmax(0,1fr)}.wbrow span{grid-column:2}.wbrow small{display:none}}
 @media (prefers-reduced-motion:reduce){.shake{animation:none}.flip{transition:none}}
 @media (max-width:520px){
   .task{flex-wrap:wrap}
@@ -334,7 +350,7 @@ details.notes summary{cursor:pointer}
   <header>
     <a class="brand" href="../" aria-label="Back to Kuzey Arcade">
       <img src="icons/icon-192.png" alt="">
-      <div><h1>Yazılı Planı <span class="ver" title="Version 2">v2</span></h1><p>Version 2 · 1. Dönem 1. Yazılılar · 5. sınıf</p></div>
+      <div><h1>Yazılı Planı <span class="ver" title="Version 2.1">v2.1</span></h1><p>Version 2.1 · 1. Dönem 1. Yazılılar · 5. sınıf</p></div>
     </a>
     <div class="next" id="next"></div>
     <div class="xp" id="xp"></div>
@@ -342,6 +358,7 @@ details.notes summary{cursor:pointer}
 
   <div class="tabs" role="tablist">
     <button role="tab" data-tab="plan" aria-selected="true">Plan</button>
+    <button role="tab" data-tab="english" aria-selected="false">English</button>
     <button role="tab" data-tab="lessons" aria-selected="false">Konu</button>
     <button role="tab" data-tab="practice" aria-selected="false">Practice</button>
     <button role="tab" data-tab="rewards" aria-selected="false">Rewards</button>
@@ -355,6 +372,7 @@ details.notes summary{cursor:pointer}
     <div class="tasks" id="tasks"></div>
   </section>
 
+  <section id="tab-english" hidden></section>
   <section id="tab-lessons" hidden></section>
   <section id="tab-practice" hidden></section>
   <section id="tab-rewards" hidden></section>
@@ -1585,6 +1603,74 @@ Object.assign(SETS,{
 ]}
 });
 
+// ---------- English tab (v2.1): everything for the two English exams in one place ----------
+const EN_CAM={lessons:["L-en-will","L-en-past","L-en-grammar"],sets:["en-cam-mix","en-will","en-will-sort","en-will-type","en-will-speed","en-will-dinle","en-verbs","cam-stative-sort","en-past","cam-past-type","cam-irregular-speed","en-cond","cam-cond-sort","cam-cond-type","en-nature","en-nature-match","cam-nature-read","cam-jobs-match","cam-dream-read","ex-en-cam","ex-en-cam2","ex-en-mix"]};
+const EN_MEB={lessons:["L-en-meb","L-en-school"],sets:["en-meb-mix","en-meb","en-country-match","en-school","en-time","en-school-words","en-school-match","en-dinle","ex-en-meb","ex-en-dinle","en-speak"]};
+Object.assign(SETS,{
+"en-cam-mix":{s:"en",kind:"quiz",title:"Cambridge Quick Mix",mix:["en-will","en-verbs","en-past","en-cond","cam-nature-read","cam-dream-read"],n:15},
+"en-meb-mix":{s:"en",kind:"quiz",title:"MEB Quick Mix",mix:["en-meb","en-school"],n:12},
+"en-review":{s:"en",kind:"quiz",title:"My English mistakes",review:true}
+});
+const EXTRA_WORDS=[["goal","hedef","Unit 2"],["dream","hayal","Unit 2"],["achieve","başarmak","Unit 2"],["succeed","başarılı olmak","Unit 2"],["practise","pratik yapmak","Unit 2"],["skill","beceri","Unit 2"],
+ ["career","kariyer, meslek hayatı","Unit 2"],["future","gelecek","Unit 2"],["plan","plan, planlamak","Unit 2"],["prediction","tahmin","Unit 2"],["hard-working","çalışkan","Unit 2"],["talented","yetenekli","Unit 2"],
+ ["environment","çevre","Unit 1"],["forest","orman","Unit 1"],["ocean","okyanus","Unit 1"],["planet","gezegen","Unit 1"],["rubbish","çöp","Unit 1"],["plastic","plastik","Unit 1"]];
+function wordBank(){
+  const out=[],add=(w,m,t)=>{if(!out.some(x=>x.w===w))out.push({w,m,t})};
+  SETS["en-nature"].cards.forEach(c=>add(c.f,strip(c.b).replace(/^.*\(([^)]*)\)\s*$/,"$1"),"Unit 1"));
+  EXTRA_WORDS.forEach(([w,m,t])=>add(w,m,t));
+  SETS["cam-jobs-match"].pairs.forEach(([w,m])=>add(w,m,"Jobs"));
+  SETS["en-school-words"].cards.forEach(c=>add(c.f,strip(c.b),"School"));
+  SETS["en-country-match"].pairs.forEach(([c,n])=>add(n,"from "+c,"Countries"));
+  return out}
+function sayEn(t){if(!("speechSynthesis" in window)){toast("This device can’t read aloud.");return}speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="en-GB";u.rate=.85;
+  const vs=speechSynthesis.getVoices(),v=vs.find(v=>/^en[-_]GB/i.test(v.lang))||vs.find(v=>/^en/i.test(v.lang));if(v)u.voice=v;speechSynthesis.speak(u)}
+function noteMiss(set,q,ok){if(set.s!=="en"||set.gen==="clock"||!q.o)return;S.miss=S.miss||[];const i=S.miss.findIndex(m=>m.q===q.q);
+  if(!ok&&i<0){S.miss.push({q:q.q,o:q.o,e:q.e,p:q.p,v:q.v});if(S.miss.length>40)S.miss.shift()}
+  if(ok&&i>=0)S.miss.splice(i,1)}
+function readiness(group){const scored=group.sets.filter(id=>SETS[id]&&!["cards","match","speed","order","speak"].includes(SETS[id].kind)&&!SETS[id].review);
+  const sc=scored.reduce((a,id)=>a+Math.min(100,S.best[id]||0),0)/(scored.length*100);const ls=group.lessons.filter(id=>S.lessons[id]).length/group.lessons.length;
+  return Math.round((sc*.8+ls*.2)*100)}
+const GRAMMAR=[
+ ["cam","Will or be going to?",`<p><b>will</b>: predictions with <i>I think / maybe / probably</i>, decisions made now, promises, offers. <i>I think it <b>will</b> rain. · I<b>'ll</b> help you!</i></p><p><b>be going to</b>: plans made before, proof you can see now. <i>We<b>'re going to</b> visit Rize. · Look at the clouds! It<b>'s going to</b> rain.</i></p><p class="ex">✗ I will going to · ✗ She going to · ✗ He will goes</p>`],
+ ["cam","Past simple & past continuous",`<p><b>Past simple</b> = a finished, short action: <i>I <b>saw</b> a deer.</i> · <b>Past continuous</b> = was/were + -ing, an action in progress: <i>I <b>was walking</b>.</i></p><p><i>I was walking <b>when</b> I saw a deer. · <b>While</b> we were playing, it started to rain.</i></p>`],
+ ["cam","Stative & action verbs",`<p>Stative verbs (no -ing): <b>know, like, love, hate, want, need, believe, understand, think</b> (opinion), <b>own, belong, seem, taste, smell</b>.</p><p><i>✓ I know the answer. ✗ I'm knowing.</i> · Action verbs can be continuous: <i>She is running.</i></p>`],
+ ["cam","First & second conditional",`<p><b>First</b> (real): <b>If</b> + present, <b>will</b> + verb. <i>If it rains, we will stay home.</i></p><p><b>Second</b> (imaginary): <b>If</b> + past, <b>would</b> + verb. <i>If I had wings, I would fly. · If I were you, I'd…</i></p>`],
+ ["cam","Irregular verbs",null],
+ ["meb","Rules: must, have to, mustn't, can't",`<p><b>must / have to</b> = necessary · <b>mustn't / can't</b> = not allowed · <b>don't have to</b> = not necessary.</p><p>Imperatives: <i>Open your book! · <b>Don't</b> run!</i></p>`],
+ ["meb","Likes & dislikes",`<p>love ❤️ · like / enjoy 🙂 · don't mind 😐 · don't like 🙁 · hate / can't stand 😖 + <b>verb-ing</b>: <i>I enjoy <b>reading</b>.</i> · <i>Do you like dancing? Yes, I do. / No, I don't.</i></p>`],
+ ["meb","Telling the time",`<p>:15 <b>quarter past</b> · :30 <b>half past</b> · :45 <b>quarter to</b> (next hour) · 1–30 min = <b>past</b>, 31–59 = <b>to</b>. <i>7:45 = quarter to eight · 10:10 = ten past ten</i></p>`],
+ ["meb","a / an / the · countries",`<p><b>a</b> + consonant sound (a ruler) · <b>an</b> + vowel sound (an eraser, an English book) · <b>the</b> = a specific one.</p><p>Türkiye → Turkish · Japan → Japanese · Germany → German · France → French · Spain → Spanish · Canada → Canadian · the UK → British · the USA → American</p>`]];
+function renderEnglish(){
+  const t=today(),now=new Date(),hm=pad(now.getHours())+"."+pad(now.getMinutes());
+  const nextEn=EXAMS.filter(e=>e.s==="en"&&(e.d>t||(e.d===t&&e.t.slice(6)>hm)));
+  const when=e=>{const n=daysBetween(t,e.d);return n===0?"today":n===1?"tomorrow":"in "+n+" days"};
+  const card=id=>{const x=SETS[id];if(!x)return"";const done=S.best[id]!=null||(x.kind==="speak"&&S.stats.spoke);
+    return `<button class="set${done?" done":""}" style="--c:var(--en)" data-open="${id}"><b>${x.review?"🔁 ":""}${esc(x.title)}</b><span>${x.review?(S.miss&&S.miss.length?S.miss.length+" questions to fix":"No mistakes saved yet"):kindLabel(x)}${bestText(id)}</span></button>`};
+  const lcard=id=>{const L=LESSONS[id];return `<button class="set lessoncard${S.lessons[id]?" done":""}" style="--c:var(--en)" data-open="lesson:${id}"><b>📖 ${esc(L.title)}</b><span>${esc(L.sub)}${S.lessons[id]?" · ✓ done":""}</span></button>`};
+  const block=(g,title,exam)=>{const r=readiness(g);return `<div class="engroup"><div class="enhead"><h2>${title}</h2><span class="mute">${exam?esc(exam.name)+" · "+when(exam)+" "+exam.t.slice(0,5):"exam done ✓"}</span></div>
+    <div class="ready"><span>Ready: <b>${r}%</b></span><div class="bar wide"><i style="width:${r}%"></i></div></div>
+    <h3>📖 Lessons</h3><div class="sets">${g.lessons.map(lcard).join("")}</div>
+    <h3>🎯 Practice & exams</h3><div class="sets">${g.sets.map(card).join("")}</div></div>`};
+  const cam=EXAMS.find(e=>e.name.startsWith("Cambridge İngiliz")&&nextEn.includes(e)),meb=EXAMS.find(e=>e.name.startsWith("Yabancı Dil")&&nextEn.includes(e));
+  const words=wordBank(),topics=[...new Set(words.map(w=>w.t))];
+  const verbs=SETS["cam-irregular-speed"].items.map(i=>[i.q.replace(" →",""),i.o[0]]);
+  $("#tab-english").innerHTML=`<div class="enhero"><div><h2>🇬🇧 English practice</h2><p class="mute">Everything for your two English exams. Fix your mistakes, learn the words and grammar, then do the Quick Mix.</p></div>
+    <div class="enquick">${card("en-review")}${card(cam?"en-cam-mix":"en-meb-mix")}</div></div>
+    ${cam?block(EN_CAM,"Cambridge English (Units 1–2)",cam):""}
+    <div class="engroup"><h2>📚 Word bank</h2><p class="mute">Tap 🔊 to hear a word. ${words.length} words.</p>
+      <input id="wbq" type="search" placeholder="Search a word (English or Turkish)" aria-label="Search the word bank" autocapitalize="off">
+      <div class="chips wbt" id="wbt"><button class="chip on" data-t="">All</button>${topics.map(t=>`<button class="chip" data-t="${esc(t)}">${esc(t)}</button>`).join("")}</div>
+      <div class="wb" id="wb"></div></div>
+    <div class="engroup"><h2>🧠 Grammar cheat sheet</h2>${GRAMMAR.filter(g=>cam||g[0]==="meb").map(([k,h,b])=>`<details class="gram"><summary>${k==="cam"?"Cambridge":"MEB"} · ${esc(h)}</summary>${b||`<div class="tblwrap"><table class="tbl"><tr><th>Verb</th><th>Past simple</th><th>Verb</th><th>Past simple</th></tr>${verbs.reduce((a,v,i)=>i%2?a:a+`<tr><td>${v[0]}</td><td><b>${v[1]}</b></td><td>${verbs[i+1]?verbs[i+1][0]:""}</td><td><b>${verbs[i+1]?verbs[i+1][1]:""}</b></td></tr>`,"")}</table></div>`}</details>`).join("")}</div>
+    ${block(EN_MEB,"MEB English (Themes 1–2)",meb)}
+    ${!cam?block(EN_CAM,"Cambridge English (Units 1–2)",null):""}`;
+  let topic="";const paint=()=>{const q=($("#wbq").value||"").toLocaleLowerCase("tr").trim();
+    const list=words.filter(w=>(!topic||w.t===topic)&&(!q||w.w.toLowerCase().includes(q)||w.m.toLocaleLowerCase("tr").includes(q)));
+    $("#wb").innerHTML=list.map(w=>`<div class="wbrow"><button class="say" data-say="${esc(w.w)}" aria-label="Say ${esc(w.w)}">🔊</button><b>${esc(w.w)}</b><span>${esc(w.m)}</span><small>${esc(w.t)}</small></div>`).join("")||'<p class="mute">No words found.</p>';
+    $("#wb").querySelectorAll("[data-say]").forEach(b=>b.onclick=()=>sayEn(b.dataset.say))};
+  $("#wbq").oninput=paint;$("#wbt").querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{topic=b.dataset.t;$("#wbt").querySelectorAll(".chip").forEach(c=>c.classList.toggle("on",c===b));paint()});paint();
+}
+
 // ---------- the plan: about an hour a day ----------
 const DAYS=[
  {d:"2026-11-08",note:"Türkçe is on Tuesday, so start with it. Finished fast? Do the bonus games below and collect XP!",tasks:[
@@ -1684,10 +1770,13 @@ const DAYS=[
   {set:"din-tf",min:3,desc:"60-second true or false"},
   {set:"ex-din-1",min:40,desc:"📝 Din Kültürü practice exam (Senaryo 4)"},
   {set:"ex-din-mix",min:35,desc:"📊 Karma deneme: tablo, besin zinciri grafiği, eşleştirme, boşluk + yazılı"},
-  {set:"ex-din-2",min:40,desc:"📝 A second Din Kültürü practice exam (if you have time)"}]},
+  {set:"ex-din-2",min:40,desc:"📝 A second Din Kültürü practice exam (if you have time)"},
+  {set:"en-cam-mix",min:8,desc:"🇬🇧 v2.1 · Cambridge Quick Mix: 15 questions from every topic"},
+  {set:"en-review",min:6,desc:"🇬🇧 v2.1 · Fix the English questions you got wrong (English tab)"}]},
  {d:"2026-11-13",note:"Exam day! Just a short warm-up at breakfast. Good luck! 🍀",tasks:[
   {set:"en-will-speed",min:3,desc:"Quick warm-up for Cambridge English"},
-  {set:"din-esma-speed",min:3,desc:"Quick warm-up for Din Kültürü"}]}
+  {set:"din-esma-speed",min:3,desc:"Quick warm-up for Din Kültürü"},
+  {set:"en-cam-mix",min:6,desc:"🇬🇧 Last Quick Mix before the exam"}]}
 ];
 // Each task's id is its day plus what it is (2026-11-09#tr-okuma), never its position.
 // So new tasks can be added, moved or removed in an update and saved progress stays on the right task.
@@ -1804,7 +1893,8 @@ function renderExams(){
 document.querySelector(".tabs").addEventListener("click",e=>{
   const b=e.target.closest("[data-tab]");if(!b)return;
   document.querySelectorAll(".tabs button").forEach(x=>x.setAttribute("aria-selected",x===b));
-  ["plan","lessons","practice","rewards","exams"].forEach(n=>$("#tab-"+n).hidden=n!==b.dataset.tab);
+  ["plan","english","lessons","practice","rewards","exams"].forEach(n=>$("#tab-"+n).hidden=n!==b.dataset.tab);
+  if(b.dataset.tab==="english")renderEnglish();
   if(b.dataset.tab==="practice")renderPractice();
   if(b.dataset.tab==="lessons")renderLessons();
   if(b.dataset.tab==="rewards")renderRewards();
@@ -1829,6 +1919,7 @@ function closeSheet(){
   if(!$("#tab-practice").hidden)renderPractice();
   if(!$("#tab-lessons").hidden)renderLessons();
   if(!$("#tab-rewards").hidden)renderRewards();
+  if(!$("#tab-english").hidden)renderEnglish();
 }
 $("#sheetClose").onclick=closeSheet;
 function finishTask(){if(curTask){S.done[curTask]=true}save();afterProgress()}
@@ -1837,6 +1928,7 @@ function openActivity(id,taskId){
   curTask=taskId;
   if(id==="break")return openBreak();
   if(id.startsWith("lesson:"))return runLesson(id.slice(7));
+  if(SETS[id]&&SETS[id].review&&!(S.miss&&S.miss.length)){toast("No mistakes saved yet. Wrong answers in English quizzes will appear here to practise again.");return}
   const set=SETS[id];openSheet(set.title,set.s);
   if(set.kind==="cards")return runCards(id,set);
   if(set.kind==="listen")return runListen(id,set);
@@ -1856,6 +1948,7 @@ function openActivity(id,taskId){
 // quiz
 function quizQuestions(set){
   if(set.gen==="clock")return clockQuestions(set.n);
+  if(set.review)return shuffle(S.miss||[]).slice(0,15).map(m=>({q:m.q,o:m.o,e:m.e,p:m.p,v:m.v}));
   if(set.mix){const all=set.mix.flatMap(m=>SETS[m].qs);return shuffle(all).slice(0,set.n)}
   return set.qs.slice();
 }
@@ -1870,7 +1963,7 @@ function runQuiz(id,set,only){
     body().querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
       const k=+b.dataset.k,ok=opts[k].ok;
       body().querySelectorAll(".opt").forEach((x,j)=>{x.disabled=true;if(opts[j].ok)x.classList.add("right")});
-      hit(ok);if(ok){score++;addXP(10)}else{b.classList.add("wrong");wrong.push(q)}
+      hit(ok);noteMiss(set,q,ok);if(ok){score++;addXP(10)}else{b.classList.add("wrong");wrong.push(q)}
       $("#fb").innerHTML=`<div class="feedback ${ok?"ok":"no"}">${ok?"✓ Right!":"✗ Not quite."} ${esc(q.e||"")}</div>
         <div class="row" style="margin-top:12px"><button class="btn" id="nx">${i+1<qs.length?"Next →":"See score"}</button></div>`;
       $("#nx").onclick=()=>{i++;show();$("#sheet").scrollTop=0};$("#nx").focus();
@@ -2526,7 +2619,8 @@ function runSpeak(id){
 
 // ---------- start ----------
 renderNext();renderPlan();renderXP();updateRewardDot();
-if(!S.seenV2){S.seenV2=true;save();setTimeout(()=>toast("✨ Version 2: 15 new Cambridge English and Din Kültürü exercises in today’s plan!"),600)}
+if(!S.seenV21){S.seenV21=true;S.seenV2=true;save();setTimeout(()=>toast("🇬🇧 Version 2.1: a new English tab with a word bank, grammar cheat sheet, Quick Mix and your mistakes to fix!"),600)}
+else if(!S.seenV2){S.seenV2=true;save();setTimeout(()=>toast("✨ Version 2: 15 new Cambridge English and Din Kültürü exercises in today’s plan!"),600)}
 setInterval(renderNext,60e3);
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#sheet").hidden)closeSheet()});
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r=>r.update()).catch(()=>{});
