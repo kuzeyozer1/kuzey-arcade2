@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0820">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Voice Changer</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Chakra+Petch:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="lab.css">
+<style>
+:root{--acc:#5cf2b4}
+.rec{display:grid;place-items:center;gap:10px;padding:10px}
+#recB{width:130px;height:130px;border-radius:50%;border:6px solid #ff3b3b;background:#2a0d18;color:#fff;font-family:var(--display);font-weight:900;font-size:16px;cursor:pointer}
+#recB.on{background:#ff3b3b;animation:pulse 1s infinite}@keyframes pulse{50%{box-shadow:0 0 0 14px rgba(255,59,59,.25)}}
+#wave{width:100%;height:90px;display:block;background:var(--panel2);border-radius:10px}
+.fx{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.fx button{padding:16px 8px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);font:700 15px var(--body);cursor:pointer}
+.fx button span{display:block;font-size:34px}.fx button.on{border-color:var(--acc);background:#123d33}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><h1>VOICE CHANGER</h1><a class="back" href="./">← ARCADE</a></header>
+<p class="sub">Record your voice, then play it back as a chipmunk, a giant, a robot, an alien, in a cave, or even backwards!</p>
+<div class="panel rec"><button id="recB">● RECORD</button><p class="note" id="st">Press RECORD and say something funny (up to 15 seconds).</p><canvas id="wave" width="900" height="120" aria-hidden="true"></canvas></div>
+<div class="panel"><h2>PLAY IT AS…</h2><div class="fx" id="fx"></div><div class="row" style="margin-top:12px"><button class="btn alt" id="save" disabled>⬇ SAVE THIS SOUND</button><span class="note" id="cur"></span></div></div>
+<p class="note">Your recording stays on this device. Nothing is uploaded.</p>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+let toastT;function toast(m,ms=1800){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),ms)}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const store={get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v??d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){toast('Could not save: storage is full')}}};
+const FX=[['normal','🙂','Normal'],['chip','🐿️','Chipmunk'],['giant','🦣','Giant'],['robot','🤖','Robot'],['alien','👽','Alien'],['echo','🏔️','Echo'],['cave','🕳️','Cave'],['reverse','🔄','Backwards'],['radio','📻','Old radio']];
+let ac=null,buf=null,rec=null,chunks=[],stream=null,src=null,last='normal',stopT=null;
+const A=()=>{if(!ac)ac=new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();return ac};
+$('fx').innerHTML=FX.map(([k,e,n])=>`<button data-k="${k}" disabled><span>${e}</span>${n}</button>`).join('');
+function wave(b){const c=$('wave'),x=c.getContext('2d'),d=b.getChannelData(0),W=c.width,H=c.height;x.clearRect(0,0,W,H);x.fillStyle='#5cf2b4';for(let i=0;i<W;i++){let m=0;const s=Math.floor(i*d.length/W),e=Math.floor((i+1)*d.length/W);for(let j=s;j<e;j++)m=Math.max(m,Math.abs(d[j]));const h=Math.max(1,m*H);x.fillRect(i,(H-h)/2,1,h)}}
+$('recB').onclick=async()=>{if(rec&&rec.state==='recording'){rec.stop();return}
+  try{stream=await navigator.mediaDevices.getUserMedia({audio:true})}catch(e){$('st').textContent='The microphone was not allowed. Allow it in your browser settings and try again.';return}
+  A();chunks=[];rec=new MediaRecorder(stream);rec.ondataavailable=e=>chunks.push(e.data);
+  rec.onstop=async()=>{clearTimeout(stopT);stream.getTracks().forEach(t=>t.stop());$('recB').classList.remove('on');$('recB').textContent='● RECORD';
+    try{const ab=await new Blob(chunks,{type:rec.mimeType}).arrayBuffer();buf=await A().decodeAudioData(ab);wave(buf);$('st').textContent=`Got it! ${buf.duration.toFixed(1)} seconds. Now pick a voice below.`;document.querySelectorAll('#fx button').forEach(b=>b.disabled=false);$('save').disabled=false;play('normal')}
+    catch(e){$('st').textContent='Could not read the recording. Please try again.'}};
+  rec.start();$('recB').classList.add('on');$('recB').textContent='■ STOP';$('st').textContent='Recording… speak now!';stopT=setTimeout(()=>rec.state==='recording'&&rec.stop(),15000)};
+function impulse(a,sec,decay){const n=a.sampleRate*sec,b=a.createBuffer(2,n,a.sampleRate);for(let c=0;c<2;c++){const d=b.getChannelData(c);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,decay)}return b}
+function build(a,k,dest){let b=buf;if(k==='reverse'){b=a.createBuffer(buf.numberOfChannels,buf.length,buf.sampleRate);for(let c=0;c<buf.numberOfChannels;c++){const s=buf.getChannelData(c),d=b.getChannelData(c);for(let i=0;i<s.length;i++)d[i]=s[s.length-1-i]}}
+  const s=a.createBufferSource();s.buffer=b;let node=s,out=a.createGain();out.connect(dest);
+  if(k==='chip')s.playbackRate.value=1.7;if(k==='giant')s.playbackRate.value=.62;if(k==='alien'){s.playbackRate.value=1.25;const l=a.createOscillator(),lg=a.createGain();l.frequency.value=7;lg.gain.value=60;l.connect(lg);lg.connect(s.detune);l.start()}
+  if(k==='robot'){const g=a.createGain();g.gain.value=0;const o=a.createOscillator();o.frequency.value=55;o.type='square';o.connect(g.gain);o.start();node.connect(g);node=g}
+  if(k==='radio'){const hp=a.createBiquadFilter();hp.type='highpass';hp.frequency.value=600;const lp=a.createBiquadFilter();lp.type='lowpass';lp.frequency.value=2800;const ws=a.createWaveShaper();const cv=new Float32Array(256);for(let i=0;i<256;i++){const x=i/128-1;cv[i]=Math.tanh(x*4)}ws.curve=cv;node.connect(hp);hp.connect(lp);lp.connect(ws);node=ws}
+  if(k==='echo'){const d=a.createDelay(1);d.delayTime.value=.32;const fb=a.createGain();fb.gain.value=.45;node.connect(d);d.connect(fb);fb.connect(d);d.connect(out)}
+  if(k==='cave'){const cv=a.createConvolver();cv.buffer=impulse(a,3,2.5);const wet=a.createGain();wet.gain.value=.8;node.connect(cv);cv.connect(wet);wet.connect(out)}
+  node.connect(out);s.start();const len=b.duration/s.playbackRate.value+(k==='echo'?2.5:k==='cave'?3:0.2);return{s,len}}
+function play(k){if(!buf)return;last=k;const a=A();if(src)try{src.s.stop()}catch(e){}src=build(a,k,a.destination);document.querySelectorAll('#fx button').forEach(b=>b.classList.toggle('on',b.dataset.k===k));$('cur').textContent='Selected: '+FX.find(f=>f[0]===k)[2]}
+$('fx').onclick=e=>{const b=e.target.closest('button');if(b&&!b.disabled)play(b.dataset.k)};
+function wav(b){const ch=1,sr=b.sampleRate,d=b.getChannelData(0),n=d.length,buf2=new ArrayBuffer(44+n*2),v=new DataView(buf2);const w=(o,s)=>[...s].forEach((c,i)=>v.setUint8(o+i,c.charCodeAt(0)));
+  w(0,'RIFF');v.setUint32(4,36+n*2,true);w(8,'WAVE');w(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,ch,true);v.setUint32(24,sr,true);v.setUint32(28,sr*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,'data');v.setUint32(40,n*2,true);
+  for(let i=0;i<n;i++)v.setInt16(44+i*2,Math.max(-1,Math.min(1,d[i]))*32767,true);return new Blob([buf2],{type:'audio/wav'})}
+$('save').onclick=async()=>{if(!buf)return;const rate={chip:1.7,giant:.62,alien:1.25}[last]||1,len=buf.duration/rate+(last==='echo'?2.5:last==='cave'?3:.2);
+  const off=new OfflineAudioContext(1,Math.ceil(len*buf.sampleRate),buf.sampleRate);build(off,last,off.destination);const out=await off.startRendering();const a=document.createElement('a');a.href=URL.createObjectURL(wav(out));a.download=`voice-${last}.wav`;a.click();toast('Saved!')};
+if(!navigator.mediaDevices||!window.MediaRecorder){$('st').textContent='Sorry, this browser cannot record sound.';$('recB').disabled=true}
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>

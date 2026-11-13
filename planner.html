@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0820">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Homework Planner</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Chakra+Petch:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="lab.css">
+<style>
+:root{--acc:#ff8a1f}
+.add{display:grid;grid-template-columns:1fr 150px 150px auto;gap:8px}
+@media (max-width:680px){.add{grid-template-columns:1fr 1fr}.add input:first-child{grid-column:1/-1}}
+.sum{display:flex;gap:10px;flex-wrap:wrap}.sum div{flex:1;min-width:120px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center}.sum b{display:block;font-family:var(--display);font-size:26px;color:var(--acc)}
+.task{display:flex;align-items:center;gap:10px;background:var(--panel2);border:1px solid var(--line);border-left:5px solid var(--c);border-radius:10px;padding:10px 12px;margin-top:8px}
+.task input{width:22px;height:22px;accent-color:var(--green)}.task span{flex:1}.task small{display:block;color:var(--mute)}
+.task.done span{text-decoration:line-through;opacity:.55}.late small{color:#ff7d7d!important;font-weight:700}
+.task button{background:none;border:0;color:var(--mute);font-size:18px;cursor:pointer}
+.chip{display:inline-block;border-radius:999px;padding:1px 8px;font-size:12px;font-weight:700;color:#0b0820;background:var(--c);margin-right:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><h1>HOMEWORK PLANNER</h1><a class="back" href="./">← ARCADE</a></header>
+<p class="sub">Write down your homework and jobs, see what is due soon, and tick them off. Keep your streak going!</p>
+<div class="panel"><div class="add"><input id="txt" placeholder="What do you need to do? e.g. Math page 42" aria-label="Task"><select id="sub" aria-label="Subject"></select><input type="date" id="due" aria-label="Due date"><button class="btn" id="addB">ADD</button></div></div>
+<div class="sum"><div><small>Due today</small><b id="sToday">0</b></div><div><small>This week</small><b id="sWeek">0</b></div><div><small>Done this week</small><b id="sDone">0</b></div><div><small>Streak</small><b id="sStreak">0🔥</b></div></div>
+<div class="tabs" style="margin-top:12px"><button data-v="todo" class="on">TO DO</button><button data-v="done">DONE</button></div>
+<div id="list"></div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+let toastT;function toast(m,ms=1800){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),ms)}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const store={get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v??d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){toast('Could not save: storage is full')}}};
+const SUB={'Math':'#3ef0ff','Turkish':'#ff3d9a','English':'#ffd23f','Science':'#5cf2b4','Social Studies':'#ff8a1f','Art':'#a855f7','FLL':'#7bd88f','Other':'#9a94c9'};
+let T=store.get('planTasks',[]),view='todo';
+$('sub').innerHTML=Object.keys(SUB).map(s=>`<option>${s}</option>`).join('');
+const ymd=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const today=()=>ymd(new Date());const addDays=(s,n)=>{const d=new Date(s+'T12:00');d.setDate(d.getDate()+n);return ymd(d)};
+$('due').value=addDays(today(),1);
+function label(due){if(!due)return'No date';const t=today();if(due<t)return`Late! Was due ${new Date(due+'T12:00').toLocaleDateString('en',{weekday:'short',day:'numeric',month:'short'})}`;if(due===t)return'Due today';if(due===addDays(t,1))return'Due tomorrow';return'Due '+new Date(due+'T12:00').toLocaleDateString('en',{weekday:'long',day:'numeric',month:'short'})}
+function streak(){const days=new Set(T.filter(x=>x.doneAt).map(x=>x.doneAt));let n=0,d=today();if(!days.has(d))d=addDays(d,-1);while(days.has(d)){n++;d=addDays(d,-1)}return n}
+function render(){const t=today(),wk=addDays(t,7),wkAgo=addDays(t,-7);
+  $('sToday').textContent=T.filter(x=>!x.done&&x.due&&x.due<=t).length;$('sWeek').textContent=T.filter(x=>!x.done&&x.due&&x.due<=wk).length;$('sDone').textContent=T.filter(x=>x.done&&x.doneAt>=wkAgo).length;$('sStreak').textContent=streak()+'🔥';
+  const list=T.filter(x=>view==='done'?x.done:!x.done).sort((a,b)=>view==='done'?(b.doneAt||'').localeCompare(a.doneAt||''):(a.due||'9999').localeCompare(b.due||'9999'));
+  $('list').innerHTML=list.map(x=>`<div class="task ${x.done?'done':''} ${!x.done&&x.due&&x.due<t?'late':''}" style="--c:${SUB[x.sub]||'#9a94c9'}"><input type="checkbox" data-c="${x.id}" ${x.done?'checked':''} aria-label="Done"><span><span class="chip">${esc(x.sub)}</span>${esc(x.text)}<small>${x.done?'Finished '+x.doneAt:label(x.due)}</small></span><button data-d="${x.id}" aria-label="Delete">🗑️</button></div>`).join('')||`<p class="note" style="margin-top:12px">${view==='done'?'Nothing finished yet.':'Nothing to do. Enjoy your free time! 🎉'}</p>`}
+$('addB').onclick=()=>{const text=$('txt').value.trim();if(!text)return toast('Type what you need to do');T.push({id:Date.now().toString(36),text,sub:$('sub').value,due:$('due').value,done:false});store.set('planTasks',T);$('txt').value='';render();toast('Added!')};
+$('txt').addEventListener('keydown',e=>{if(e.key==='Enter')$('addB').click()});
+$('list').onclick=e=>{const c=e.target.dataset.c,d=e.target.closest('[data-d]');if(c){const x=T.find(x=>x.id===c);x.done=e.target.checked;x.doneAt=x.done?today():null;store.set('planTasks',T);if(x.done)toast(['Well done! ⭐','Great job! 🎉','One less thing! ✅'][Math.floor(Math.random()*3)]);setTimeout(render,250)}
+  if(d&&confirm('Delete this task?')){T=T.filter(x=>x.id!==d.dataset.d);store.set('planTasks',T);render()}};
+document.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{view=b.dataset.v;document.querySelectorAll('[data-v]').forEach(x=>x.classList.toggle('on',x===b));render()});render();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>

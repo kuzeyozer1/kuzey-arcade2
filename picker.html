@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0820">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Decision Kit</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Chakra+Petch:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="lab.css">
+<style>
+:root{--acc:#ff3d9a}
+#wheel{width:min(100%,420px);aspect-ratio:1;display:block;margin:0 auto}
+.wbox{position:relative}.ptr{position:absolute;left:50%;top:-4px;transform:translateX(-50%);font-size:34px;filter:drop-shadow(0 2px 2px #000)}
+.win{text-align:center;font-family:var(--display);font-size:26px;color:var(--gold);min-height:34px;margin-top:8px}
+.dice{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:14px 0}
+.die{width:80px;height:80px;background:#fff;border-radius:14px;display:grid;grid-template-columns:repeat(3,1fr);padding:10px;gap:2px;box-shadow:0 4px 0 #bbb}
+.die i{width:14px;height:14px;border-radius:50%;background:#0b0820;justify-self:center;align-self:center;visibility:hidden}.die i.on{visibility:visible}
+.roll{animation:shake .5s}@keyframes shake{0%,100%{transform:rotate(0)}25%{transform:rotate(-20deg)}75%{transform:rotate(20deg)}}
+.coin{width:150px;height:150px;border-radius:50%;margin:16px auto;display:grid;place-items:center;font-family:var(--display);font-size:24px;font-weight:900;color:#5a3d00;background:radial-gradient(circle at 35% 35%,#fff3b0,#ffd23f 50%,#c9961a);border:6px solid #c9961a}
+.coin.spin{animation:flip .9s}@keyframes flip{0%{transform:rotateX(0)}100%{transform:rotateX(1800deg)}}
+.teams{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;margin-top:10px}.teams div{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px}.teams b{color:var(--gold)}
+.big2{font-family:var(--display);font-size:72px;text-align:center;color:var(--gold);margin:10px 0}
+.center{justify-content:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><h1>DECISION KIT</h1><a class="back" href="./">← ARCADE</a></header>
+<p class="sub">Can't decide? Spin the wheel, roll dice, flip a coin, pick a random number or split everyone into fair teams.</p>
+<div class="tabs"><button data-t="wheel" class="on">🎡 WHEEL</button><button data-t="dice">🎲 DICE</button><button data-t="coin">🪙 COIN</button><button data-t="num">🔢 NUMBER</button><button data-t="teams">👥 TEAMS</button></div>
+<section id="wheelS" class="panel"><div class="wbox"><div class="ptr">▼</div><canvas id="wheel" width="600" height="600" aria-label="Spinning wheel"></canvas></div><div class="win" id="win" aria-live="polite"></div>
+<div class="row center"><button class="btn" id="spin">SPIN!</button><label><input type="checkbox" id="remove"> Remove the winner after each spin</label></div>
+<label for="names" style="display:block;margin-top:12px">Choices (one per line)</label><textarea id="names"></textarea></section>
+<section id="diceS" class="panel" hidden><div class="row center"><label>How many dice <select id="dn"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option></select></label><button class="btn" id="roll">ROLL!</button></div><div class="dice" id="dice"></div><div class="win" id="dsum"></div></section>
+<section id="coinS" class="panel" hidden><div class="coin" id="coin">?</div><div class="row center"><button class="btn" id="flip">FLIP!</button></div><p class="note" style="text-align:center" id="ctally"></p></section>
+<section id="numS" class="panel" hidden><div class="row center"><label>From <input type="number" id="nmin" value="1" style="width:90px"></label><label>to <input type="number" id="nmax" value="100" style="width:90px"></label><button class="btn" id="ngo">PICK!</button></div><div class="big2" id="nout">?</div></section>
+<section id="teamsS" class="panel" hidden><label for="tnames">Names (one per line)</label><textarea id="tnames"></textarea><div class="row" style="margin-top:8px"><label>Number of teams <select id="tn"><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></label><button class="btn" id="tgo">MAKE TEAMS</button></div><div class="teams" id="teams"></div></section>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+let toastT;function toast(m,ms=1800){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),ms)}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const store={get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v??d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){toast('Could not save: storage is full')}}};
+let ac=null;function tick(f=900,d=.03){try{if(!ac)ac=new (window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;g.gain.setValueAtTime(.15,ac.currentTime);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+d);o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+d)}catch(e){}}
+$('names').value=store.get('wheelNames','Pizza\nBurger\nPasta\nTacos\nSushi\nSoup');$('tnames').value=store.get('teamNames','Kuzey\nAli\nZeynep\nElif\nMert\nAyşe\nCan\nDeniz');
+const W=$('wheel'),wx=W.getContext('2d'),COL=['#ff3d9a','#ffd23f','#3ef0ff','#5cf2b4','#a855f7','#ff8a1f','#3b82f6','#7bd88f'];let ang=0,spinning=false;
+const items=()=>$('names').value.split('\n').map(s=>s.trim()).filter(Boolean);
+function drawW(){const it=items(),n=Math.max(1,it.length),R=290;wx.clearRect(0,0,600,600);wx.save();wx.translate(300,300);wx.rotate(ang);
+  it.forEach((t,i)=>{const a0=i/n*Math.PI*2,a1=(i+1)/n*Math.PI*2;wx.fillStyle=COL[i%COL.length];if(n%COL.length===1&&i===n-1)wx.fillStyle=COL[1];wx.beginPath();wx.moveTo(0,0);wx.arc(0,0,R,a0,a1);wx.fill();wx.save();wx.rotate((a0+a1)/2);wx.fillStyle='#0b0820';wx.font=`700 ${Math.max(14,Math.min(30,260/n+8))}px Chakra Petch, sans-serif`;wx.textAlign='right';wx.fillText(t.length>18?t.slice(0,17)+'…':t,R-16,9);wx.restore()});
+  if(!it.length){wx.fillStyle='#2a2650';wx.beginPath();wx.arc(0,0,R,0,7);wx.fill()}wx.restore();wx.fillStyle='#0b0820';wx.beginPath();wx.arc(300,300,26,0,7);wx.fill()}
+$('names').oninput=()=>{store.set('wheelNames',$('names').value);drawW()};
+$('spin').onclick=()=>{const it=items();if(it.length<2)return toast('Write at least 2 choices');if(spinning)return;spinning=true;$('win').textContent='';const start=ang,total=Math.PI*2*(5+Math.random()*4)+Math.random()*Math.PI*2,dur=4200,t0=performance.now();let lastSeg=-1;
+  (function f(t){const p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,4);ang=start+total*e;drawW();const n=it.length,top=((-Math.PI/2-ang)%(Math.PI*2)+Math.PI*4)%(Math.PI*2),seg=Math.floor(top/(Math.PI*2)*n);if(seg!==lastSeg){tick(700+seg*30);lastSeg=seg}
+    if(p<1)requestAnimationFrame(f);else{spinning=false;const w=it[seg];$('win').textContent='🎉 '+w+' 🎉';tick(1200,.3);if($('remove').checked){setTimeout(()=>{const l=items();l.splice(l.indexOf(w),1);$('names').value=l.join('\n');store.set('wheelNames',$('names').value);drawW()},1500)}}})(t0)};
+const PIPS={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
+function die(v){return`<div class="die">${Array.from({length:9},(_,i)=>`<i class="${PIPS[v].includes(i)?'on':''}"></i>`).join('')}</div>`}
+$('roll').onclick=()=>{const n=+$('dn').value;let k=0;const iv=setInterval(()=>{const v=Array.from({length:n},()=>1+Math.floor(Math.random()*6));$('dice').innerHTML=v.map(die).join('');tick(400+Math.random()*400);if(++k>8){clearInterval(iv);$('dsum').textContent=n>1?'Total: '+v.reduce((a,b)=>a+b,0):'You rolled '+v[0]}},70);$('dsum').textContent=''};
+let heads=0,tails=0;$('flip').onclick=()=>{const c=$('coin');c.classList.remove('spin');void c.offsetWidth;c.classList.add('spin');c.textContent='';setTimeout(()=>{const h=Math.random()<.5;h?heads++:tails++;c.textContent=h?'HEADS':'TAILS';$('ctally').textContent=`Heads ${heads} · Tails ${tails}`;tick(1000,.15)},900)};
+$('ngo').onclick=()=>{let a=Math.ceil(+$('nmin').value),b=Math.floor(+$('nmax').value);if(isNaN(a)||isNaN(b))return;if(a>b)[a,b]=[b,a];let k=0;const iv=setInterval(()=>{$('nout').textContent=a+Math.floor(Math.random()*(b-a+1));tick(600);if(++k>10)clearInterval(iv)},60)};
+$('tnames').oninput=()=>store.set('teamNames',$('tnames').value);
+$('tgo').onclick=()=>{const ns=$('tnames').value.split('\n').map(s=>s.trim()).filter(Boolean),n=+$('tn').value;if(ns.length<n)return toast('Add more names than teams');for(let i=ns.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[ns[i],ns[j]]=[ns[j],ns[i]]}
+  const T=Array.from({length:n},()=>[]);ns.forEach((x,i)=>T[i%n].push(x));const E=['🦁','🦅','🐬','🐺','🐉','🦊'];$('teams').innerHTML=T.map((t,i)=>`<div><b>${E[i]} Team ${i+1}</b><br>${t.map(esc).join('<br>')}</div>`).join('')};
+document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-t]').forEach(x=>x.classList.toggle('on',x===b));['wheel','dice','coin','num','teams'].forEach(s=>$(s+'S').hidden=s!==b.dataset.t)});
+drawW();$('dice').innerHTML=die(3)+die(5);
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>

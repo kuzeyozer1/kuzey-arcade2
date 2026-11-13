@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0820">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Times Table Gym</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Chakra+Petch:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="lab.css">
+<style>
+:root{--acc:#5cf2b4}
+.q{font-family:var(--display);font-weight:900;font-size:clamp(46px,13vw,90px);text-align:center;margin:6px 0}
+.ans{font-family:var(--display);font-size:42px;text-align:center;min-height:56px;color:var(--gold)}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:360px;margin:10px auto}
+.pad button{font-family:var(--display);font-size:26px;padding:16px 0;border-radius:12px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);cursor:pointer}
+.pad button.go{background:var(--acc);color:#0b0820}
+.tbl{display:flex;flex-wrap:wrap;gap:6px}.tbl label{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-weight:700}
+.map{display:grid;grid-template-columns:repeat(13,1fr);gap:2px;font-size:11px;text-align:center;max-width:520px}
+.map div{aspect-ratio:1;display:grid;place-items:center;border-radius:4px}
+.fb{text-align:center;font-weight:700;min-height:24px}
+.bar{height:10px;border-radius:5px;background:#1d1a48;overflow:hidden;margin-top:8px}.bar u{display:block;height:100%;background:var(--acc);transition:width .3s}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><h1>TIMES TABLE GYM</h1><a class="back" href="./">← ARCADE</a></header>
+<p class="sub">Train your times tables like a sport. Pick the tables, answer fast, and watch your mastery map turn green.</p>
+<section id="setup" class="panel"><h2>WHICH TABLES?</h2><div class="tbl" id="tbl"></div>
+<div class="row" style="margin-top:12px"><button class="btn" data-mode="20">🎯 20 QUESTIONS</button><button class="btn" data-mode="sprint">⚡ 60-SECOND SPRINT</button><button class="btn alt" data-mode="weak">💪 PRACTISE MY TRICKY ONES</button></div></section>
+<section id="play" class="panel" hidden><div class="row"><span id="info" style="flex:1"></span><button class="btn alt small" id="stop">STOP</button></div><div class="bar"><u id="bar"></u></div>
+<div class="q" id="q"></div><div class="ans" id="ans" aria-live="polite"></div><div class="fb" id="fb"></div>
+<div class="pad" id="pad"></div></section>
+<section id="result" class="panel" hidden></section>
+<div class="panel"><h2>MY MASTERY MAP</h2><p class="note">Green = you know it fast. Red = keep practising. Grey = not tried yet.</p><div class="map" id="map"></div></div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+let toastT;function toast(m,ms=1800){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),ms)}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const store={get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v??d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){toast('Could not save: storage is full')}}};
+let st=store.get('mathStats',{}),sel=store.get('mathSel',[2,3,4,5]),mode=null,qs=[],qi=0,cur=null,typed='',right=0,wrong=0,t0=0,tq=0,timer=null;
+$('tbl').innerHTML=Array.from({length:12},(_,i)=>`<label><input type="checkbox" value="${i+1}" ${sel.includes(i+1)?'checked':''}> ×${i+1}</label>`).join('');
+$('tbl').onchange=()=>{sel=[...$('tbl').querySelectorAll('input:checked')].map(i=>+i.value);store.set('mathSel',sel)};
+$('pad').innerHTML=[1,2,3,4,5,6,7,8,9,'⌫',0,'✓'].map(k=>`<button class="${k==='✓'?'go':''}" data-k="${k}">${k}</button>`).join('');
+const key=(a,b)=>Math.min(a,b)+'x'+Math.max(a,b);
+function score(k){const s=st[k];if(!s||!s.n)return null;return Math.max(0,Math.min(1,s.ok/s.n-(s.ms/s.n>5000?.25:s.ms/s.n>3000?.1:0)))}
+function map(){let h='<div></div>'+Array.from({length:12},(_,i)=>`<div><b>${i+1}</b></div>`).join('');for(let a=1;a<=12;a++){h+=`<div><b>${a}</b></div>`;for(let b=1;b<=12;b++){const s=score(key(a,b));h+=`<div title="${a}×${b}=${a*b}" style="background:${s===null?'#2a2650':`hsl(${s*120},70%,45%)`}">${a*b}</div>`}}$('map').innerHTML=h}
+function mkQ(){const a=sel[Math.floor(Math.random()*sel.length)],b=1+Math.floor(Math.random()*12);return Math.random()<.5?[a,b]:[b,a]}
+function weak(){const all=[];for(const a of sel)for(let b=1;b<=12;b++){const s=score(key(a,b));all.push([a,b,s===null?.5:s])}all.sort((x,y)=>x[2]-y[2]);return all.slice(0,10).flatMap(x=>[[x[0],x[1]],[x[1],x[0]]]).sort(()=>Math.random()-.5).slice(0,15)}
+function start(m){if(!sel.length)return toast('Pick at least one table');mode=m;right=wrong=0;qi=0;qs=m==='weak'?weak():m==='20'?Array.from({length:20},mkQ):[];t0=Date.now();
+  $('setup').hidden=true;$('result').hidden=true;$('play').hidden=false;if(m==='sprint')timer=setInterval(()=>{const l=60-(Date.now()-t0)/1000;$('bar').style.width=Math.max(0,l/60*100)+'%';info();if(l<=0)end()},200);next()}
+function info(){$('info').textContent=mode==='sprint'?`⏱ ${Math.max(0,Math.ceil(60-(Date.now()-t0)/1000))}s · ✅ ${right} · ❌ ${wrong}`:`Question ${qi+1} of ${qs.length} · ✅ ${right} · ❌ ${wrong}`;if(mode!=='sprint')$('bar').style.width=qi/qs.length*100+'%'}
+function next(){cur=mode==='sprint'?mkQ():qs[qi];if(!cur)return end();typed='';$('q').textContent=`${cur[0]} × ${cur[1]}`;$('ans').textContent='?';tq=Date.now();info()}
+function submit(){if(!typed)return;const ok=+typed===cur[0]*cur[1],k=key(cur[0],cur[1]),s=st[k]||(st[k]={n:0,ok:0,ms:0});s.n++;s.ms+=Date.now()-tq;
+  if(ok){s.ok++;right++;$('fb').textContent=['Great! ⭐','Correct! ✅','Super! 🚀','Yes! 🎉'][right%4];$('fb').style.color='var(--green)'}else{wrong++;$('fb').textContent=`Not quite: ${cur[0]} × ${cur[1]} = ${cur[0]*cur[1]}`;$('fb').style.color='#ff7d7d';if(mode!=='sprint')qs.push(cur)}
+  store.set('mathStats',st);qi++;map();if(mode!=='sprint'&&qi>=qs.length)return end();setTimeout(next,ok?250:900)}
+function end(){clearInterval(timer);$('play').hidden=true;$('setup').hidden=false;const best=store.get('mathBest',0);let extra='';if(mode==='sprint'&&right>best){store.set('mathBest',right);extra='🏆 New sprint record!'}
+  $('result').hidden=false;$('result').innerHTML=`<h2>WORKOUT DONE!</h2><p class="big" style="font-size:40px">✅ ${right} &nbsp; ❌ ${wrong}</p><p>${extra||(mode==='sprint'?'Sprint record: '+Math.max(best,right):'Look at your mastery map below to see what to practise next.')}</p>`;$('fb').textContent=''}
+$('pad').onclick=e=>{const b=e.target.closest('button');if(!b)return;const k=b.dataset.k;if(k==='⌫')typed=typed.slice(0,-1);else if(k==='✓')return submit();else if(typed.length<3)typed+=k;$('ans').textContent=typed||'?'};
+addEventListener('keydown',e=>{if($('play').hidden)return;if(/^[0-9]$/.test(e.key)&&typed.length<3)typed+=e.key;else if(e.key==='Backspace')typed=typed.slice(0,-1);else if(e.key==='Enter')return submit();$('ans').textContent=typed||'?'});
+document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>start(b.dataset.mode));$('stop').onclick=end;map();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>

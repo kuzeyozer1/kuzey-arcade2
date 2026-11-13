@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0820">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Flipbook Animator</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Chakra+Petch:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="lab.css">
+<style>
+:root{--acc:#ff8a1f}
+.fb{display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:12px}
+@media (max-width:760px){.fb{grid-template-columns:1fr}}
+.stage{background:#fff;border-radius:14px;overflow:hidden;border:1px solid var(--line);position:relative}
+#cv,#onion{width:100%;aspect-ratio:4/3;display:block}#onion{position:absolute;inset:0;opacity:.25;pointer-events:none}#cv{position:relative;touch-action:none;cursor:crosshair}
+.strip{display:flex;gap:6px;overflow-x:auto;padding:8px 2px}
+.strip button{flex:0 0 auto;width:84px;aspect-ratio:4/3;border-radius:6px;border:2px solid var(--line);background:#fff;padding:0;position:relative;cursor:pointer}
+.strip button.on{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc)}.strip img{width:100%;height:100%;display:block;border-radius:4px}
+.strip span{position:absolute;left:3px;top:1px;font-size:10px;color:#666;font-weight:700}
+.sw{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:10px}.sw button{aspect-ratio:1;border-radius:50%;border:2px solid #555;cursor:pointer}.sw button.on{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold)}
+.ctl label{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><h1>FLIPBOOK ANIMATOR</h1><a class="back" href="./">← ARCADE</a></header>
+<p class="sub">Draw a picture on each page, change it a little every time, then press PLAY to bring it to life like a cartoon!</p>
+<div class="fb"><div><div class="stage"><canvas id="onion" width="640" height="480"></canvas><canvas id="cv" width="640" height="480" aria-label="Drawing page"></canvas></div>
+<div class="row" style="margin-top:8px"><button class="btn" id="play">▶ PLAY</button><button class="btn alt small" id="addB">+ BLANK PAGE</button><button class="btn alt small" id="dupB">⧉ COPY PAGE</button><button class="btn alt small" id="delB">🗑 DELETE PAGE</button></div>
+<div class="strip" id="strip"></div></div>
+<div class="panel ctl" style="margin:0"><b style="display:block;margin-bottom:6px">Colour</b><div class="sw" id="sw"></div>
+<label>Pen size <input type="range" id="size" min="1" max="24" value="5"></label>
+<label><span><input type="checkbox" id="eraser"> Eraser</span></label>
+<label><span><input type="checkbox" id="onionT" checked> See the last page faintly (onion skin)</span></label>
+<label>Speed <input type="range" id="fps" min="1" max="15" value="6"><small class="note" id="fpsV">6 pages per second</small></label>
+<div class="row"><button class="btn alt small" id="undo">UNDO</button><button class="btn alt small" id="clr">CLEAR PAGE</button></div>
+<div class="row" style="margin-top:10px"><button class="btn small" id="sheet">⬇ SAVE ALL PAGES</button><button class="btn alt small" id="newA">NEW FLIPBOOK</button></div></div></div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+let toastT;function toast(m,ms=1800){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),ms)}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const store={get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v??d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){toast('Could not save: storage is full')}}};
+const cv=$('cv'),x=cv.getContext('2d'),on=$('onion'),ox=on.getContext('2d'),W=640,H=480;const COLS=['#111111','#ff3b3b','#ff8a1f','#ffd23f','#2fbf71','#3ef0ff','#3b82f6','#a855f7','#ff3d9a','#8b5a2b'];
+let frames=store.get('flipFrames',null)||[null],cur=0,col='#111111',playing=null,undo=[],last=null;
+$('sw').innerHTML=COLS.map(c=>`<button data-c="${c}" style="background:${c}" aria-label="Colour ${c}"></button>`).join('');
+function setCol(c){col=c;$('eraser').checked=false;$('sw').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.c===c))}
+$('sw').onclick=e=>{const b=e.target.closest('button');if(b)setCol(b.dataset.c)};setCol(col);
+function img(src,ctx){return new Promise(r=>{ctx.clearRect(0,0,W,H);if(!src){r();return}const i=new Image();i.onload=()=>{ctx.drawImage(i,0,0);r()};i.src=src})}
+async function show(){await img(frames[cur],x);ox.clearRect(0,0,W,H);if($('onionT').checked&&cur>0&&!playing)await img(frames[cur-1],ox);strip()}
+function commit(){frames[cur]=cv.toDataURL('image/png');store.set('flipFrames',frames);strip()}
+function strip(){$('strip').innerHTML=frames.map((f,i)=>`<button class="${i===cur?'on':''}" data-i="${i}" aria-label="Page ${i+1}">${f?`<img src="${f}" alt="">`:''}<span>${i+1}</span></button>`).join('');const b=$('strip').children[cur];if(b)b.scrollIntoView({block:'nearest',inline:'nearest'})}
+function pos(e){const r=cv.getBoundingClientRect();return[(e.clientX-r.left)/r.width*W,(e.clientY-r.top)/r.height*H]}
+cv.addEventListener('pointerdown',e=>{if(playing)return;cv.setPointerCapture(e.pointerId);undo.push(x.getImageData(0,0,W,H));if(undo.length>20)undo.shift();last=pos(e);line(last,[last[0]+.1,last[1]])});
+cv.addEventListener('pointermove',e=>{if(!last)return;const p=pos(e);line(last,p);last=p});
+addEventListener('pointerup',()=>{if(last){last=null;commit()}});
+function line(a,b){x.save();x.globalCompositeOperation=$('eraser').checked?'destination-out':'source-over';x.strokeStyle=col;x.lineWidth=+$('size').value*($('eraser').checked?3:1);x.lineCap=x.lineJoin='round';x.beginPath();x.moveTo(a[0],a[1]);x.lineTo(b[0],b[1]);x.stroke();x.restore()}
+$('strip').onclick=e=>{const b=e.target.closest('[data-i]');if(b&&!playing){cur=+b.dataset.i;undo=[];show()}};
+$('addB').onclick=()=>{if(frames.length>=60)return toast('60 pages is the most');frames.splice(cur+1,0,null);cur++;undo=[];store.set('flipFrames',frames);show()};
+$('dupB').onclick=()=>{if(frames.length>=60)return toast('60 pages is the most');frames.splice(cur+1,0,frames[cur]);cur++;undo=[];store.set('flipFrames',frames);show()};
+$('delB').onclick=()=>{if(frames.length===1){frames=[null];}else{frames.splice(cur,1);cur=Math.max(0,cur-1)}store.set('flipFrames',frames);show()};
+$('undo').onclick=()=>{const u=undo.pop();if(u){x.putImageData(u,0,0);commit()}};
+$('clr').onclick=()=>{undo.push(x.getImageData(0,0,W,H));x.clearRect(0,0,W,H);commit()};
+$('onionT').onchange=show;$('eraser').onchange=()=>$('sw').querySelectorAll('button').forEach(b=>b.classList.toggle('on',!$('eraser').checked&&b.dataset.c===col));
+$('fps').oninput=e=>$('fpsV').textContent=e.target.value+' pages per second';
+$('play').onclick=()=>{if(playing){clearTimeout(playing);playing=null;$('play').textContent='▶ PLAY';show();return}if(frames.length<2)return toast('Add at least 2 pages first');$('play').textContent='■ STOP';ox.clearRect(0,0,W,H);
+  let i=0;const step=async()=>{cur=i;await img(frames[i],x);strip();i=(i+1)%frames.length;playing=setTimeout(step,1000/+$('fps').value)};playing=1;step()};
+$('sheet').onclick=async()=>{const c=document.createElement('canvas'),n=frames.length,cols=Math.min(5,n),rows=Math.ceil(n/cols);c.width=cols*W/2;c.height=rows*H/2;const cx=c.getContext('2d');cx.fillStyle='#fff';cx.fillRect(0,0,c.width,c.height);
+  for(let i=0;i<n;i++){if(!frames[i])continue;await new Promise(r=>{const im=new Image();im.onload=()=>{cx.drawImage(im,(i%cols)*W/2,Math.floor(i/cols)*H/2,W/2,H/2);r()};im.src=frames[i]})}const a=document.createElement('a');a.href=c.toDataURL('image/png');a.download='flipbook-pages.png';a.click()};
+$('newA').onclick=()=>{if(!confirm('Start a new flipbook? This one will be deleted.'))return;frames=[null];cur=0;store.set('flipFrames',frames);show()};
+show();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>

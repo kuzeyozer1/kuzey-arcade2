@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0820">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Kaleidoscope Paint</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Chakra+Petch:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="lab.css">
+<style>
+:root{--acc:#a855f7}
+.studio{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:12px}
+@media (max-width:760px){.studio{grid-template-columns:1fr}}
+.board{background:#000;border:1px solid var(--line);border-radius:14px;overflow:hidden;display:grid;place-items:center}
+#cv{width:100%;max-width:640px;aspect-ratio:1;touch-action:none;cursor:crosshair;display:block}
+.ctl label{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.sw{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-bottom:10px}
+.sw button{aspect-ratio:1;border-radius:50%;border:2px solid transparent;cursor:pointer}
+.sw button.on{border-color:#fff}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><h1>KALEIDOSCOPE PAINT</h1><a class="back" href="./">← ARCADE</a></header>
+<p class="sub">Draw anywhere and your lines are copied around the middle like a kaleidoscope. Every scribble turns into a beautiful pattern!</p>
+<div class="studio"><div class="board"><canvas id="cv" width="900" height="900" aria-label="Kaleidoscope drawing area"></canvas></div>
+<div class="panel ctl" style="margin:0">
+<label>Mirrors <select id="seg"><option>2</option><option>4</option><option selected>6</option><option>8</option><option>12</option><option>16</option></select></label>
+<label><span><input type="checkbox" id="flip" checked> Mirror each slice</span></label>
+<label>Brush size <input type="range" id="size" min="1" max="30" value="6"></label>
+<b style="display:block;margin-bottom:6px">Colour</b><div class="sw" id="sw"></div>
+<label><span><input type="checkbox" id="glow" checked> Glow</span></label>
+<div class="row"><button class="btn alt small" id="undo">UNDO</button><button class="btn alt small" id="clear">CLEAR</button><button class="btn small" id="save">⬇ SAVE</button></div>
+<label style="margin-top:10px">Background <select id="bg"><option value="#000000">Black</option><option value="#ffffff">White</option><option value="#0b0820">Night</option></select></label>
+</div></div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+let toastT;function toast(m,ms=1800){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),ms)}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const store={get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v??d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){toast('Could not save: storage is full')}}};
+const cv=$('cv'),x=cv.getContext('2d'),W=cv.width;const COLS=['rainbow','#ff3d9a','#ffd23f','#3ef0ff','#5cf2b4','#ffffff','#ff8a1f','#a855f7','#3b82f6','#ff3b3b','#7bd88f','#000000'];
+let col='rainbow',hue=0,last=null,hist=[];
+$('sw').innerHTML=COLS.map(c=>`<button data-c="${c}" aria-label="${c==='rainbow'?'Rainbow':c}" style="background:${c==='rainbow'?'conic-gradient(red,yellow,lime,cyan,blue,magenta,red)':c}"></button>`).join('');
+function pickCol(c){col=c;$('sw').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.c===c))}
+$('sw').onclick=e=>{const b=e.target.closest('button');if(b)pickCol(b.dataset.c)};pickCol('rainbow');
+function clear(){x.fillStyle=$('bg').value;x.fillRect(0,0,W,W)}
+function pos(e){const r=cv.getBoundingClientRect();return[(e.clientX-r.left)/r.width*W-W/2,(e.clientY-r.top)/r.height*W-W/2]}
+function seg(a,b){const n=+$('seg').value,fl=$('flip').checked;hue=(hue+2)%360;const c=col==='rainbow'?`hsl(${hue},95%,60%)`:col;
+  x.save();x.translate(W/2,W/2);x.lineCap=x.lineJoin='round';x.lineWidth=+$('size').value;x.strokeStyle=c;x.shadowColor=c;x.shadowBlur=$('glow').checked?14:0;
+  for(let i=0;i<n;i++){x.save();x.rotate(i/n*Math.PI*2);for(const m of fl?[1,-1]:[1]){x.save();x.scale(1,m);x.beginPath();x.moveTo(a[0],a[1]);x.lineTo(b[0],b[1]);x.stroke();x.restore()}x.restore()}x.restore()}
+cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);hist.push(x.getImageData(0,0,W,W));if(hist.length>15)hist.shift();last=pos(e);seg(last,[last[0]+.1,last[1]+.1])});
+cv.addEventListener('pointermove',e=>{if(!last)return;const p=pos(e);seg(last,p);last=p});
+addEventListener('pointerup',()=>{last=null});
+$('undo').onclick=()=>{const h=hist.pop();if(h)x.putImageData(h,0,0)};
+$('clear').onclick=()=>{hist.push(x.getImageData(0,0,W,W));clear()};
+$('bg').onchange=()=>{hist.push(x.getImageData(0,0,W,W));clear()};
+$('save').onclick=()=>{const a=document.createElement('a');a.href=cv.toDataURL('image/png');a.download='kaleidoscope.png';a.click()};
+clear();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>

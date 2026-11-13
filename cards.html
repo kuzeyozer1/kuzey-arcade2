@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0820">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Flashcards</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Chakra+Petch:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="lab.css">
+<style>
+:root{--acc:#ffd23f}
+.decks{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.deck{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.deck h2{margin:0;font-size:16px}.deck small{color:var(--mute)}
+.prog{height:8px;background:#1d1a48;border-radius:4px;overflow:hidden}.prog u{display:block;height:100%;background:linear-gradient(90deg,var(--green),var(--gold))}
+.flip{perspective:1200px;cursor:pointer;margin:6px auto 12px;width:min(100%,560px);aspect-ratio:3/2}
+.fc{position:relative;width:100%;height:100%;transition:transform .45s;transform-style:preserve-3d}
+.fc.on{transform:rotateY(180deg)}
+.side{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:16px;display:grid;place-items:center;padding:20px;text-align:center;font-size:clamp(22px,5vw,34px);font-weight:700;border:2px solid var(--line)}
+.front{background:linear-gradient(135deg,#1c1650,#120f33)}.back{background:linear-gradient(135deg,#123d33,#0d2622);transform:rotateY(180deg)}
+.side small{position:absolute;top:10px;left:14px;font-size:12px;color:var(--mute);font-weight:600}
+.list div{display:flex;gap:8px;align-items:center;border-top:1px solid var(--line);padding:6px 0}.list span{flex:1}
+.center{justify-content:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><h1>FLASHCARDS</h1><a class="back" href="./">← ARCADE</a></header>
+<p class="sub">Make your own flashcards for any subject and study them. Cards you know come back less often; tricky cards come back more.</p>
+<section id="home"><div class="panel"><div class="row"><input id="newName" placeholder="New deck name, e.g. English words" style="flex:1;min-width:200px" aria-label="New deck name"><button class="btn" id="mk">+ NEW DECK</button></div></div><div class="decks" id="decks"></div></section>
+<section id="edit" hidden><div class="panel"><div class="row"><h2 style="flex:1;margin:0" id="eName"></h2><button class="btn small" id="eStudy">▶ STUDY</button><button class="btn alt small" id="eBack">← DECKS</button></div>
+<div class="row" style="margin-top:10px"><input id="f" placeholder="Front (question)" style="flex:1;min-width:150px" aria-label="Front"><input id="b" placeholder="Back (answer)" style="flex:1;min-width:150px" aria-label="Back"><button class="btn" id="add">ADD</button></div>
+<details style="margin-top:10px"><summary class="note">Add many at once</summary><p class="note">One card per line, with a dash between: <code>cat - kedi</code></p><textarea id="bulk"></textarea><button class="btn alt small" id="bulkAdd">ADD ALL</button></details>
+<div class="list" id="list" style="margin-top:10px"></div><button class="btn alt small" id="delDeck" style="margin-top:10px">DELETE THIS DECK</button></div></section>
+<section id="study" hidden><div class="panel"><div class="row"><h2 style="flex:1;margin:0" id="sName"></h2><button class="btn alt small" id="sBack">← DONE</button></div>
+<p class="note" id="sInfo"></p><div class="flip" id="flip" role="button" aria-label="Flip card"><div class="fc" id="fc"><div class="side front"><small>QUESTION · tap to flip</small><span id="sF"></span></div><div class="side back"><small>ANSWER</small><span id="sB"></span></div></div></div>
+<div class="row center"><button class="btn alt" id="no">😕 STILL LEARNING</button><button class="btn" id="yes">😃 I KNEW IT</button></div><div class="row center" style="margin-top:8px"><button class="btn alt small" id="rev">⇄ SHOW ANSWER SIDE FIRST</button></div></div></section>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+let toastT;function toast(m,ms=1800){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),ms)}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const store={get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v??d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){toast('Could not save: storage is full')}}};
+let decks=store.get('flashDecks',null);
+if(!decks){decks=[{name:'English ↔ Türkçe',cards:'apple - elma|book - kitap|friend - arkadaş|school - okul|beautiful - güzel|to run - koşmak|weather - hava durumu|homework - ödev|library - kütüphane|teacher - öğretmen'.split('|').map(s=>{const [f,b]=s.split(' - ');return{f,b,box:1}})},
+  {name:'World capitals',cards:'Türkiye - Ankara|France - Paris|Japan - Tokyo|Egypt - Cairo|Brazil - Brasília|Canada - Ottawa|Australia - Canberra|Germany - Berlin|Italy - Rome|Spain - Madrid'.split('|').map(s=>{const [f,b]=s.split(' - ');return{f,b,box:1}})}];store.set('flashDecks',decks)}
+let cur=0,card=null,reversed=false,streak=0;const save=()=>store.set('flashDecks',decks);
+function show(id){['home','edit','study'].forEach(s=>$(s).hidden=s!==id)}
+function pct(d){return d.cards.length?Math.round(d.cards.reduce((a,c)=>a+(c.box-1),0)/(d.cards.length*4)*100):0}
+function home(){show('home');$('decks').innerHTML=decks.map((d,i)=>`<div class="deck"><h2>${esc(d.name)}</h2><small>${d.cards.length} cards · ${pct(d)}% learned</small><div class="prog"><u style="width:${pct(d)}%"></u></div><div class="row"><button class="btn small" data-s="${i}" ${d.cards.length?'':'disabled'}>STUDY</button><button class="btn alt small" data-e="${i}">EDIT</button></div></div>`).join('')||'<p class="note">No decks yet. Make one above!</p>'}
+$('decks').onclick=e=>{const b=e.target.closest('button');if(!b)return;cur=+(b.dataset.s??b.dataset.e);b.dataset.s!==undefined?study():edit()};
+$('mk').onclick=()=>{const n=$('newName').value.trim();if(!n)return toast('Give your deck a name first');decks.push({name:n,cards:[]});save();$('newName').value='';cur=decks.length-1;edit()};
+function edit(){show('edit');const d=decks[cur];$('eName').textContent=d.name;$('list').innerHTML=d.cards.map((c,i)=>`<div><span><b>${esc(c.f)}</b> → ${esc(c.b)}</span><small class="note">box ${c.box}</small><button class="btn alt small" data-d="${i}" aria-label="Delete card">✕</button></div>`).join('')||'<p class="note">No cards yet.</p>'}
+$('add').onclick=()=>{const f=$('f').value.trim(),b=$('b').value.trim();if(!f||!b)return toast('Fill in both sides');decks[cur].cards.push({f,b,box:1});save();$('f').value=$('b').value='';$('f').focus();edit()};
+$('b').addEventListener('keydown',e=>{if(e.key==='Enter')$('add').click()});
+$('bulkAdd').onclick=()=>{let n=0;$('bulk').value.split('\n').forEach(l=>{const m=l.split(/\s+[-–=:]\s+|\t/);if(m.length>=2&&m[0].trim()&&m[1].trim()){decks[cur].cards.push({f:m[0].trim(),b:m.slice(1).join(' - ').trim(),box:1});n++}});save();$('bulk').value='';toast(n+' cards added');edit()};
+$('list').onclick=e=>{const b=e.target.closest('[data-d]');if(!b)return;decks[cur].cards.splice(+b.dataset.d,1);save();edit()};
+$('delDeck').onclick=()=>{if(!confirm('Delete this whole deck?'))return;decks.splice(cur,1);save();home()};
+$('eBack').onclick=home;$('eStudy').onclick=()=>{if(decks[cur].cards.length)study();else toast('Add some cards first')};
+function pick(){const cs=decks[cur].cards;const w=cs.map(c=>Math.pow(2,5-c.box));let r=Math.random()*w.reduce((a,b)=>a+b,0);for(let i=0;i<cs.length;i++){r-=w[i];if(r<=0&&cs[i]!==card)return cs[i]}return cs[Math.floor(Math.random()*cs.length)]}
+function study(){show('study');$('sName').textContent=decks[cur].name;streak=0;next()}
+function next(){card=pick();$('fc').classList.remove('on');setTimeout(()=>{$('sF').textContent=reversed?card.b:card.f;$('sB').textContent=reversed?card.f:card.b},card?120:0);const d=decks[cur];$('sInfo').textContent=`${pct(d)}% learned · this card is in box ${card.box} of 5${streak>2?' · 🔥 '+streak+' in a row':''}`}
+$('flip').onclick=()=>$('fc').classList.toggle('on');
+$('yes').onclick=()=>{card.box=Math.min(5,card.box+1);streak++;save();next()};
+$('no').onclick=()=>{card.box=1;streak=0;save();if(!$('fc').classList.contains('on')){$('fc').classList.add('on');setTimeout(next,1400)}else next()};
+$('rev').onclick=()=>{reversed=!reversed;$('rev').classList.toggle('on',reversed);next()};
+$('sBack').onclick=home;home();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0820">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>QR Code Maker</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Chakra+Petch:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="lab.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<style>
+:root{--acc:#ffd23f}
+.qrbox{display:grid;grid-template-columns:1fr 300px;gap:14px;align-items:start}
+@media (max-width:700px){.qrbox{grid-template-columns:1fr}}
+#qc{width:100%;max-width:300px;aspect-ratio:1;display:block;margin:0 auto;border-radius:12px;image-rendering:pixelated;background:#fff}
+.f{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}.f input,.f textarea{width:100%}
+.center{justify-content:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><h1>QR CODE MAKER</h1><a class="back" href="./">← ARCADE</a></header>
+<p class="sub">Turn a link, a message or your Wi-Fi password into a QR code that phones can scan with their camera.</p>
+<div class="tabs"><button data-t="link" class="on">🔗 LINK</button><button data-t="text">💬 MESSAGE</button><button data-t="wifi">📶 WI-FI</button></div>
+<div class="qrbox"><div class="panel">
+<div id="link"><label class="f">Website address<input id="url" value="https://kuzeyozer1.github.io/kuzey-arcade2/" inputmode="url"></label></div>
+<div id="text" hidden><label class="f">Your message<textarea id="msg">Hello from Kuzey Arcade! 👋</textarea></label></div>
+<div id="wifi" hidden><label class="f">Wi-Fi name<input id="ssid" placeholder="MyHomeWiFi"></label><label class="f">Password<input id="pass" type="password" placeholder="password"></label><p class="note">Friends can scan it to join your Wi-Fi without typing the password. Only share it with people you trust!</p></div>
+<div class="row"><label>Dots <input type="color" id="fg" value="#0b0820"></label><label>Background <input type="color" id="bgc" value="#ffffff"></label></div>
+</div><div class="panel" style="text-align:center"><canvas id="qc" width="600" height="600" aria-label="QR code"></canvas><p class="note" id="info"></p><div class="row center"><button class="btn" id="dl">⬇ DOWNLOAD</button></div></div></div>
+<p class="note">Tip: point your iPad or phone camera at a QR code and tap the link that pops up.</p>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+let toastT;function toast(m,ms=1800){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),ms)}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const store={get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v??d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){toast('Could not save: storage is full')}}};
+let tab='link';
+function data(){if(tab==='link')return $('url').value.trim();if(tab==='text')return $('msg').value;const e=s=>s.replace(/([\\;,:"])/g,'\\$1');return `WIFI:T:WPA;S:${e($('ssid').value)};P:${e($('pass').value)};;`}
+function utf8(s){return unescape(encodeURIComponent(s))}
+function draw(){const c=$('qc'),x=c.getContext('2d'),d=data();x.fillStyle=$('bgc').value;x.fillRect(0,0,600,600);if(!d||(tab==='wifi'&&!$('ssid').value)){$('info').textContent='Type something to make a code';return}
+  try{const q=qrcode(0,'M');q.addData(utf8(d));q.make();const n=q.getModuleCount(),cell=Math.floor(600/(n+8)),off=Math.floor((600-cell*n)/2);x.fillStyle=$('fg').value;
+    for(let r=0;r<n;r++)for(let k=0;k<n;k++)if(q.isDark(r,k))x.fillRect(off+k*cell,off+r*cell,cell,cell);$('info').textContent=`${n}×${n} squares · ${utf8(d).length} letters`}
+  catch(e){$('info').textContent='That is too long for one QR code. Make it shorter.'}}
+['url','msg','ssid','pass','fg','bgc'].forEach(id=>$(id).addEventListener('input',draw));
+document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{tab=b.dataset.t;document.querySelectorAll('[data-t]').forEach(x=>x.classList.toggle('on',x===b));['link','text','wifi'].forEach(s=>$(s).hidden=s!==tab);draw()});
+$('dl').onclick=()=>{const a=document.createElement('a');a.href=$('qc').toDataURL('image/png');a.download='qr-code.png';a.click()};
+if(typeof qrcode==='undefined'){$('info').textContent='Go online once so the QR maker can load.'}else draw();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>
