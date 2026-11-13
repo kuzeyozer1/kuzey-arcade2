@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#fff7e8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="English Class">
+<title>Kuzey English Class</title>
+<link rel="icon" href="../icons/icon-192.png">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+/* A bright classroom workbook: cream paper, one colour per unit, big tap targets.
+   Board mode scales everything up for a projector; Teams mode adds a scoreboard strip. Light only, for projectors. */
+:root{
+  --paper:#fff7e8; --card:#ffffff; --ink:#1f2340; --mute:#5d6283; --line:#e6dcc6;
+  --good:#1f9d63; --bad:#d6455d; --gold:#f2a516; --c:#2f7de1;
+  --display:'Baloo 2', ui-rounded, system-ui, sans-serif; --body:'Nunito', system-ui, sans-serif;
+  color-scheme:light;
+}
+[hidden]{display:none!important}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:18px;line-height:1.5;
+  padding:env(safe-area-inset-top,0px) 0 calc(30px + env(safe-area-inset-bottom,0px))}
+body.board{font-size:24px}
+button,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.wrap{max-width:1100px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);margin:0;line-height:1.15;text-wrap:balance}
+a{color:inherit}
+.mute{color:var(--mute)}
+.btn{border:0;border-radius:14px;padding:12px 20px;font-family:var(--display);font-weight:700;font-size:1.05em;cursor:pointer;background:var(--c);color:#fff;box-shadow:0 3px 0 rgba(0,0,0,.18)}
+.btn:active{transform:translateY(2px);box-shadow:none}
+.btn.ghost{background:var(--card);color:var(--ink);border:2px solid var(--line);box-shadow:none}
+.btn.good{background:var(--good)}.btn.bad{background:var(--bad)}
+.btn[disabled]{opacity:.45;cursor:default}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.center{justify-content:center}
+/* top */
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-block:14px 8px}
+.logo{display:flex;align-items:center;gap:10px;margin-right:auto;text-decoration:none}
+.logo span{font-size:34px}
+.logo h1{font-size:1.5em;color:var(--ink)}
+.logo p{margin:0;font-size:.7em;color:var(--mute)}
+.modes{display:flex;gap:6px;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:4px}
+.modes button{border:0;background:none;border-radius:12px;padding:8px 12px;cursor:pointer;font-weight:800;font-size:.85em;color:var(--mute)}
+.modes button[aria-pressed=true]{background:var(--ink);color:#fff}
+/* scoreboard */
+.score{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 12px}
+.team{flex:1 1 150px;display:flex;align-items:center;gap:8px;background:var(--card);border:3px solid var(--line);border-radius:16px;padding:6px 10px}
+.team.turn{border-color:var(--tc);box-shadow:0 0 0 3px color-mix(in srgb,var(--tc) 30%,transparent)}
+.team .em{font-size:1.5em}
+.team .nm{font-weight:800;flex:1;min-width:0;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.team .pt{font-family:var(--display);font-size:1.6em;font-weight:800;color:var(--tc);min-width:1.5em;text-align:center;font-variant-numeric:tabular-nums}
+.team button{border:0;background:var(--paper);border-radius:8px;width:30px;height:30px;font-weight:800;cursor:pointer}
+.turnlbl{font-weight:800;color:var(--mute);font-size:.85em}
+/* home */
+.hero{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:18px 20px;margin:6px 0 18px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.hero h2{font-size:1.6em}
+.hero p{margin:4px 0 0;color:var(--mute);max-width:60ch}
+.units{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.unit{display:flex;flex-direction:column;gap:6px;text-align:left;background:var(--card);border:2px solid var(--line);border-top:10px solid var(--uc);border-radius:20px;padding:16px;cursor:pointer;text-decoration:none;color:var(--ink);min-height:150px}
+.unit .ue{font-size:2.2em;line-height:1}
+.unit b{font-family:var(--display);font-size:.9em;color:var(--uc);letter-spacing:.04em}
+.unit h3{font-size:1.25em}
+.unit small{color:var(--mute)}
+.unit.soon{border-top-color:var(--line);opacity:.7;cursor:default}
+/* unit page */
+.uhead{display:flex;gap:14px;align-items:center;flex-wrap:wrap;background:var(--uc);color:#fff;border-radius:22px;padding:16px 20px;margin:6px 0 18px}
+.uhead .ue{font-size:2.6em}
+.uhead h2{font-size:1.8em}
+.uhead p{margin:2px 0 0;opacity:.9}
+.back{display:inline-flex;align-items:center;gap:6px;font-weight:800;text-decoration:none;color:var(--mute);margin-top:4px}
+.secs{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px}
+.sec{background:var(--card);border:2px solid var(--line);border-radius:20px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.sec h3{font-size:1.2em;display:flex;gap:8px;align-items:center}
+.ex{display:flex;align-items:center;gap:10px;border:2px solid var(--line);border-radius:14px;padding:10px 12px;text-decoration:none;color:var(--ink);background:var(--paper);font-weight:700}
+.ex:hover{border-color:var(--uc)}
+.ex .i{font-size:1.4em}
+.ex .st{margin-left:auto;color:var(--gold);font-size:.85em;white-space:nowrap}
+/* player */
+.pbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:4px 0 10px}
+.pbar h2{font-size:1.35em;margin-right:auto}
+.prog{font-weight:800;color:var(--mute)}
+.timer{border:2px solid var(--line);background:var(--card);border-radius:12px;padding:6px 12px;font-weight:800;cursor:pointer;font-variant-numeric:tabular-nums}
+.timer.run{border-color:var(--c);color:var(--c)}.timer.end{background:var(--bad);color:#fff;border-color:var(--bad)}
+.stage{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:20px;min-height:340px;display:flex;flex-direction:column;gap:16px}
+.q{font-family:var(--display);font-size:1.45em;font-weight:700;line-height:1.25}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.opt{border:3px solid var(--line);background:var(--paper);border-radius:16px;padding:14px 16px;text-align:left;cursor:pointer;font-weight:700;font-size:1.05em}
+.opt:hover:not([disabled]){border-color:var(--c)}
+.opt.right{border-color:var(--good);background:#e2f6ec}
+.opt.wrong{border-color:var(--bad);background:#fde6ea}
+.opt[disabled]{cursor:default}
+.opt .pe{font-size:2.2em;display:block;text-align:center}
+.fb{border-radius:14px;padding:10px 14px;font-weight:700}
+.fb.ok{background:#e2f6ec;color:#145c3b}.fb.no{background:#fde6ea;color:#8a1f33}.fb.info{background:#eef4ff;color:#1d3f7a}
+.gap{display:inline-block;min-width:4em;border-bottom:3px solid var(--c);color:var(--c);text-align:center;padding:0 4px}
+.gapin{border:3px solid var(--line);border-radius:12px;padding:8px 12px;min-width:0;flex:1 1 200px;background:var(--paper)}
+.gapin:focus{outline:none;border-color:var(--c)}
+.passage{background:#fffdf7;border:2px dashed var(--line);border-radius:16px;padding:14px 18px;font-size:1.02em}
+.passage p{margin:0 0 8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:3px solid var(--c);background:var(--card);border-radius:999px;padding:8px 16px;font-weight:800;cursor:pointer}
+.chip.used{opacity:.25;cursor:default}
+.built{min-height:60px;border:3px dashed var(--line);border-radius:16px;padding:10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.built .chip{border-color:var(--ink)}
+.card3d{perspective:1400px;cursor:pointer;max-width:620px;width:100%;margin:0 auto}
+.flip{position:relative;height:300px;transition:transform .45s;transform-style:preserve-3d}
+body.board .flip{height:400px}
+.flip.on{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;padding:20px}
+.face.f{background:var(--paper);border:4px solid var(--c)}
+.face.f .pe{font-size:5em;line-height:1}
+.face.f b{font-family:var(--display);font-size:2em}
+.face.b{background:var(--c);color:#fff;transform:rotateY(180deg)}
+.face.b b{font-family:var(--display);font-size:2em}
+.match{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.match .col{display:flex;flex-direction:column;gap:8px;min-width:0}
+.mt{border:3px solid var(--line);background:var(--paper);border-radius:14px;padding:12px;cursor:pointer;font-weight:700;min-height:56px;overflow-wrap:anywhere}
+.mt.sel{border-color:var(--gold);background:#fff4d8}.mt.done{border-color:var(--good);background:#e2f6ec;opacity:.55;cursor:default}.mt.wrong{border-color:var(--bad);background:#fde6ea}
+.slide h3{font-size:1.4em;color:var(--c);margin-bottom:6px}
+.slide table{border-collapse:collapse;width:100%}
+.slide td,.slide th{border:2px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.slide th{background:var(--paper)}
+.ex-s{display:flex;align-items:center;gap:8px;margin:6px 0}
+.say{border:0;background:var(--paper);border:2px solid var(--line);border-radius:10px;padding:4px 10px;cursor:pointer;font-size:.95em}
+.script{display:flex;flex-direction:column;gap:6px}
+.script div{background:var(--paper);border-radius:12px;padding:6px 12px}
+.script b{color:var(--c)}
+.phr{background:var(--paper);border-radius:14px;padding:10px 14px}
+.phr ul{margin:4px 0 0;padding-left:22px}
+textarea.wr{width:100%;min-height:150px;border:3px solid var(--line);border-radius:16px;padding:12px;background:#fffdf7;resize:vertical}
+.model{background:#e2f6ec;border-radius:14px;padding:12px 14px}
+.fin{text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center;justify-content:center}
+.fin .big{font-family:var(--display);font-size:3.4em;font-weight:800;color:var(--c);line-height:1}
+.stars{font-size:2.4em;letter-spacing:.1em}
+.sheet{position:fixed;inset:0;background:rgba(31,35,64,.45);display:grid;place-items:center;padding:16px;z-index:20}
+.sheet .box{background:var(--card);border-radius:22px;padding:20px;width:min(520px,100%);display:flex;flex-direction:column;gap:12px}
+.sheet input{border:2px solid var(--line);border-radius:10px;padding:8px 10px;width:100%}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:14px;padding:10px 18px;font-weight:800;z-index:30;max-width:90vw;text-align:center}
+@media (max-width:600px){.match{gap:6px}.mt{padding:8px;font-size:.9em}.q{font-size:1.25em}.flip{height:240px}}
+@media (prefers-reduced-motion:reduce){.flip{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="logo" href="#"><span>🧭</span><div><h1>Kuzey English Class</h1><p>Practice for our Compass units</p></div></a>
+    <div class="modes" role="group" aria-label="Mode">
+      <button data-mode="board" title="Teacher on the board">📺 Board</button>
+      <button data-mode="teams" title="Class teams game">👥 Teams</button>
+      <button data-mode="solo" title="Students on tablets">📱 Solo</button>
+    </div>
+  </header>
+  <div id="score"></div>
+  <main id="app"></main>
+</div>
+<div class="sheet" id="sheet" hidden><div class="box" id="sheetBox"></div></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(()=>{
+const $=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const store={get(k,d){try{const v=localStorage.getItem('kec:'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('kec:'+k,JSON.stringify(v))}catch(e){}}};
+let toastT;function toast(t){const el=$('#toast');el.textContent=t;el.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>el.hidden=true,2400)}
+
+/* ================= CONTENT ================= */
+// Each unit: vocab, grammar slides, choose (multiple choice), gaps, word order, reading, listening, speaking, writing.
+// To add a unit, copy one of these objects and change the content. Units without content show as "coming soon".
+const UNITS=[
+{id:1,title:'Why Do We Need Nature?',emoji:'🌳',color:'#2e9d5b',topics:'Nature & natural resources · stative and action verbs · past simple and past continuous',
+ vocab:[['🌲','forest','orman'],['🏞️','river','nehir'],['🌊','ocean','okyanus'],['⛰️','mountain','dağ'],['🟫','soil','toprak'],['💧','water','su'],['💨','air','hava'],['☀️','sunlight','güneş ışığı'],
+   ['🌬️','wind','rüzgâr'],['🪨','coal','kömür'],['🛢️','oil','petrol'],['🪵','wood','odun, tahta'],['🌱','plant','bitki'],['🦌','wildlife','yaban hayatı'],['🏭','pollution','kirlilik'],['♻️','recycle','geri dönüştürmek'],
+   ['🛡️','protect','korumak'],['🐼','endangered','nesli tükenmekte'],['🏡','habitat','yaşam alanı'],['🔋','renewable energy','yenilenebilir enerji']],
+ grammar:[
+  {h:'Natural resources',html:`<p><b>Natural resources</b> are things from nature that people use.</p><table><tr><th>♻️ Renewable (won't run out)</th><th>⛔ Non-renewable (will run out)</th></tr><tr><td>sunlight, wind, water, wood (if we plant new trees)</td><td>coal, oil, natural gas (fossil fuels)</td></tr></table>`,ex:['The sun is a renewable resource.','Coal and oil are non-renewable.']},
+  {h:'Stative and action verbs',html:`<p><b>Action verbs</b> are things we do. They can be in the continuous form: <i>She <b>is planting</b> a tree.</i></p><p><b>Stative verbs</b> are about thoughts, feelings, senses and owning. We usually <b>don't</b> use them with -ing:<br><b>know, like, love, hate, want, need, believe, understand, think</b> (opinion)<b>, own, belong, seem, taste, smell</b></p><p>✓ <i>I know the answer.</i> &nbsp; ✗ <i>I'm knowing the answer.</i></p>`,ex:['We need clean water.','Look! The children are planting trees.']},
+  {h:'Past simple',html:`<p>A <b>finished</b> action in the past.</p><table><tr><th>✅</th><td>I <b>visited</b> the forest. · We <b>saw</b> a deer.</td></tr><tr><th>❌</th><td>I <b>didn't visit</b> the forest.</td></tr><tr><th>❓</th><td><b>Did</b> you <b>visit</b> the forest?</td></tr></table><p>Irregular: go → went, see → saw, have → had, take → took, find → found, fall → fell, grow → grew, swim → swam</p>`,ex:['Last summer we went to the mountains.','Did you see the river?']},
+  {h:'Past continuous',html:`<p>An action <b>in progress</b> at a time in the past: <b>was / were + verb-ing</b>.</p><table><tr><td>I / he / she / it <b>was</b> walking</td><td>you / we / they <b>were</b> walking</td></tr></table><p>Long action + short action:<br><i>I <b>was walking</b> in the forest <b>when</b> I <b>saw</b> a deer.</i><br><i><b>While</b> we <b>were swimming</b>, it <b>started</b> to rain.</i></p>`,ex:['I was walking in the forest when I saw a deer.','While we were swimming, it started to rain.']}],
+ choose:[
+  {q:'I ___ the answer to this question.',o:['know','am knowing','knowing','am know'],e:'know is a stative verb.'},
+  {q:'Look! Those people ___ rubbish on the beach.',o:['are picking up','pick up','picks up','picked up'],e:'Look! = happening now → present continuous.'},
+  {q:'We ___ more trees in our city.',o:['need','are needing','needing','needs'],e:'need is stative.'},
+  {q:'Yesterday we ___ a fox in the forest.',o:['saw','see','were seeing','seed'],e:'Finished past action → past simple (see → saw).'},
+  {q:'At 10 o\'clock yesterday, I ___ my bike by the river.',o:['was riding','rode','am riding','were riding'],e:'In progress at a time in the past; I → was.'},
+  {q:'While they ___ in the lake, it started to rain.',o:['were swimming','was swimming','swam','swim'],e:'while + long action; they → were.'},
+  {q:'I was reading about pandas when my mum ___ me.',o:['called','was calling','calls','call'],e:'The short action that interrupts → past simple.'},
+  {q:'Which one is a renewable resource?',o:['wind','coal','oil','natural gas'],e:'Wind will never run out.'},
+  {q:'Which one is a stative verb?',o:['believe','plant','swim','carry'],e:'believe = a thought, not an action.'},
+  {q:'Pandas are ___ animals. There are very few of them.',o:['endangered','renewable','polluted','recycled'],e:'endangered = in danger of disappearing.'},
+  {q:'Factories and cars cause air ___.',o:['pollution','habitat','soil','energy'],e:'pollution = making air, water or land dirty.'},
+  {q:'___ you recycle the bottles yesterday?',o:['Did','Were','Do','Was'],e:'Past simple question: Did + subject + verb.'}],
+ gaps:[
+  {t:'This soup ___ delicious. (taste)',a:['tastes'],e:'Stative verb in the present simple.'},
+  {t:'Shh! The baby bird ___ . (sleep)',a:['is sleeping'],e:'Happening now → is sleeping.'},
+  {t:'Last weekend we ___ ten trees. (plant)',a:['planted'],e:'Past simple, regular verb.'},
+  {t:'I ___ a deer while I was walking. (see)',a:['saw'],e:'Irregular past: see → saw.'},
+  {t:'They ___ football when it started to rain. (play)',a:['were playing'],e:'Long action → past continuous.'},
+  {t:'Oil and coal are ___ resources. (renewable / non-renewable)',a:['non-renewable','nonrenewable'],e:'They will run out one day.'},
+  {t:'We ___ plastic bottles to help the planet. (recycle)',a:['recycle'],e:'Present simple for habits.'},
+  {t:'My sister ___ animals very much. (love)',a:['loves'],e:'Stative verb, she → loves.'}],
+ order:['The children were planting trees in the park.','I don\'t understand this word.','We saw a deer while we were walking.','She loves the smell of the forest.','Do you know the name of this river?','They were recycling bottles when it started to rain.'],
+ read:{title:'The Amazon Rainforest',text:['The Amazon is the biggest rainforest in the world. It is in South America, and it covers parts of nine countries. Millions of kinds of plants and animals live there.','The trees of the Amazon produce a lot of oxygen, so people call it "the lungs of the planet". But the forest is in danger. People are cutting down trees for wood and farmland. When the trees disappear, animals lose their habitat and many species become endangered.','Scientists say we can all help. We can use less paper, recycle, and buy products that do not harm forests.'],
+  qs:[{q:'Where is the Amazon rainforest?',o:['In South America','In Africa','In Asia','In Europe'],e:'"It is in South America."'},
+   {q:'Why do people call it "the lungs of the planet"?',o:['Its trees produce a lot of oxygen.','It is very big.','It has many rivers.','People breathe there.'],e:'Paragraph 2.'},
+   {q:'Why are people cutting down trees?',o:['For wood and farmland','For fun','To build schools','To make the rivers bigger'],e:'"for wood and farmland"'},
+   {q:'What happens to animals when the trees disappear?',o:['They lose their habitat.','They get bigger.','They move to the city.','Nothing happens.'],e:'Paragraph 2.'},
+   {tf:true,q:'The Amazon covers parts of nine countries.',a:true},{tf:true,q:'The Amazon is in no danger.',a:false},{tf:true,q:'Recycling and using less paper can help.',a:true}]},
+ listen:{title:'A weekend at the lake',lines:[['Mia','Hi Tom! What did you do at the weekend?'],['Tom','I went camping at Pine Lake with my family.'],['Mia','Cool! What were you doing when it got dark?'],['Tom','We were cooking dinner on the campfire. Then my dad saw an owl in a tree!'],['Mia','Wow! Did you swim in the lake?'],['Tom','Yes, but while we were swimming, it started to rain, so we ran back to the tent.'],['Mia','Oh no! Was there any rubbish at the lake?'],['Tom','A little. We picked it up and recycled the plastic bottles.']],
+  qs:[{q:'Where did Tom go at the weekend?',o:['Camping at Pine Lake','To the beach','To the city','To a farm'],e:'"I went camping at Pine Lake."'},
+   {q:'What were they doing when it got dark?',o:['Cooking dinner on the campfire','Swimming','Sleeping','Fishing'],e:'"We were cooking dinner on the campfire."'},
+   {q:'What did his dad see?',o:['An owl','A deer','A fox','A fish'],e:'"my dad saw an owl in a tree"'},
+   {q:'What happened while they were swimming?',o:['It started to rain.','They saw a bear.','The sun came out.','They lost the tent.'],e:'Long action + short action.'},
+   {q:'What did they do with the rubbish?',o:['They picked it up and recycled the bottles.','They left it there.','They burned it.','They put it in the lake.'],e:'Last line.'}]},
+ speak:[{p:'Why do we need nature? Give three reasons.',ph:['We need nature because …','Trees give us …','Without … we can\'t …'],m:'We need nature because trees give us oxygen. Rivers and lakes give us water to drink. Nature is also a home for animals, and it makes people happy and healthy.'},
+  {p:'What do you do to protect nature?',ph:['I always …','I never …','At school we …'],m:'I always recycle paper and plastic. I never leave rubbish in the park. At school we turn off the lights, and last year we planted trees in the garden.'},
+  {p:'Tell us about a time you were in nature. What were you doing? What happened?',ph:['Last summer I …','I was … when …','While we were …'],m:'Last summer I went to the mountains with my family. We were walking near a river when we saw a deer. While we were having a picnic, a bird took my sandwich!'},
+  {p:'Renewable or non-renewable? Name two of each and say why.',ph:['… is renewable because …','… is non-renewable because …'],m:'Sunlight and wind are renewable because they never run out. Coal and oil are non-renewable because they will run out one day.'}],
+ write:[{p:'Write 5 sentences: How can our school protect nature?',tips:['Use "We can …" and "We should …"','Give at least 3 ideas','Use nature words: recycle, protect, plant, pollution'],m:'Our school can protect nature in many ways. We can recycle paper, plastic and glass. We should turn off the lights when we leave the classroom. We can plant trees and flowers in the garden. We can also walk or cycle to school to reduce air pollution.'},
+  {p:'Write about a day in nature. Use the past simple and the past continuous (when / while).',tips:['Where did you go? Who with?','What were you doing when something happened?','How did you feel?'],m:'Last spring my class went to a forest near our town. We were walking along a river when our teacher saw a big turtle. While we were watching it, it started to rain! We ran under the trees and laughed. It was a great day.'}]},
+{id:2,title:'How Can We Make Our Dreams Come True?',emoji:'🚀',color:'#7a4fe0',topics:'Goals & jobs · first and second conditional · future plans (be going to) and predictions (will)',
+ vocab:[['🩺','doctor','doktor'],['🐶','vet','veteriner'],['🏛️','architect','mimar'],['🚀','astronaut','astronot'],['⚙️','engineer','mühendis'],['✈️','pilot','pilot'],['🧑‍🍳','chef','aşçı'],['📰','journalist','gazeteci'],
+   ['🔬','scientist','bilim insanı'],['🚒','firefighter','itfaiyeci'],['🦷','dentist','diş hekimi'],['💻','programmer','programcı'],['📷','photographer','fotoğrafçı'],['🎯','goal','hedef'],['💭','dream','hayal'],['🏆','achieve','başarmak'],
+   ['🏋️','practise','pratik yapmak'],['🧠','skill','beceri'],['💪','hard-working','çalışkan'],['⭐','talented','yetenekli']],
+ grammar:[
+  {h:'Future plans: be going to',html:`<p>Use <b>be going to + verb</b> for <b>plans</b> you have already made, and for <b>predictions with proof</b> you can see now.</p><table><tr><td>I <b>am</b> going to study</td><td>He / She <b>is</b> going to study</td><td>We / They <b>are</b> going to study</td></tr></table><p><i>I'm going to join the robotics club. · Look at the clouds! It's going to rain.</i></p>`,ex:['I am going to practise the piano every day.','Look at those clouds! It is going to rain.']},
+  {h:'Predictions: will',html:`<p>Use <b>will + verb</b> for <b>predictions and opinions</b> (often with <i>I think, I'm sure, maybe, probably</i>), for <b>promises</b> and for <b>decisions you make now</b>.</p><p><i>I think robots <b>will</b> help doctors. · I <b>won't</b> give up! · The phone is ringing. I<b>'ll</b> answer it.</i></p><p class="mute">✗ I will going to · ✗ She going to · ✗ He will goes</p>`,ex:['I think people will live on Mars.','I promise I won\'t give up.']},
+  {h:'First conditional',html:`<p>A <b>real</b>, possible situation in the future.</p><p style="font-size:1.15em"><b>If</b> + present simple, <b>will</b> + verb</p><p><i>If you <b>practise</b> every day, you <b>will improve</b>. · If it <b>rains</b>, we <b>won't play</b> outside.</i></p>`,ex:['If you work hard, you will achieve your goals.','If it rains, we will stay at home.']},
+  {h:'Second conditional',html:`<p>An <b>imaginary</b> or unlikely situation.</p><p style="font-size:1.15em"><b>If</b> + past simple, <b>would</b> + verb</p><p><i>If I <b>had</b> a million dollars, I <b>would build</b> a school. · If I <b>were</b> an astronaut, I <b>would visit</b> the Moon.</i></p><table><tr><th>First (real)</th><th>Second (imaginary)</th></tr><tr><td>If I <b>pass</b> the test, I <b>will be</b> happy.</td><td>If I <b>were</b> a bird, I <b>would fly</b>.</td></tr></table>`,ex:['If I were a pilot, I would fly around the world.','If I had more time, I would learn Japanese.']}],
+ choose:[
+  {q:'If you practise every day, you ___ better.',o:['will get','would get','got','get'],e:'First conditional: If + present, will + verb.'},
+  {q:'If I ___ a superhero, I would help everyone.',o:['were','am','will be','be'],e:'Second conditional: If I were …'},
+  {q:'If I had a robot, it ___ my homework.',o:['would do','will do','does','did'],e:'Second conditional: would + verb.'},
+  {q:'I\'ve decided. I ___ join the science club.',o:['am going to','will','would','going to'],e:'A plan already made → be going to.'},
+  {q:'I think robots ___ teach children in the future.',o:['will','are going','would','going to'],e:'"I think" + prediction → will.'},
+  {q:'Look at that dark sky! It ___ rain.',o:['is going to','will','would','rains'],e:'Proof you can see → going to.'},
+  {q:'A person who looks after sick animals is a ___.',o:['vet','pilot','chef','journalist'],e:'vet = veteriner'},
+  {q:'A person who designs buildings is an ___.',o:['architect','astronaut','engineer','photographer'],e:'architect = mimar'},
+  {q:'She ___ to be a doctor. She studies biology every day.',o:['is going','will','would','goes'],e:'is going to be = a plan.'},
+  {q:'If it ___ tomorrow, we won\'t have the picnic.',o:['rains','will rain','rained','would rain'],e:'If + present simple.'},
+  {q:'To ___ your goals, you need to work hard.',o:['achieve','dream','talent','skill'],e:'achieve = başarmak'},
+  {q:'Which sentence is a promise?',o:['I won\'t give up!','It\'s going to rain.','If I were rich, I would travel.','She is a chef.'],e:'Promises use will / won\'t.'}],
+ gaps:[
+  {t:'If you study hard, you ___ the exam. (pass)',a:['will pass',"'ll pass"],e:'First conditional.'},
+  {t:'If I ___ wings, I would fly to school. (have)',a:['had'],e:'Second conditional: If + past simple.'},
+  {t:'If I were an astronaut, I ___ the Moon. (visit)',a:['would visit',"'d visit"],e:'would + verb.'},
+  {t:'Next year I ___ learn to swim. (be going to)',a:['am going to',"'m going to"],e:'A plan.'},
+  {t:'I think people ___ live on Mars one day. (will)',a:['will'],e:'A prediction.'},
+  {t:'My brother wants to be a ___ because he loves cooking. (job)',a:['chef','cook'],e:'chef = aşçı'},
+  {t:'If it ___ sunny, we will go to the beach. (be)',a:['is'],e:'If + present simple.'},
+  {t:'If I had a lot of money, I ___ a hospital. (build)',a:['would build',"'d build"],e:'Second conditional.'}],
+ order:['If you practise every day, you will improve.','I am going to join the robotics club.','If I were a pilot, I would fly around the world.','I think robots will help doctors.','She wants to be a vet because she loves animals.','We are going to visit a science museum next week.'],
+ read:{title:'From a Small Village to the Stars',text:['Elif lives in a small village near the mountains. Every night she looks at the stars from her window. Her big dream is to become an astronaut.','Last year, while she was reading a book about space, she made a plan. Now she is going to study science and maths very hard, and next summer she is going to attend a space camp.','"Some people say my dream is impossible," Elif says. "But if I work hard, I will achieve it. If I were an astronaut today, I would take photos of Earth for my village!" Her teacher thinks Elif will be a great scientist one day.'],
+  qs:[{q:'What is Elif\'s dream?',o:['To become an astronaut','To become a teacher','To live in a city','To be a photographer'],e:'Paragraph 1.'},
+   {q:'What was she doing when she made a plan?',o:['She was reading a book about space.','She was looking at the stars.','She was at space camp.','She was taking photos.'],e:'Past continuous: was reading.'},
+   {q:'What is she going to do next summer?',o:['Attend a space camp','Visit the Moon','Move to a city','Write a book'],e:'A plan → going to.'},
+   {q:'"If I work hard, I will achieve it." What kind of sentence is this?',o:['First conditional','Second conditional','Past continuous','Past simple'],e:'If + present, will + verb.'},
+   {tf:true,q:'Elif lives in a big city.',a:false},{tf:true,q:'Her teacher thinks she will be a great scientist.',a:true},{tf:true,q:'If Elif were an astronaut, she would take photos of Earth.',a:true}]},
+ listen:{title:'Meet a young chef',lines:[['Reporter','Hello Deniz! You are only twenty and you are a chef. When did you start cooking?'],['Deniz','I started when I was eight. I was helping my grandma in the kitchen when I made my first cake.'],['Reporter','What is your next goal?'],['Deniz','I\'m going to open my own restaurant next year. I have already found the building!'],['Reporter','Do you think it will be successful?'],['Deniz','I think it will be very popular, because the food will be healthy and delicious.'],['Reporter','What advice do you have for young people?'],['Deniz','If you love something, practise it every day. If you work hard, your dreams will come true.']],
+  qs:[{q:'How old is Deniz?',o:['Twenty','Eight','Twelve','Thirty'],e:'"You are only twenty."'},
+   {q:'What was Deniz doing when he made his first cake?',o:['Helping his grandma in the kitchen','Watching TV','Working in a restaurant','Shopping'],e:'Past continuous.'},
+   {q:'What is he going to do next year?',o:['Open his own restaurant','Go to university','Write a cookbook','Move abroad'],e:'A plan → going to.'},
+   {q:'Why does he think the restaurant will be popular?',o:['The food will be healthy and delicious.','It will be cheap.','It will be very big.','His grandma will cook.'],e:'A prediction with will.'},
+   {q:'What is his advice?',o:['Practise what you love every day.','Never cook at home.','Stop dreaming.','Only work at weekends.'],e:'Last line.'}]},
+ speak:[{p:'What is your dream job? Why?',ph:['I want to be a … because …','I love …','I\'m good at …'],m:'I want to be an engineer because I love building things. I\'m good at maths and science, and I enjoy solving problems.'},
+  {p:'What are you going to do to make your dream come true?',ph:['I\'m going to …','Next year I\'m going to …','Every day I …'],m:'I\'m going to study hard at school. Next year I\'m going to join the robotics club, and I\'m going to practise coding every week.'},
+  {p:'If you were famous, what would you do?',ph:['If I were famous, I would …','I would also …'],m:'If I were famous, I would help children who can\'t go to school. I would also travel around the world and meet interesting people.'},
+  {p:'How will the world be in 2050? Make three predictions.',ph:['I think … will …','Maybe …','I\'m sure …'],m:'I think cars will fly. Maybe people will live on Mars. I\'m sure robots will help us at home and at school.'}],
+ write:[{p:'Write a paragraph: My Dream Job.',tips:['What do you want to be? Why?','Use "be going to" for your plans','Use one first conditional (If I …, I will …)'],m:'I want to be a vet because I love animals. I\'m going to study science very hard at school. Next summer I\'m going to help at an animal shelter. If I work hard, I will become a good vet. I think I will open my own animal hospital one day.'},
+  {p:'Write four sentences that start with "If I were …".',tips:['If I were + a job / an animal / a famous person','… I would + verb'],m:'If I were a bird, I would fly over the mountains. If I were a teacher, I would give no homework on Fridays. If I were a scientist, I would find a cure for diseases. If I were rich, I would build a park in my town.'}]},
+...[3,4,5,6,7,8].map(n=>({id:n,soon:true}))];
+
+/* ================= STATE ================= */
+let MODE=store.get('mode','board');
+const TEAMDEF=[{n:'Foxes',e:'🦊',c:'#e8622b'},{n:'Pandas',e:'🐼',c:'#2f7de1'},{n:'Frogs',e:'🐸',c:'#1f9d63'},{n:'Tigers',e:'🐯',c:'#c9377a'}];
+let teams=store.get('teams',null)||TEAMDEF.slice(0,2).map(t=>({...t,s:0})),turn=store.get('turn',0)%teams.length;
+const saveTeams=()=>{store.set('teams',teams);store.set('turn',turn)};
+let stars=store.get('stars',{});
+
+/* ================= SPEECH, SOUND, TIMER ================= */
+let voices=[];const loadV=()=>{voices=('speechSynthesis' in window)?speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang)):[]};if('speechSynthesis' in window){loadV();speechSynthesis.onvoiceschanged=loadV}
+function say(text,who=0,rate=.88){if(!('speechSynthesis' in window)){toast('This device cannot read aloud.');return null}
+  const u=new SpeechSynthesisUtterance(text);u.lang='en-GB';u.rate=rate;const gb=voices.filter(v=>/GB/i.test(v.lang)),pool=gb.length>1?gb:voices;
+  if(pool.length)u.voice=pool[who%pool.length];u.pitch=who%2?.85:1.1;speechSynthesis.speak(u);return u}
+let AC;function beep(f=880,d=.25){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=f;g.gain.value=.08;o.connect(g).connect(AC.destination);o.start();o.stop(AC.currentTime+d)}catch(e){}}
+let tLeft=0,tIv=null;const TIMES=[0,30,60,90];let tSel=0;
+function timerBtn(){return `<button class="timer" id="tm" title="Timer">${tIv?'⏱ '+tLeft+'s':TIMES[tSel]?'⏱ '+TIMES[tSel]+'s':'⏱ Timer'}</button>`}
+function bindTimer(){const b=$('#tm');if(!b)return;b.onclick=()=>{if(tIv){clearInterval(tIv);tIv=null;b.className='timer';b.textContent='⏱ Timer';return}
+  tSel=(tSel+1)%TIMES.length;if(!TIMES[tSel]){b.textContent='⏱ Timer';return}b.textContent='⏱ '+TIMES[tSel]+'s · tap to start';b.onclick=()=>startTimer(TIMES[tSel])}}
+function startTimer(sec){clearInterval(tIv);tLeft=sec;const tick=()=>{const b=$('#tm');if(!b){clearInterval(tIv);tIv=null;return}b.className='timer run';b.textContent='⏱ '+tLeft+'s';
+  if(tLeft<=0){clearInterval(tIv);tIv=null;b.className='timer end';b.textContent='⏰ Time!';beep(660,.6);setTimeout(bindTimer,50);return}if(tLeft<=3)beep();tLeft--};tick();tIv=setInterval(tick,1000)}
+
+/* ================= SCOREBOARD ================= */
+function renderScore(){
+  const el=$('#score');if(MODE!=='teams'){el.innerHTML='';return}
+  el.innerHTML=`<div class="score">${teams.map((t,i)=>`<div class="team${i===turn?' turn':''}" style="--tc:${t.c}"><span class="em">${t.e}</span><span class="nm" data-turn="${i}" title="Tap to give this team the turn">${esc(t.n)}</span>
+    <button data-pt="${i}:-1" aria-label="${esc(t.n)} minus one">−</button><span class="pt">${t.s}</span><button data-pt="${i}:1" aria-label="${esc(t.n)} plus one">+</button></div>`).join('')}
+    <button class="btn ghost" id="teamSet" style="padding:8px 14px">⚙️ Teams</button></div>`;
+  el.querySelectorAll('[data-pt]').forEach(b=>b.onclick=()=>{const [i,d]=b.dataset.pt.split(':').map(Number);teams[i].s=Math.max(0,teams[i].s+d);saveTeams();renderScore()});
+  el.querySelectorAll('[data-turn]').forEach(b=>b.onclick=()=>{turn=+b.dataset.turn;saveTeams();renderScore();paintTurn()});
+  $('#teamSet').onclick=teamSheet}
+function paintTurn(){const t=$('#turnlbl');if(t)t.innerHTML=MODE==='teams'?`Turn: <span style="color:${teams[turn].c}">${teams[turn].e} ${esc(teams[turn].n)}</span>`:''}
+function teamSheet(){
+  const box=$('#sheetBox');$('#sheet').hidden=false;
+  const draw=()=>{box.innerHTML=`<h2>👥 Teams</h2><p class="mute">How many teams? Tap a name to change it.</p>
+    <div class="row">${[2,3,4].map(n=>`<button class="btn ${teams.length===n?'':'ghost'}" data-n="${n}">${n} teams</button>`).join('')}</div>
+    ${teams.map((t,i)=>`<label class="row"><span style="font-size:1.6em">${t.e}</span><input value="${esc(t.n)}" data-name="${i}" aria-label="Team ${i+1} name"></label>`).join('')}
+    <div class="row"><button class="btn bad" id="reset">Reset scores</button><button class="btn" id="ok">Done</button></div>`;
+    box.querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>{const n=+b.dataset.n;teams=TEAMDEF.slice(0,n).map((d,i)=>teams[i]||{...d,s:0});turn=0;saveTeams();draw()});
+    box.querySelectorAll('[data-name]').forEach(inp=>inp.oninput=()=>{teams[+inp.dataset.name].n=inp.value.slice(0,18)||TEAMDEF[+inp.dataset.name].n;saveTeams()});
+    $('#reset').onclick=()=>{teams.forEach(t=>t.s=0);turn=0;saveTeams();toast('Scores reset')};
+    $('#ok').onclick=()=>{$('#sheet').hidden=true;renderScore();paintTurn()}};draw()}
+// one answer = one turn: in Teams mode a right answer scores for the team whose turn it is
+function award(ok,pts=1){if(MODE==='solo'){P.score+=ok?pts:0;P.total+=pts}else if(MODE==='teams'){if(ok){teams[turn].s+=pts}turn=(turn+1)%teams.length;saveTeams();renderScore();paintTurn()}}
+
+/* ================= MODES ================= */
+function setMode(m){MODE=m;store.set('mode',m);document.body.classList.toggle('board',m!=='solo');document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===m));renderScore();route()}
+document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{setMode(b.dataset.mode);if(b.dataset.mode==='teams'&&!store.get('teamsSeen',0)){store.set('teamsSeen',1);teamSheet()}});
+
+/* ================= PAGES ================= */
+const SECTIONS=[['📚','Vocabulary',[['cards','🃏','Picture flashcards'],['listen','👂','Listen and choose'],['match','🧩','Match the words']]],
+  ['✏️','Grammar',[['grammar','💡','Grammar box'],['choose','✅','Choose the right answer'],['gaps','📝','Fill in the gaps'],['order','🔀','Put the words in order']]],
+  ['📖','Reading & Listening',[['read','📖','Reading'],['listening','🎧','Listening']]],
+  ['🗣️','Speaking & Writing',[['speak','🎤','Speaking cards'],['write','✍️','Writing task']]]];
+const unitOf=id=>UNITS.find(u=>u.id===id);
+function home(){
+  $('#app').innerHTML=`<section class="hero"><div style="font-size:3em">🧭</div><div><h2>Let's learn English!</h2>
+    <p>Pick a unit. On the board use <b>📺 Board</b>, for a class game use <b>👥 Teams</b>, and on tablets use <b>📱 Solo</b>. Every unit has vocabulary, grammar, reading, listening, speaking and writing.</p></div></section>
+    <div class="units">${UNITS.map(u=>u.soon?`<div class="unit soon"><span class="ue">🔒</span><b>UNIT ${u.id}</b><h3>Coming soon</h3><small>Send the unit name and topics to add it.</small></div>`:
+    `<a class="unit" href="#u${u.id}" style="--uc:${u.color}"><span class="ue">${u.emoji}</span><b>UNIT ${u.id}</b><h3>${esc(u.title)}</h3><small>${esc(u.topics)}</small><small>${unitStars(u)}</small></a>`).join('')}</div>`}
+function unitStars(u){const ids=SECTIONS.flatMap(s=>s[2].map(x=>x[0])).filter(k=>!['cards','grammar','speak','write'].includes(k));const got=ids.filter(k=>stars['u'+u.id+'-'+k]).length;return got?`⭐ ${got}/${ids.length} exercises done in Solo`:''}
+function unitPage(u){
+  document.documentElement.style.setProperty('--c',u.color);
+  $('#app').innerHTML=`<a class="back" href="#">← All units</a><section class="uhead" style="--uc:${u.color}"><span class="ue">${u.emoji}</span><div><p>UNIT ${u.id}</p><h2>${esc(u.title)}</h2><p>${esc(u.topics)}</p></div></section>
+    <div class="secs">${SECTIONS.map(([ic,name,list])=>`<div class="sec"><h3>${ic} ${name}</h3>${list.map(([k,i,t])=>{const st=stars['u'+u.id+'-'+k];
+      return `<a class="ex" href="#u${u.id}-${k}" style="--uc:${u.color}"><span class="i">${i}</span>${t}${st?`<span class="st">${'⭐'.repeat(st)}</span>`:''}</a>`}).join('')}</div>`).join('')}</div>`}
+
+/* ================= PLAYER ================= */
+let P=null;
+function frame(u,title,progress=''){
+  $('#app').innerHTML=`<a class="back" href="#u${u.id}">← Unit ${u.id}: ${esc(u.title)}</a>
+    <div class="pbar"><h2>${title}</h2><span class="turnlbl" id="turnlbl"></span><span class="prog" id="prog">${progress}</span>${timerBtn()}</div><div class="stage" id="stage"></div>`;
+  bindTimer();paintTurn()}
+const stage=()=>$('#stage');
+function setProg(){const p=$('#prog');if(p&&P)p.textContent=`${Math.min(P.i+1,P.n)} / ${P.n}`}
+function finish(u,key){
+  const solo=MODE==='solo',pct=solo&&P.total?Math.round(P.score/P.total*100):null,st=pct==null?0:pct>=90?3:pct>=60?2:pct>0?1:0;
+  if(solo&&st){const k='u'+u.id+'-'+key;stars[k]=Math.max(stars[k]||0,st);store.set('stars',stars)}
+  const lead=MODE==='teams'?teams.slice().sort((a,b)=>b.s-a.s):null;
+  stage().innerHTML=`<div class="fin">${solo&&P.total?`<div class="big">${P.score}/${P.total}</div><div class="stars">${'⭐'.repeat(st)}${'☆'.repeat(3-st)}</div><p>${st===3?'Excellent!':st===2?'Well done!':'Keep practising!'}</p>`:
+    lead?`<div class="big">🏆 ${lead[0].e} ${esc(lead[0].n)}</div><p>${lead.map(t=>`${t.e} ${esc(t.n)}: <b>${t.s}</b>`).join(' · ')}</p>`:`<div class="big">🎉 Finished!</div>`}
+    <div class="row center"><a class="btn ghost" href="#u${u.id}">Back to the unit</a><button class="btn" id="again">Play again</button></div></div>`;
+  $('#again').onclick=()=>route(true)}
+function nextBtn(label='Next →'){return `<div class="row center"><button class="btn" id="nx">${label}</button></div>`}
+
+// multiple choice / true-false, used by several exercises
+function mcStep(q,done,{extra=''}={}){
+  const tf=q.tf,opts=tf?[{t:'True ✔',ok:q.a===true},{t:'False ✘',ok:q.a===false}]:shuffle(q.o.map((t,k)=>({t,ok:k===0})));
+  stage().innerHTML=`${extra}<div class="q">${esc(q.q).replace(/___/g,'<span class="gap">?</span>')}</div>
+    <div class="opts">${opts.map((o,k)=>`<button class="opt" data-k="${k}">${o.pe?`<span class="pe">${o.pe}</span>`:''}${esc(o.t)}</button>`).join('')}</div>
+    <div id="fb"></div>${MODE==='board'?'<div class="row center" id="rv"><button class="btn ghost" id="reveal">👀 Reveal answer</button></div>':''}`;
+  const show=(ok,picked)=>{stage().querySelectorAll('.opt').forEach((b,j)=>{b.disabled=true;if(opts[j].ok)b.classList.add('right')});if(picked&&!ok)picked.classList.add('wrong');
+    if($('#rv'))$('#rv').remove();$('#fb').outerHTML=`<div class="fb ${ok===null?'info':ok?'ok':'no'}">${ok===null?'':ok?'✔ Right! ':'✘ Not quite. '}${esc(q.e||'')}</div>`+nextBtn();$('#nx').onclick=done;$('#nx').focus()};
+  stage().querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const ok=opts[+b.dataset.k].ok;award(ok);if(ok)beep(990,.12);show(ok,b)});
+  if($('#reveal'))$('#reveal').onclick=()=>show(null)}
+function runList(u,key,items,step){P={i:0,n:items.length,score:0,total:0};const go=()=>{if(P.i>=P.n)return finish(u,key);setProg();step(items[P.i],()=>{P.i++;go()})};go()}
+
+const EX={
+ cards(u){frame(u,'🃏 Picture flashcards');let i=0,list=u.vocab.slice();const draw=()=>{const [e,w,m]=list[i];
+   stage().innerHTML=`<div class="prog" style="text-align:center">${i+1} / ${list.length} · tap the card to turn it</div>
+     <div class="card3d" id="cd" role="button" tabindex="0" aria-label="Flip card"><div class="flip" id="fl"><div class="face f"><span class="pe">${e}</span><b>${esc(w)}</b></div><div class="face b"><b>${esc(w)}</b><span style="font-size:1.4em">${esc(m)}</span></div></div></div>
+     <div class="row center"><button class="btn ghost" id="pv">← Back</button><button class="btn ghost" id="sp">🔊 Say it</button><button class="btn ghost" id="sh">🔀 Shuffle</button><button class="btn" id="nv">Next →</button></div>`;
+   const flip=()=>$('#fl').classList.toggle('on');$('#cd').onclick=flip;$('#cd').onkeydown=ev=>{if(ev.key===' '||ev.key==='Enter'){ev.preventDefault();flip()}};
+   $('#sp').onclick=()=>say(w);$('#pv').onclick=()=>{i=(i-1+list.length)%list.length;draw()};$('#nv').onclick=()=>{i=(i+1)%list.length;draw();say(list[i][1])};$('#sh').onclick=()=>{list=shuffle(list);i=0;draw()}};draw()},
+ listen(u){frame(u,'👂 Listen and choose');const items=shuffle(u.vocab).slice(0,10);
+   runList(u,'listen',items,(t,done)=>{const others=shuffle(u.vocab.filter(v=>v!==t)).slice(0,3);const q={q:'Listen. Which picture is it?',o:[t[1],...others.map(v=>v[1])],e:`${t[0]} ${t[1]} = ${t[2]}`};
+     const opts=shuffle([t,...others]).map(v=>({t:MODE==='solo'?'':v[1],pe:v[0],ok:v===t,w:v[1]}));
+     stage().innerHTML=`<div class="row center"><button class="btn" id="play" style="font-size:1.4em">🔊 Listen</button></div><div class="q" style="text-align:center">${q.q}</div>
+       <div class="opts">${opts.map((o,k)=>`<button class="opt" data-k="${k}" aria-label="${esc(o.w)}"><span class="pe">${o.pe}</span>${esc(o.t)}</button>`).join('')}</div><div id="fb"></div>`;
+     $('#play').onclick=()=>say(t[1]);setTimeout(()=>say(t[1]),300);
+     stage().querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const ok=opts[+b.dataset.k].ok;award(ok);if(ok)beep(990,.12);
+       stage().querySelectorAll('.opt').forEach((x,j)=>{x.disabled=true;if(opts[j].ok)x.classList.add('right')});if(!ok)b.classList.add('wrong');
+       $('#fb').outerHTML=`<div class="fb ${ok?'ok':'no'}">${ok?'✔ Right!':'✘ Not quite.'} ${esc(q.e)}</div>`+nextBtn();$('#nx').onclick=done})})},
+ match(u){frame(u,'🧩 Match the words');const all=shuffle(u.vocab).slice(0,12);P={i:0,n:Math.ceil(all.length/6),score:0,total:0};
+   const round=()=>{if(P.i>=P.n)return finish(u,'match');setProg();const pairs=all.slice(P.i*6,P.i*6+6);let left=pairs.length,sel=null;
+     const L=shuffle(pairs.map((p,k)=>({t:p[0]+' '+p[1],k}))),R=shuffle(pairs.map((p,k)=>({t:p[2],k})));
+     stage().innerHTML=`<p class="mute" style="margin:0">Tap an English word, then its Turkish meaning.</p><div class="match"><div class="col">${L.map(x=>`<button class="mt" data-s="L" data-k="${x.k}">${esc(x.t)}</button>`).join('')}</div><div class="col">${R.map(x=>`<button class="mt" data-s="R" data-k="${x.k}">${esc(x.t)}</button>`).join('')}</div></div>`;
+     stage().querySelectorAll('.mt').forEach(b=>b.onclick=()=>{if(b.disabled)return;if(!sel||sel.dataset.s===b.dataset.s){if(sel)sel.classList.remove('sel');sel=b;b.classList.add('sel');return}
+       const a=sel;sel=null;const ok=a.dataset.k===b.dataset.k;award(ok);
+       if(ok){beep(990,.1);[a,b].forEach(x=>{x.classList.remove('sel');x.classList.add('done');x.disabled=true});say(pairs[+a.dataset.k][1]);if(--left===0){P.i++;setTimeout(round,600)}}
+       else{[a,b].forEach(x=>x.classList.add('wrong'));setTimeout(()=>[a,b].forEach(x=>x.classList.remove('wrong','sel')),500)}})};round()},
+ grammar(u){frame(u,'💡 Grammar box');let i=0;const draw=()=>{const g=u.grammar[i];
+   stage().innerHTML=`<div class="prog">${i+1} / ${u.grammar.length}</div><div class="slide"><h3>${esc(g.h)}</h3>${g.html}
+     <p style="margin:12px 0 4px"><b>Examples:</b></p>${g.ex.map((x,k)=>`<div class="ex-s"><button class="say" data-say="${k}">🔊</button><i>${esc(x)}</i></div>`).join('')}</div>
+     <div class="row center"><button class="btn ghost" id="pv" ${i?'':'disabled'}>← Back</button><button class="btn" id="nv">${i<u.grammar.length-1?'Next →':'Practise now ✅'}</button></div>`;
+   stage().querySelectorAll('[data-say]').forEach(b=>b.onclick=()=>say(g.ex[+b.dataset.say]));
+   $('#pv').onclick=()=>{i--;draw()};$('#nv').onclick=()=>{if(i<u.grammar.length-1){i++;draw()}else location.hash='u'+u.id+'-choose'}};draw()},
+ choose(u){frame(u,'✅ Choose the right answer');runList(u,'choose',shuffle(u.choose),(q,done)=>mcStep(q,done))},
+ gaps(u){frame(u,'📝 Fill in the gaps');runList(u,'gaps',shuffle(u.gaps),(g,done)=>{
+   const norm=s=>String(s||'').toLowerCase().replace(/[’‘`]/g,"'").replace(/[.!?]/g,'').replace(/\s+/g,' ').trim();
+   const sentence=esc(g.t).replace('___','<span class="gap">?</span>');
+   if(MODE==='solo'){stage().innerHTML=`<div class="q">${sentence}</div><form class="row" id="gf" autocomplete="off"><input class="gapin" id="gi" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Type your answer" aria-label="Your answer"><button class="btn">Check</button></form><div id="fb"></div>`;
+     $('#gi').focus();$('#gf').onsubmit=ev=>{ev.preventDefault();const v=$('#gi').value;if(!v.trim())return;const ok=g.a.some(a=>norm(a)===norm(v));award(ok);$('#gi').disabled=true;
+       $('#fb').outerHTML=`<div class="fb ${ok?'ok':'no'}">${ok?'✔ Right!':'✘ The answer is <b>'+esc(g.a[0])+'</b>.'} ${esc(g.e||'')}</div>`+nextBtn();$('#nx').onclick=done;$('#nx').focus()}}
+   else{stage().innerHTML=`<div class="q">${sentence}</div><p class="mute">Say the answer out loud, then reveal it.</p><div class="row center"><button class="btn" id="rv">👀 Reveal answer</button></div><div id="fb"></div>`;
+     $('#rv').onclick=()=>{$('#rv').parentElement.remove();stage().querySelector('.gap').textContent=g.a[0];
+       $('#fb').outerHTML=`<div class="fb info">${esc(g.e||'')}</div>`+(MODE==='teams'?`<div class="row center"><button class="btn good" id="yes">✔ ${esc(teams[turn].n)} got it</button><button class="btn bad" id="no">✘ Wrong</button></div>`:nextBtn());
+       if(MODE==='teams'){$('#yes').onclick=()=>{award(true);beep(990,.12);done()};$('#no').onclick=()=>{award(false);done()}}else $('#nx').onclick=done}}})},
+ order(u){frame(u,'🔀 Put the words in order');runList(u,'order',shuffle(u.order),(s,done)=>{
+   const words=s.replace(/[.?!]$/,'').split(' '),end=s.slice(-1),chips=shuffle(words.map((w,k)=>({w,k})));let built=[];
+   const draw=()=>{stage().innerHTML=`<p class="mute" style="margin:0">Tap the words to make a sentence.</p><div class="built" id="bt">${built.map((c,j)=>`<button class="chip" data-b="${j}">${esc(c.w)}</button>`).join('')||'<span class="mute">…</span>'}<b>${esc(end)}</b></div>
+     <div class="chips">${chips.map((c,j)=>`<button class="chip${built.includes(c)?' used':''}" data-c="${j}" ${built.includes(c)?'disabled':''}>${esc(c.w)}</button>`).join('')}</div>
+     <div class="row center"><button class="btn ghost" id="clr">↺ Start again</button><button class="btn" id="ck" ${built.length===words.length?'':'disabled'}>Check</button></div><div id="fb"></div>`;
+     stage().querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{built.push(chips[+b.dataset.c]);draw()});
+     stage().querySelectorAll('[data-b]').forEach(b=>b.onclick=()=>{built.splice(+b.dataset.b,1);draw()});
+     $('#clr').onclick=()=>{built=[];draw()};
+     $('#ck').onclick=()=>{const ok=built.map(c=>c.w).join(' ').toLowerCase()===words.join(' ').toLowerCase();award(ok);if(ok)beep(990,.12);say(s);
+       stage().querySelectorAll('button').forEach(b=>b.disabled=true);$('#fb').outerHTML=`<div class="fb ${ok?'ok':'no'}">${ok?'✔ Right!':'✘ The sentence is:'} <b>${esc(s)}</b></div>`+nextBtn();$('#nx').onclick=done}};draw()})},
+ read(u){const R=u.read;frame(u,'📖 Reading: '+esc(R.title));const text=`<div class="passage"><div class="row" style="justify-content:space-between"><b>${esc(R.title)}</b><button class="say" id="rd">🔊 Read aloud</button></div>${R.text.map(p=>`<p>${esc(p)}</p>`).join('')}</div>`;
+   runList(u,'read',R.qs,(q,done)=>{mcStep(q,done,{extra:text});$('#rd').onclick=()=>{if(window.speechSynthesis)speechSynthesis.cancel();say(R.text.join(' '))}})},
+ listening(u){const L=u.listen;frame(u,'🎧 Listening: '+esc(L.title));const who=[...new Set(L.lines.map(l=>l[0]))];
+   const play=()=>{if(!('speechSynthesis' in window))return toast('This device cannot read aloud.');speechSynthesis.cancel();L.lines.forEach(([s,t])=>say(t,who.indexOf(s)))};
+   let showScript=false;const top=()=>`<div class="row center"><button class="btn" id="pl">▶ Play the dialogue</button><button class="btn ghost" id="sc">${showScript?'🙈 Hide':'📄 Show'} the script</button></div>
+     ${showScript?`<div class="script">${L.lines.map(([s,t])=>`<div><b>${esc(s)}:</b> ${esc(t)}</div>`).join('')}</div>`:''}`;
+   const bindTop=()=>{$('#pl').onclick=play;$('#sc').onclick=()=>{showScript=!showScript;const q=stage().querySelector('.q');const keep=stage().innerHTML;stage().querySelector('#lt').innerHTML=top();bindTop()}};
+   runList(u,'listening',L.qs,(q,done)=>{mcStep(q,done,{extra:'<div id="lt"></div>'});$('#lt').innerHTML=top();bindTop()})},
+ speak(u){frame(u,'🎤 Speaking cards');let i=0;const draw=()=>{const s=u.speak[i];
+   stage().innerHTML=`<div class="prog">${i+1} / ${u.speak.length}</div><div class="q">${esc(s.p)}</div><div class="phr"><b>Useful phrases</b><ul>${s.ph.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
+     <div class="row center"><button class="btn ghost" id="t30">⏳ 30s to think</button><button class="btn ghost" id="t60">🎤 1 minute to speak</button><button class="btn ghost" id="sm">💬 Sample answer</button></div><div id="mdl"></div>
+     ${MODE==='teams'?`<div class="row center"><span class="turnlbl">Points for ${teams[turn].e} ${esc(teams[turn].n)}:</span><button class="btn good" data-aw="1">+1</button><button class="btn good" data-aw="2">+2</button><button class="btn good" data-aw="3">+3</button><button class="btn ghost" data-aw="0">No points</button></div>`:''}
+     <div class="row center"><button class="btn ghost" id="pv" ${i?'':'disabled'}>← Back</button><button class="btn" id="nv">${i<u.speak.length-1?'Next card →':'Finish'}</button></div>`;
+   $('#t30').onclick=()=>{window.scrollTo(0,0);startTimer(30)};$('#t60').onclick=()=>{window.scrollTo(0,0);startTimer(60)};
+   $('#sm').onclick=()=>{$('#mdl').innerHTML=`<div class="model">${esc(s.m)} <button class="say" id="sms">🔊</button></div>`;$('#sms').onclick=()=>say(s.m)};
+   stage().querySelectorAll('[data-aw]').forEach(b=>b.onclick=()=>{const n=+b.dataset.aw;if(n)teams[turn].s+=n;turn=(turn+1)%teams.length;saveTeams();renderScore();paintTurn();if(n)beep(990,.12);draw()});
+   $('#pv').onclick=()=>{i--;draw()};$('#nv').onclick=()=>{if(i<u.speak.length-1){i++;draw()}else{P={score:0,total:0};finish(u,'speak')}}};draw()},
+ write(u){frame(u,'✍️ Writing task');let i=0;const draw=()=>{const w=u.write[i],key=`w${u.id}-${i}`;
+   stage().innerHTML=`<div class="prog">${i+1} / ${u.write.length}</div><div class="q">${esc(w.p)}</div><div class="phr"><b>Tips</b><ul>${w.tips.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
+     ${MODE==='solo'?`<textarea class="wr" id="wr" placeholder="Write here…" aria-label="Your writing">${esc(store.get(key,''))}</textarea><p class="mute" id="wc" style="margin:0"></p>`:''}
+     <div class="row center"><button class="btn ghost" id="sm">💡 Show a model answer</button></div><div id="mdl"></div>
+     <div class="row center"><button class="btn ghost" id="pv" ${i?'':'disabled'}>← Back</button><button class="btn" id="nv">${i<u.write.length-1?'Next task →':'Finish'}</button></div>`;
+   const wr=$('#wr');if(wr){const cnt=()=>{const n=wr.value.trim()?wr.value.trim().split(/\s+/).length:0;$('#wc').textContent=`${n} words`};wr.oninput=()=>{store.set(key,wr.value);cnt()};cnt()}
+   $('#sm').onclick=()=>{$('#mdl').innerHTML=`<div class="model">${esc(w.m)} <button class="say" id="sms">🔊</button></div>`;$('#sms').onclick=()=>say(w.m)};
+   $('#pv').onclick=()=>{i--;draw()};$('#nv').onclick=()=>{if(i<u.write.length-1){i++;draw()}else{P={score:0,total:0};finish(u,'write')}}};draw()}
+};
+
+/* ================= ROUTER ================= */
+function route(){
+  if('speechSynthesis' in window)speechSynthesis.cancel();
+  const h=location.hash.slice(1),m=h.match(/^u(\d+)(?:-(\w+))?$/);document.documentElement.style.setProperty('--c','#2f7de1');
+  const u=m&&unitOf(+m[1]);
+  if(!u||u.soon){home();return}
+  document.documentElement.style.setProperty('--c',u.color);
+  if(m[2]&&EX[m[2]])EX[m[2]](u);else unitPage(u);
+  window.scrollTo(0,0)}
+addEventListener('hashchange',route);
+$('#sheet').addEventListener('click',e=>{if(e.target.id==='sheet'){$('#sheet').hidden=true;renderScore()}});
+setMode(MODE);
+})();
+</script>
+</body>
+</html>
