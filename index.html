@@ -56,6 +56,10 @@ h1{font-family:var(--display);font-weight:900;font-size:clamp(34px,9vw,64px);lin
       <canvas id="n1" width="160" height="90" aria-hidden="true"></canvas>
       <div class="info"><h2>Star Siege</h2><p>NEW! A huge space shooter: 8 sectors, 8 giant bosses, 8 ships to buy and paint, upgrades, Endless and a Daily Run.</p><span class="play">PLAY</span></div>
     </a>
+    <a class="game" href="turbotrails.html" style="--acc:#ff8a3d">
+      <canvas id="n2" width="160" height="90" aria-hidden="true"></canvas>
+      <div class="info"><h2>Turbo Trails</h2><p>NEW! Top-down racing with drifts, jumps and nitro. 15 tracks, 5 cups, 12 cars to buy, paint and tune, Time Trial ghosts and a Daily Challenge.</p><span class="play">PLAY</span></div>
+    </a>
   </div>
 
   <div class="games">
@@ -244,6 +248,9 @@ function voidP(t){const x=c8,g=x.createLinearGradient(0,0,0,90);g.addColorStop(0
   const f=still?0:Math.max(0,((t%4000)-2400)/1600);x.globalAlpha=1-f;x.fillStyle='#ff7a59';x.fillRect(132+f*12,38+f*f*48,8,8);x.globalAlpha=1}
 // previews for the new mega games
 const NP={};
+NP.n2=(x,t)=>{x.fillStyle='#4a9a3a';x.fillRect(0,0,160,90);x.lineJoin='round';x.lineWidth=26;x.strokeStyle='#ff3d3d';x.beginPath();x.ellipse(80,45,58,28,0,0,7);x.stroke();x.lineWidth=22;x.strokeStyle='#555963';x.stroke();
+  x.setLineDash([6,6]);x.lineWidth=1;x.strokeStyle='#fff8';x.stroke();x.setLineDash([]);const T=still?0:t/1000;
+  [['#ff8a3d',0],['#3ef0ff',.5],['#ffd23f',1.1]].forEach(([c,o])=>{const a=T*1.3+o,cx=80+Math.cos(a)*58,cy=45+Math.sin(a)*28;x.save();x.translate(cx,cy);x.rotate(a+Math.PI/2+.2);x.fillStyle=c;x.fillRect(-7,-4,14,8);x.fillStyle='#bfe8ff';x.fillRect(1,-3,3,6);x.restore()})};
 function megaP(t){for(const id in NP){const c=document.getElementById(id);if(c)NP[id](c.getContext('2d'),t)}}
 NP.n1=(x,t)=>{x.fillStyle='#050a1e';x.fillRect(0,0,160,90);x.fillStyle='#fff';for(let i=0;i<30;i++){const y=((i*37+(still?0:t/20)*(1+i%3))%90);x.fillRect((i*53)%160,y,1+i%2,1+i%2)}
   const sx=80+Math.sin(still?0:t/600)*40;x.fillStyle='#3ef0ff';for(let i=0;i<5;i++){const y=(70-((still?0:t/4)+i*18)%70);x.fillRect(sx-3,y,2,5);x.fillRect(sx+2,y,2,5)}
