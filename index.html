@@ -72,6 +72,10 @@ h1{font-family:var(--display);font-weight:900;font-size:clamp(34px,9vw,64px);lin
       <canvas id="n5" width="160" height="90" aria-hidden="true"></canvas>
       <div class="info"><h2>Mini Golf World</h2><p>NEW! 54 crazy holes in 6 courses: windmills, pirates, black holes, ghosts and lava jumps. Play with up to 4 friends or Robo-Caddie, dress your golfer and build your own holes.</p><span class="play">PLAY</span></div>
     </a>
+    <a class="game" href="goalrush.html" style="--acc:#ffd23f">
+      <canvas id="n6" width="160" height="90" aria-hidden="true"></canvas>
+      <div class="info"><h2>Goal Rush</h2><p>NEW! Arcade 4-a-side football: design your kit, your avatar is the star player. Cup, League, 2 players, penalties, skill games, training and goal replays.</p><span class="play">PLAY</span></div>
+    </a>
   </div>
 
   <div class="games">
@@ -276,6 +280,8 @@ NP.n5=(x,t)=>{x.fillStyle='#3a7a3a';x.fillRect(0,0,160,90);x.fillStyle='#4fb04a'
   x.fillStyle='#062014';x.beginPath();x.arc(126,45,5,0,7);x.fill();x.strokeStyle='#ddd';x.lineWidth=1.5;x.beginPath();x.moveTo(126,45);x.lineTo(126,22);x.stroke();x.fillStyle='#ff3d3d';x.beginPath();x.moveTo(126,22);x.lineTo(138,26);x.lineTo(126,30);x.fill();
   const a=still?0:t/600;x.save();x.translate(80,45);x.rotate(a);x.fillStyle='#f4f0e8';for(let k=0;k<4;k++){x.rotate(Math.PI/2);x.fillRect(0,-3,20,6)}x.restore();x.fillStyle='#8a5a3a';x.beginPath();x.arc(80,45,4,0,7);x.fill();
   const k=still?.3:((t%3000)/3000);x.fillStyle='#fff';x.beginPath();x.arc(30+k*96,45+Math.sin(k*6)*14,3.5,0,7);x.fill()};
+NP.n6=(x,t)=>{for(let i=0;i<8;i++){x.fillStyle=i%2?'#3a9a3a':'#348c34';x.fillRect(i*20,0,20,90)}x.strokeStyle='#fff';x.lineWidth=1.5;x.strokeRect(4,4,152,82);x.beginPath();x.moveTo(80,4);x.lineTo(80,86);x.stroke();x.beginPath();x.arc(80,45,14,0,7);x.stroke();x.strokeRect(146,32,10,26);
+  const T=still?0:t/1000,bx=40+((T*40)%100),by=45+Math.sin(T*3)*14;[[bx-8,by,'#3ef0ff'],[bx+20,by-20,'#ffd23f'],[120,40+Math.sin(T*2)*10,'#ffd23f'],[60,70,'#3ef0ff']].forEach(([a,b,c])=>{x.fillStyle=c;x.beginPath();x.arc(a,b,5,0,7);x.fill()});x.fillStyle='#fff';x.beginPath();x.arc(bx,by,3,0,7);x.fill()};
 function megaP(t){for(const id in NP){const c=document.getElementById(id);if(c)NP[id](c.getContext('2d'),t)}}
 NP.n1=(x,t)=>{x.fillStyle='#050a1e';x.fillRect(0,0,160,90);x.fillStyle='#fff';for(let i=0;i<30;i++){const y=((i*37+(still?0:t/20)*(1+i%3))%90);x.fillRect((i*53)%160,y,1+i%2,1+i%2)}
   const sx=80+Math.sin(still?0:t/600)*40;x.fillStyle='#3ef0ff';for(let i=0;i<5;i++){const y=(70-((still?0:t/4)+i*18)%70);x.fillRect(sx-3,y,2,5);x.fillRect(sx+2,y,2,5)}
