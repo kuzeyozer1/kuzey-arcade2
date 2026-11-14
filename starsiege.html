@@ -47,6 +47,8 @@ h2{font-family:var(--display);font-size:22px;margin:0;color:var(--gold);letter-s
 .ships{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
 .ship{border:2px solid var(--line);border-radius:14px;background:var(--panel);color:var(--ink);padding:8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;font:600 13px var(--body)}
 .ship.on{border-color:var(--gold);box-shadow:0 0 0 2px #ffd23f55}
+.shipwrap{display:flex;flex-direction:column;gap:4px}.shipwrap .ship{flex:1}
+.sell{border:1px solid var(--line);border-radius:10px;background:#3a2430;color:#ffb3c0;font:900 11px var(--display);padding:7px 4px;cursor:pointer}.sell:hover{border-color:#ff8a9a}
 .ship canvas{width:110px;height:110px}
 .ship b{font:900 13px var(--display)}
 .ship .bars{width:100%;display:grid;grid-template-columns:auto 1fr;gap:2px 6px;font-size:11px;color:var(--mute);align-items:center}
@@ -966,8 +968,14 @@ function drawSectors(){$('secList').innerHTML=SECTORS.map((s,i)=>{const open=i<=
 let briefS=0;function brief(i){briefS=i;const s=SECTORS[i];$('bTitle').textContent=`SECTOR ${i+1} · ${s.name.toUpperCase()}`;$('bText').innerHTML=BRIEF[i];$('bText').style.setProperty('--c',s.c);$('bBoss').textContent=`Boss: ${BOSSES[s.boss].name} · Target score ${s.target.toLocaleString()}`;SFX.click();show('sBrief')}
 $('bGo').onclick=()=>{G=null;newRun('campaign',briefS)};
 function statBars(s){const row=(n,v)=>`<span>${n}</span><i style="width:${Math.round(v*100)}%"></i>`;return`<div class="bars">${row('Speed',s.spd/380)}${row('Armour',s.hp/5)}${row('Power',s.dmg*s.rate/1.4)}</div>`}
+// selling gives back half of what the ship cost; your first ship (Comet) can't be sold
+const sellPrice=s=>Math.floor(s.cost/2);
+function sellShip(s){if(!s||s.id==='comet'||!D.owned[s.id])return;
+  UI.modal(`<h2>💰 Sell ${s.name}?</h2><p style="margin:0">You get <b>🪙 ${sellPrice(s)}</b> back (half of what it cost). You can buy it again later for 🪙 ${s.cost}.</p><div style="display:flex;gap:8px;justify-content:flex-end"><button class="kbtn2 alt" data-close>KEEP IT</button><button class="kbtn2" id="sellYes">SELL</button></div>`,(m,close)=>{
+    m.querySelector('#sellYes').onclick=()=>{delete D.owned[s.id];D.coins+=sellPrice(s);if(PROF.vehicle(GAME,'comet')===s.id)PROF.setVehicle(GAME,'comet');save();SFX.coin();close();drawHangar();show('sHangar')}})}
 function drawHangar(){const cur=curShip();$('shipList').innerHTML=SHIPS.map(s=>{const own=!!D.owned[s.id],locked=s.needs&&!ACH.has(GAME,s.needs);
-  return`<button class="ship ${cur.id===s.id?'on':''}" data-ship="${s.id}" ${!own&&(locked||D.coins<s.cost)?'disabled':''}><canvas width="220" height="220"></canvas><b>${s.name}</b><small class="mute">${s.desc}</small>${statBars(s)}<span class="price">${own?(cur.id===s.id?'✔ FLYING':'TAP TO FLY'):locked?'🔒 Finish the campaign':'🪙 '+s.cost}</span></button>`}).join('');
+  return`<div class="shipwrap"><button class="ship ${cur.id===s.id?'on':''}" data-ship="${s.id}" ${!own&&(locked||D.coins<s.cost)?'disabled':''}><canvas width="220" height="220"></canvas><b>${s.name}</b><small class="mute">${s.desc}</small>${statBars(s)}<span class="price">${own?(cur.id===s.id?'✔ FLYING':'TAP TO FLY'):locked?'🔒 Finish the campaign':'🪙 '+s.cost}</span></button>${own&&s.id!=='comet'?`<button class="sell" data-sell="${s.id}">💰 SELL for 🪙${sellPrice(s)}</button>`:''}</div>`}).join('');
+  document.querySelectorAll('[data-sell]').forEach(b=>b.onclick=()=>sellShip(SHIPS.find(x=>x.id===b.dataset.sell)));
   document.querySelectorAll('.ship').forEach(b=>{const s=SHIPS.find(x=>x.id===b.dataset.ship),c=b.querySelector('canvas').getContext('2d');c.scale(2,2);c.translate(55,58);c.scale(1.6,1.6);s.draw(c,paint()[0],paint()[1],0);
     b.onclick=()=>{if(!D.owned[s.id]){if(D.coins<s.cost)return;D.coins-=s.cost;D.owned[s.id]=1;SFX.coin();ACH.unlock(GAME,'ship');if(SHIPS.every(x=>D.owned[x.id]))ACH.unlock(GAME,'allships');save()}PROF.setVehicle(GAME,s.id);SFX.click();drawHangar();show('sHangar')}});
   $('paintList').innerHTML=PAINTS.map((p,i)=>{const open=D.cleared>=PAINT_NEED[i];return`<button title="${p[0]}${open?'':' — clear '+PAINT_NEED[i]+' sectors'}" class="${D.paint===i?'on':''}" data-p="${i}" style="background:linear-gradient(135deg,${p[1]} 50%,${p[2]} 50%);${open?'':'opacity:.25'}" ${open?'':'disabled'}></button>`}).join('');

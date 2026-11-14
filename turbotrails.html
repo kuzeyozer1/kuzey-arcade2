@@ -552,7 +552,13 @@ const keys=U.keys();
 const pad=KIT.pad.create({joystick:true,buttons:[{id:'brake',label:'🛑',name:'Brake'},{id:'hand',label:'💨',name:'Drift'},{id:'nitro',label:'🔥',name:'Nitro'}]});pad.show(false);
 addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(!G)return;if(k==='p'||k==='escape'){togglePause()}if(k==='c'){D.cam=(D.cam+1)%2;save();refreshOpts()}if(k==='h'&&G.me){honk(G.me.def.id);G.hornT=.3}});
 function myInput(){const k=keys;let steer=(k.arrowright||k.d?1:0)-(k.arrowleft||k.a?1:0),gas=k.arrowup||k.w?1:0,brake=k.arrowdown||k.s?1:0,hand=!!k[' '],nitro=!!(k.shift||k.n);
-  if(pad.on){if(pad.x)steer=pad.x;if(D.auto&&!pad.held('brake'))gas=1;if(pad.y<-.5)gas=1;if(pad.y>.6||pad.held('brake')){brake=1;gas=0}if(pad.held('hand'))hand=true;if(pad.held('nitro'))nitro=true}
+  if(pad.on){const mag=Math.hypot(pad.x,pad.y),me=G&&G.me;
+    if(mag>.25&&me){// the car drives the way you push the stick on screen: right goes right, down goes down
+      let want=Math.atan2(pad.y,pad.x);if(D.cam)want+=G.camA+Math.PI/2;
+      let diff=want-me.a;while(diff>Math.PI)diff-=2*Math.PI;while(diff<-Math.PI)diff+=2*Math.PI;
+      steer=U.clamp(diff*2.2,-1,1);gas=1;if(Math.abs(diff)>2.5&&Math.hypot(me.vx,me.vy)>120){gas=0;brake=1}}
+    else if(D.auto&&!pad.held('brake'))gas=1;
+    if(pad.held('brake')){brake=1;gas=0}if(pad.held('hand'))hand=true;if(pad.held('nitro'))nitro=true}
   // rotating camera: on screen "left" really means left
   return{gas,brake,steer:U.clamp(steer,-1,1),hand,nitro}}
 
