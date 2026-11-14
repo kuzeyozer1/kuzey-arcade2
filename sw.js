@@ -1,5 +1,5 @@
 // Caches the arcade so it works offline. Bump VERSION when files change.
-const VERSION = 'arcade-v35';
+const VERSION = 'arcade-v36';
 const FILES = ['./', 'index.html', 'snake.html', 'temples.html', 'stack.html', 'dodger.html', 'words.html', 'bandit.html', 'craft.html', 'voidbridge.html', 'kit.js', 'starsiege.html', 'turbotrails.html', 'bastion.html', 'laser.html', 'minigolf.html', 'goalrush.html', 'pixelpeaks.html', 'crypt.html', 'farm.html', 'gearworks.html', 'space.html', 'lab.css', 'pixel.html', 'beats.html', 'piano.html', 'elements.html', 'codes.html', 'timer.html', 'convert.html', 'weather.html', 'fractal.html', 'illusions.html', 'kaleido.html', 'typing.html', 'cards.html', 'mathgym.html', 'planner.html', 'picker.html', 'flags.html', 'voice.html', 'qr.html', 'flipbook.html', 'sosyal.html', 'elementals.html', 'snake-arena.html', 'app-forge.html', 'minecraft/', 'minecraft/index.html', 'manifest.webmanifest',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
 self.addEventListener('install', e => {
