@@ -67,6 +67,9 @@ li.dead{opacity:.45}
   .board{flex:none}
   aside{width:auto}
 }
+.botsel{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center;color:var(--mute,#9a94c9);font-size:13px}
+.botsel button{background:#151036;border:1px solid #2c2468;color:#ecebff;border-radius:8px;padding:4px 10px;cursor:pointer;font:600 13px 'Chakra Petch',sans-serif}
+.botsel button.on{border-color:#ffd23f;color:#ffd23f}
 </style>
 
 <header>
@@ -81,6 +84,8 @@ li.dead{opacity:.45}
       <h2>SNAKE ARENA LIVE</h2>
       <p>Everyone who opens this page plays in the same arena. Eat to grow. If your head hits another snake, you're out, and they get the kill. The edges wrap around.</p>
       <button class="play" id="go">JOIN THE ARENA</button>
+      <div class="botsel">🤖 Robot snakes when nobody else is here: <span id="botBtns"></span></div>
+      <div class="botsel"><button id="aAch">🏆 Awards <small id="achInfo"></small></button><button id="aMe">👤 Avatar</button></div>
     </div>
   </div>
   <aside>
@@ -104,6 +109,7 @@ li.dead{opacity:.45}
   </aside>
 </main>
 
+<script src="kit.js"></script>
 <script>
 (()=>{
 const N=36,TICK=.11,MAXSEND=180,FOODS=7;
@@ -279,6 +285,48 @@ let sw=null;
 cv.addEventListener('pointerdown',e=>{sw={x:e.clientX,y:e.clientY}});
 cv.addEventListener('pointermove',e=>{if(!sw)return;const dx=e.clientX-sw.x,dy=e.clientY-sw.y;if(Math.hypot(dx,dy)>22){Math.abs(dx)>Math.abs(dy)?turn(Math.sign(dx),0):turn(0,Math.sign(dy));sw={x:e.clientX,y:e.clientY}}});
 addEventListener('pointerup',()=>sw=null);
+
+/* ================= ARENA2: robot snakes for solo play, avatar head, awards ================= */
+const {sfx:SFX,util:U,ach:ACH,profile:PROF,ui:UI}=KIT;const GAME='snake-arena';
+const AD=Object.assign({bots:4,kills:0,best:0,games:0},U.load('arena:v2',{}));const asv=()=>U.save('arena:v2',AD);
+ACH.define(GAME,[{id:'join',icon:'🐍',name:'Into the Arena',desc:'Join the arena'},{id:'l20',icon:'📏',name:'Growing Up',desc:'Reach length 20'},{id:'l50',icon:'🐉',name:'Arena Giant',desc:'Reach length 50'},
+ {id:'kill',icon:'⚔️',name:'First Takedown',desc:'Make a snake crash into you'},{id:'k10',icon:'💀',name:'Hunter',desc:'10 takedowns in total'},{id:'gold',icon:'🌟',name:'Shiny',desc:'Eat a golden food'},
+ {id:'top',icon:'👑',name:'King of the Arena',desc:'Be the longest snake with 5 robots around'},{id:'friend',icon:'🤝',name:'Not Alone',desc:'Play with a real friend in the arena'}]);
+const BOTN=['Zippy','Noodle','Sly','Rex','Pixel','Viper','Bolt','Mamba'];let bots=[],botAcc=0;
+function newBot(i){const x=Math.random()*N|0,y=Math.random()*N|0,dirs=[[1,0],[-1,0],[0,1],[0,-1]],[dx,dy]=dirs[Math.random()*4|0];
+  return{i,n:'🤖 '+BOTN[i%BOTN.length],c:PAL[(i+3)%PAL.length],b:[{x,y},{x:(x-dx+N)%N,y:(y-dy+N)%N},{x:(x-2*dx+N)%N,y:(y-2*dy+N)%N}],dir:{x:dx,y:dy},grow:0,alive:true,inv:true,invT:1.5,kills:0,idle:false,bot:true,respawn:0,smart:.6+Math.random()*.35}}
+const livePeers=()=>others.filter(o=>!o.bot&&!o.idle&&o.b.length).length;
+function syncBots(){const want=livePeers()?0:(started?AD.bots:0);while(bots.length<want)bots.push(newBot(bots.length));if(bots.length>want)bots.length=want}
+const _readPeers=readPeers;readPeers=function(){_readPeers();if(livePeers())ACH.unlock(GAME,'friend');syncBots();others=others.concat(bots)};
+function occupied(){const s=new Set();if(me&&me.alive)for(const p of me.body)s.add(p.x+','+p.y);for(const o of others)if(o.alive)for(const p of o.b)s.add(p.x+','+p.y);return s}
+function wrapD(a,b){let d=b-a;if(d>N/2)d-=N;if(d<-N/2)d+=N;return d}
+function botThink(bt,occ,food){const h=bt.b[0];const opts=[[1,0],[-1,0],[0,1],[0,-1]].filter(([dx,dy])=>!(dx===-bt.dir.x&&dy===-bt.dir.y));
+  let target=null,bd=1e9;for(const f of food){const d=Math.abs(wrapD(h.x,f.x))+Math.abs(wrapD(h.y,f.y))-(f.gold?4:0);if(d<bd){bd=d;target=f}}
+  let best=null,bs=-1e9;for(const[dx,dy]of opts){const nx=(h.x+dx+N)%N,ny=(h.y+dy+N)%N;let sc=0;if(occ.has(nx+','+ny))sc-=1000;
+    // look one more step ahead for a dead end
+    let free=0;for(const[ex,ey]of[[1,0],[-1,0],[0,1],[0,-1]])if(!occ.has(((nx+ex+N)%N)+','+((ny+ey+N)%N)))free++;sc+=free*6;
+    if(target&&Math.random()<bt.smart)sc-=(Math.abs(wrapD(nx,target.x))+Math.abs(wrapD(ny,target.y)))*3;else sc+=Math.random()*10;
+    if(dx===bt.dir.x&&dy===bt.dir.y)sc+=2;if(sc>bs){bs=sc;best=[dx,dy]}}
+  if(best)bt.dir={x:best[0],y:best[1]}}
+function botStep(){const occ=occupied(),food=activeFood();
+  for(const bt of bots){if(!bt.alive)continue;botThink(bt,occ,food);const h=bt.b[0],nx=(h.x+bt.dir.x+N)%N,ny=(h.y+bt.dir.y+N)%N;
+    if(!bt.inv&&occ.has(nx+','+ny)){const hitMe=me&&me.alive&&me.inv<=0&&me.body.some(p=>p.x===nx&&p.y===ny);const tail=bt.b[bt.b.length-1];
+      if(!(tail.x===nx&&tail.y===ny&&bt.grow===0)){killBot(bt,hitMe);continue}}
+    bt.b.unshift({x:nx,y:ny});occ.add(nx+','+ny);if(bt.grow>0)bt.grow--;else{const t=bt.b.pop();occ.delete(t.x+','+t.y)}
+    for(const f of food)if(f.x===nx&&f.y===ny&&!eaten.has(f.id)){markEaten(f.id);bt.grow+=f.gold?5:1}}}
+function killBot(bt,byMe){bt.alive=false;bt.respawn=3;for(const s of bt.b.slice(0,8))burst(s.x,s.y,bt.c,5,4);
+  if(byMe){kills++;AD.kills++;asv();if(me){me.grow+=3;pop(me.body[0].x,me.body[0].y,'KILL!','#ff5d5d')}SFX.hit();ACH.unlock(GAME,'kill');if(AD.kills>=10)ACH.unlock(GAME,'k10')}}
+const _update=update;update=function(dt){_update(dt);if(!started)return;
+  for(const bt of bots){if(bt.inv){bt.invT-=dt;if(bt.invT<=0)bt.inv=false}if(!bt.alive){bt.respawn-=dt;if(bt.respawn<=0)Object.assign(bt,newBot(bt.i))}}
+  botAcc+=dt;while(botAcc>=TICK*1.15){botAcc-=TICK*1.15;botStep()}
+  if(me&&me.alive){const L=me.body.length;if(L>=20)ACH.unlock(GAME,'l20');if(L>=50)ACH.unlock(GAME,'l50');if(AD.bots>=5&&bots.length>=5&&bots.every(b=>!b.alive||b.b.length<L)&&L>=15)ACH.unlock(GAME,'top');if(me.score>AD.best){AD.best=me.score}}};
+const _step=step;step=function(){const s=me?me.score:0;_step();if(me&&me.score-s>=5)ACH.unlock(GAME,'gold')};
+const _render=render;render=function(){_render();if(me&&me.alive&&started){const h=me.body[0];ctx.font=`${cell*.85}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(PROF.avatar,(h.x+.5)*cell,(h.y+.5)*cell+1)}};
+function drawBotBtns(){$('botBtns').innerHTML=[0,2,4,6].map(n=>`<button data-n="${n}" class="${AD.bots===n?'on':''}">${n}</button>`).join('');$('botBtns').querySelectorAll('button').forEach(b=>b.onclick=()=>{AD.bots=+b.dataset.n;asv();drawBotBtns()});const c=ACH.count(GAME);$('achInfo').textContent=c.got+'/'+c.total}
+drawBotBtns();$('aAch').onclick=()=>UI.achievements(GAME,'Arena awards');$('aMe').onclick=()=>UI.profileEditor(()=>{});
+const _go=$('go').onclick;$('go').onclick=()=>{_go();ACH.unlock(GAME,'join');AD.games++;asv();syncBots()};
+if(!localStorage.getItem('arenaNick')&&PROF.name&&PROF.name!=='Player'){nick=PROF.name;$('nick').value=nick}
+if(new URLSearchParams(location.search).has('test'))window.__ar={get me(){return me},get bots(){return bots},get others(){return others}};
 
 fit();renderList();requestAnimationFrame(loop);
 })();
