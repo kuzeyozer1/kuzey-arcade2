@@ -137,6 +137,7 @@ input,select{font:inherit;background:#0e0b26;color:var(--ink);border:1px solid v
   <button class="btn" id="respawn">RESPAWN</button>
 </div>
 
+<script src="kit.js"></script>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 const $=id=>document.getElementById(id);
@@ -651,6 +652,28 @@ function startWorld(meta,isNew){
 function quit(){playing=false;$('hud').hidden=true;$('panel').hidden=true;chunks.forEach(c=>unloadChunk(c));chunks.clear();mobs.slice().forEach(killMob);W=null;$('title').hidden=false;renderTitle()}
 addEventListener('visibilitychange',()=>{if(document.hidden&&playing===true)saveWorld()});
 addEventListener('pagehide',()=>{if(playing===true)saveWorld()});
+/* ================= arcade awards for Kuzey Craft ================= */
+const {ach:ACH,ui:KUI,util:KU,profile:PROF}=window.KIT;const AGAME='craft';
+const CX=Object.assign({ever:{},placed:0,broken:0},KU.load('craft:awards',{}));const csv=()=>KU.save('craft:awards',CX);
+ACH.define(AGAME,[
+ {id:'log',icon:'🪵',name:'Getting Wood',desc:'Collect a log'},{id:'planks',icon:'🟫',name:'Carpenter',desc:'Make wooden planks'},{id:'stonepick',icon:'⛏️',name:'Stone Age',desc:'Get a stone pickaxe'},
+ {id:'iron',icon:'🔩',name:'Iron Age',desc:'Get an iron ingot'},{id:'gold',icon:'🥇',name:'Shiny!',desc:'Get a gold ingot'},{id:'diamond',icon:'💎',name:'Diamonds!',desc:'Find a diamond'},
+ {id:'dpick',icon:'💠',name:'Diamond Miner',desc:'Get a diamond pickaxe'},{id:'dset',icon:'🧰',name:'Full Kit',desc:'Own every diamond tool'},
+ {id:'shard',icon:'🔮',name:'Elemental',desc:'Find an elemental shard'},{id:'shards',icon:'🌈',name:'All Five Elements',desc:'Collect all five shards'},{id:'blade',icon:'🗡️',name:'Elemental Blade',desc:'Craft the Elemental Blade'},
+ {id:'bread',icon:'🍞',name:'Baker',desc:'Make bread'},{id:'meat',icon:'🍖',name:'Barbecue',desc:'Cook meat'},
+ {id:'deep',icon:'🕳️',name:'Deep Down',desc:'Dig below level 8'},{id:'sky',icon:'☁️',name:'Sky High',desc:'Stand above level 58'},
+ {id:'b200',icon:'🏗️',name:'Builder',desc:'Place 200 blocks'},{id:'m500',icon:'⛰️',name:'Excavator',desc:'Break 500 blocks'},{id:'fly',icon:'🕊️',name:'Free Bird',desc:'Fly in creative mode'},
+ {id:'day5',icon:'🌙',name:'Survivor',desc:'Reach day 5 in survival'}]);
+const _setB=setB;setB=function(x,y,z,id){const before=getB(x,y,z);_setB(x,y,z,id);if(!W||playing!==true)return;if(id===AIR&&before!==AIR&&before!==WATER)CX.broken++;else if(id!==AIR&&id!==WATER&&before===AIR)CX.placed++};
+function awardTick(){if(!W||playing!==true)return;const inv=W.data.inv;for(const s of inv)if(s)CX.ever[s.id]=1;const has=id=>CX.ever[id];const U=(a,c)=>{if(c)ACH.unlock(AGAME,a)};
+  U('log',has(LOG));U('planks',has(PLANKS));U('stonepick',has(toolId('pick',2)));U('iron',has(102));U('gold',has(103));U('diamond',has(104));U('dpick',has(toolId('pick',4)));
+  U('dset',TOOLS.every(t=>has(toolId(t,4))));U('shard',[112,113,114,115,116].some(has));U('shards',[112,113,114,115,116].every(has));U('blade',has(140));U('bread',has(107));U('meat',has(111));
+  U('deep',P.y<8);U('sky',P.y>58);U('b200',CX.placed>=200);U('m500',CX.broken>=500);U('fly',P.fly);U('day5',W.meta.mode!=='creative'&&W.data.day>=5);csv()}
+setInterval(awardTick,1500);
+$('newWorld').insertAdjacentHTML('afterend','<button class="btn" id="awardsBtn" style="background:#ffd23f">🏆 AWARDS</button>');
+$('awardsBtn').onclick=()=>KUI.achievements(AGAME,'Kuzey Craft awards');
+const _upd=()=>{const c=ACH.count(AGAME);$('awardsBtn').textContent=`🏆 AWARDS ${c.got}/${c.total}`};_upd();setInterval(_upd,3000);
+const _openPause=openPause;openPause=function(){_openPause();const card=document.querySelector('#panel .card');if(card){const b=document.createElement('button');b.className='btn';b.textContent='🏆 AWARDS';b.onclick=()=>KUI.achievements(AGAME,'Kuzey Craft awards');card.appendChild(b)}};
 renderTitle();requestAnimationFrame(frame);
 if(location.search.includes('test'))window.__k={P,get W(){return W},chunks,mobs,getB,setB,spawnMob,I,B,addItem,place:()=>place(),setMine:v=>mineHeld=v,setPlace:()=>placeTap=true,openCraft,openInv,closePanel,ray:()=>ray(5)};
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
