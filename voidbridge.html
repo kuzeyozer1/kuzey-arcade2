@@ -1,0 +1,1813 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0c0e26">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Kuzey Arcade">
+<title>Void Bridge</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;700&family=Chakra+Petch:wght@500;600;700&display=swap">
+<style>
+/* Layout: a one-screen arcade cabinet. Status strip on top, the sky arena in the middle,
+   inventory and touch controls underneath. One deliberate dusk-sky look in both themes. */
+:root {
+	--sky-hi: #2a2f6b;
+	--sky-lo: #0c0e26;
+	--ink: #f4efe1;
+	--ink-dim: #b9b6d3;
+	--gold: #f4b942;
+	--danger: #ff6464;
+	--panel: #161941;
+	--panel-edge: #343a86;
+	--display: "Pixelify Sans", "Trebuchet MS", system-ui, sans-serif;
+	--ui: "Chakra Petch", "Segoe UI", system-ui, sans-serif;
+	color-scheme: dark;
+	padding-top: env(safe-area-inset-top, 0px);
+	padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+html { box-sizing: border-box; }
+html, body { height: 100%; }
+[hidden] { display: none !important; }
+body {
+	margin: 0;
+	font-size: 14px;
+	background: var(--sky-lo);
+	color: var(--ink);
+	font-family: var(--ui);
+	overflow: hidden;
+	-webkit-user-select: none;
+	user-select: none;
+}
+.app {
+	height: 100%;
+	display: grid;
+	grid-template-rows: auto minmax(0, 1fr) auto;
+	gap: 8px;
+	padding-left: max(16px, env(safe-area-inset-left, 0px));
+	padding-right: max(16px, env(safe-area-inset-right, 0px));
+	padding-block: 10px;
+	box-sizing: border-box;
+	max-width: 1100px;
+	margin: 0 auto;
+}
+.status { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-variant-numeric: tabular-nums; }
+.brand { font-family: var(--display); font-weight: 700; font-size: 1.35rem; letter-spacing: 0.02em; color: var(--gold); }
+.stats { display: flex; gap: 14px; align-items: center; font-weight: 600; flex-wrap: wrap; }
+.stat { display: flex; align-items: center; gap: 6px; }
+.stat small { color: var(--ink-dim); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; }
+.hearts { display: flex; gap: 2px; }
+.heart { width: 14px; height: 13px; display: inline-block; background: var(--danger); clip-path: polygon(50% 100%, 0 38%, 12% 6%, 34% 0, 50% 14%, 66% 0, 88% 6%, 100% 38%); }
+.heart.half { background: linear-gradient(90deg, var(--danger) 50%, #4a2a4a 50%); }
+.heart.empty { background: #4a2a4a; }
+.sound { border: 1px solid var(--panel-edge); background: var(--panel); color: var(--ink); border-radius: 8px; padding: 3px 9px; font: 600 0.8rem var(--ui); cursor: pointer; }
+.sound:focus-visible { outline: 2px solid var(--gold); }
+.stage { position: relative; min-height: 0; border-radius: 14px; overflow: hidden; border: 2px solid var(--panel-edge); background: var(--sky-lo); }
+canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+.collapse-banner {
+	position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+	font-family: var(--display); font-size: 1rem; color: var(--danger);
+	background: rgba(12, 14, 38, 0.82); padding: 4px 12px; border-radius: 8px; white-space: nowrap;
+}
+.feed { position: absolute; left: 10px; bottom: 10px; display: flex; flex-direction: column; gap: 3px; font-size: 0.8rem; max-width: 70%; pointer-events: none; }
+.feed div { background: rgba(12, 14, 38, 0.7); padding: 2px 8px; border-radius: 6px; }
+.toast {
+	position: absolute; left: 50%; top: 46px; transform: translateX(-50%);
+	background: var(--panel); border: 1px solid var(--gold); color: var(--ink);
+	padding: 6px 14px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; text-align: center;
+	pointer-events: none; max-width: 86%;
+}
+.bottom { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.inventory { display: flex; gap: 6px; flex-wrap: wrap; }
+.slot {
+	min-width: 54px; padding: 5px 8px; border-radius: 10px; background: var(--panel); border: 1px solid var(--panel-edge);
+	display: flex; flex-direction: column; align-items: center; gap: 1px; color: var(--ink); font: inherit; font-variant-numeric: tabular-nums;
+}
+.slot b { font-size: 0.95rem; }
+.slot span { font-size: 0.66rem; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.06em; }
+button.slot { cursor: pointer; }
+button.slot:disabled { opacity: 0.4; cursor: default; }
+button.slot:not(:disabled):hover, button.slot:focus-visible { border-color: var(--gold); outline: none; }
+.controls { display: flex; align-items: center; gap: 14px; }
+.dpad { display: grid; grid-template-columns: repeat(3, 46px); grid-template-rows: repeat(3, 46px); gap: 4px; }
+.dpad button, .hit {
+	border: 1px solid var(--panel-edge); background: var(--panel); color: var(--ink); border-radius: 10px;
+	font: 700 1.1rem var(--ui); touch-action: none; cursor: pointer;
+}
+.dpad button:active, .hit:active, .dpad button.down { background: var(--panel-edge); }
+.dpad .up { grid-column: 2; grid-row: 1; } .dpad .left { grid-column: 1; grid-row: 2; }
+.dpad .right { grid-column: 3; grid-row: 2; } .dpad .down-btn { grid-column: 2; grid-row: 3; }
+.hit { width: 84px; height: 84px; border-radius: 50%; background: #5a2340; border-color: var(--danger); font-family: var(--display); font-size: 1.2rem; }
+.keys { color: var(--ink-dim); font-size: 0.78rem; }
+@media (pointer: fine) { .controls .dpad, .controls .hit { display: none; } }
+@media (pointer: coarse) { .keys { display: none; } .controls { flex: 1; justify-content: space-between; } }
+.overlay {
+	position: absolute; inset: 0; display: flex; flex-direction: column; overflow-y: auto; padding: 16px;
+	background: radial-gradient(circle at 50% 30%, rgba(42, 47, 107, 0.75), rgba(12, 14, 38, 0.94));
+}
+.card { width: min(460px, 100%); margin: auto; display: flex; flex-direction: column; gap: 12px; text-align: center; }
+.card h1 { font-family: var(--display); font-size: clamp(2.2rem, 8vw, 3.4rem); margin: 0; color: var(--gold); line-height: 1; text-wrap: balance; }
+.card h2 { font-family: var(--display); font-size: 2rem; margin: 0; text-wrap: balance; }
+.card p { margin: 0; color: var(--ink-dim); line-height: 1.45; }
+.rules { text-align: left; display: grid; gap: 5px; font-size: 0.85rem; color: var(--ink); background: rgba(22, 25, 65, 0.8); border: 1px solid var(--panel-edge); border-radius: 12px; padding: 10px 14px; margin: 0; }
+.rules div { display: grid; grid-template-columns: 64px 1fr; gap: 8px; }
+.rules dd { margin: 0; }
+.rules dt { color: var(--gold); }
+.app.in-menu .bottom { display: none; }
+.field { display: grid; gap: 6px; text-align: left; }
+.field-label { font-weight: 700; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-dim); }
+.hint { font-size: 0.8rem; color: var(--ink-dim); min-height: 1.2em; }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.seg button { padding: 9px; border-radius: 10px; border: 1px solid var(--panel-edge); background: var(--panel); color: var(--ink); font: 700 0.98rem var(--ui); cursor: pointer; }
+.seg button[aria-pressed="true"] { border-color: var(--gold); background: #3a3270; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+label { font-weight: 600; }
+select { flex: 1; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--panel-edge); background: var(--panel); color: var(--ink); font: 600 0.95rem var(--ui); }
+input[type="range"] { flex: 1; accent-color: var(--gold); }
+.go { padding: 14px; border-radius: 12px; border: 0; background: var(--gold); color: #1d1630; font: 700 1.3rem var(--display); cursor: pointer; }
+.go:focus-visible, .seg button:focus-visible, select:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.ghost { padding: 10px; border-radius: 12px; border: 1px solid var(--panel-edge); background: transparent; color: var(--ink); font: 600 1rem var(--ui); cursor: pointer; }
+a.back { color: var(--ink-dim); text-decoration: none; font: 600 0.8rem var(--display); letter-spacing: 0.1em; }
+a.back:hover, a.back:focus-visible { color: var(--gold); outline: none; }
+.record { font-size: 0.8rem; color: var(--ink-dim); font-variant-numeric: tabular-nums; }
+.result-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-variant-numeric: tabular-nums; }
+.result-stats div { background: var(--panel); border: 1px solid var(--panel-edge); border-radius: 10px; padding: 8px 4px; display: flex; flex-direction: column; }
+.result-stats b { font-size: 1.3rem; }
+.result-stats span { font-size: 0.7rem; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.06em; }
+@media (max-width: 640px) {
+	.bottom { flex-direction: column; align-items: stretch; gap: 8px; }
+	.inventory { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
+	.slot { min-width: 0; overflow: hidden; }
+	.slot b { font-size: 0.8rem; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+	.slot span { font-size: 0.56rem; letter-spacing: 0.02em; white-space: nowrap; }
+}
+@media (max-width: 520px) {
+	.brand { font-size: 1.1rem; }
+	.stats { gap: 10px; font-size: 0.85rem; }
+	.dpad { grid-template-columns: repeat(3, 42px); grid-template-rows: repeat(3, 42px); }
+	.hit { width: 76px; height: 76px; }
+	.slot { padding: 4px 6px; }
+}
+</style>
+</head>
+<body>
+
+<div class="app in-menu" id="app">
+	<header class="status">
+		<div class="brand">Void Bridge</div>
+		<div class="stats">
+			<div class="hearts" id="hearts" aria-label="Health"></div>
+			<div class="stat"><small>Alive</small><b id="alive">0</b></div>
+			<div class="stat"><small>Kills</small><b id="kills">0</b></div>
+			<div class="stat"><small>Time</small><b id="time">0:00</b></div>
+			<button class="sound" id="sound" type="button">♪ On</button>
+		</div>
+	</header>
+
+	<main class="stage" id="stage">
+		<canvas id="view" aria-label="Game arena"></canvas>
+		<div class="collapse-banner" id="banner" hidden>The sky is collapsing!</div>
+		<div class="toast" id="toast" hidden></div>
+		<div class="feed" id="feed"></div>
+
+		<div class="overlay" id="startScreen">
+			<div class="card">
+				<h1>Void Bridge</h1>
+				<p>Loot the chests on your floating island, bridge across the void and knock everyone else off. Last one standing wins.</p>
+				<dl class="rules">
+					<div><dt>Move</dt><dd>Walk into the void to put a block down in front of you.</dd></div>
+					<div><dt>Fight</dt><dd>Walk into an enemy or press Hit. Hits knock them back off the edge.</dd></div>
+					<div><dt>Items</dt><dd>Apples heal, pearls teleport, eggs bridge, TNT and fireballs blow things up, bows shoot.</dd></div>
+					<div><dt>Collapse</dt><dd>After 1:15 the sky crumbles from the edges inward.</dd></div>
+				</dl>
+				<div class="field">
+					<span class="field-label">Mode</span>
+					<div class="seg" role="group" aria-label="Game mode">
+						<button type="button" id="mode-solo" data-mode="solo" aria-pressed="true">Solo</button>
+						<button type="button" id="mode-teams" data-mode="teams" aria-pressed="false">Teams</button>
+						<button type="button" id="mode-lucky" data-mode="lucky" aria-pressed="false">Lucky</button>
+					</div>
+					<div class="hint" id="modeHint"></div>
+				</div>
+				<div class="field">
+					<span class="field-label">Bot difficulty</span>
+					<div class="seg" role="group" aria-label="Bot difficulty">
+						<button type="button" id="diff-easy" data-diff="easy" aria-pressed="false">Easy</button>
+						<button type="button" id="diff-medium" data-diff="medium" aria-pressed="true">Medium</button>
+						<button type="button" id="diff-hard" data-diff="hard" aria-pressed="false">Hard</button>
+					</div>
+				</div>
+				<div class="row">
+					<label for="mapSelect">Map</label>
+					<select id="mapSelect"></select>
+				</div>
+				<div class="row">
+					<label for="botCount">Bots: <span id="botLabel">5</span></label>
+					<input type="range" id="botCount" min="1" max="7" value="5">
+				</div>
+				<button class="go" id="play" type="button">Play</button>
+				<div class="record" id="record"></div>
+				<a class="back" href="./">BACK TO ARCADE</a>
+			</div>
+		</div>
+
+		<div class="overlay" id="endScreen" hidden>
+			<div class="card">
+				<h2 id="endTitle">Victory!</h2>
+				<p id="endText"></p>
+				<div class="result-stats">
+					<div><b id="endPlace">#1</b><span>Place</span></div>
+					<div><b id="endKills">0</b><span>Kills</span></div>
+					<div><b id="endTime">0:00</b><span>Survived</span></div>
+				</div>
+				<button class="go" id="again" type="button">Play again</button>
+				<button class="ghost" id="watch" type="button">Keep watching</button>
+				<button class="ghost" id="menu" type="button">Change settings</button>
+				<a class="back" href="./">BACK TO ARCADE</a>
+			</div>
+		</div>
+	</main>
+
+	<footer class="bottom">
+		<div class="inventory">
+			<div class="slot"><b id="weapon">Fist</b><span>Weapon</span></div>
+			<div class="slot"><b id="armor">None</b><span>Armor</span></div>
+			<div class="slot"><b id="blocks">0</b><span>Blocks</span></div>
+			<button class="slot" id="useApple" type="button"><b id="apples">0</b><span>Apple 1</span></button>
+			<button class="slot" id="usePearl" type="button"><b id="pearls">0</b><span>Pearl 2</span></button>
+			<button class="slot" id="useEgg" type="button"><b id="eggs">0</b><span>Egg 3</span></button>
+			<button class="slot" id="useTnt" type="button"><b id="tnt">0</b><span>TNT 4</span></button>
+			<button class="slot" id="useBow" type="button"><b id="arrows">-</b><span>Bow 5</span></button>
+			<button class="slot" id="useFireball" type="button"><b id="fireballs">0</b><span>Fireball 6</span></button>
+			<div class="slot"><b id="elytra">0</b><span>Elytra</span></div>
+		</div>
+		<div class="controls">
+			<span class="keys">WASD / arrows to move, Space to hit, 1-6 for items</span>
+			<div class="dpad" aria-label="Move">
+				<button type="button" class="up" data-dir="0,-1" aria-label="Up">▲</button>
+				<button type="button" class="left" data-dir="-1,0" aria-label="Left">◀</button>
+				<button type="button" class="right" data-dir="1,0" aria-label="Right">▶</button>
+				<button type="button" class="down-btn" data-dir="0,1" aria-label="Down">▼</button>
+			</div>
+			<button type="button" class="hit" id="hitBtn">Hit</button>
+		</div>
+	</footer>
+</div>
+
+<script>
+(() => {
+	"use strict";
+
+	// ------------------------------------------------------------------ helpers
+
+	const $ = (id) => document.getElementById(id);
+	const rand = (a, b) => a + Math.random() * (b - a);
+	const randInt = (a, b) => Math.floor(rand(a, b + 1));
+	const chance = (p) => Math.random() < p;
+	const pick = (list) => list[Math.floor(Math.random() * list.length)];
+	const shuffle = (list) => {
+		for (let i = list.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[list[i], list[j]] = [list[j], list[i]];
+		}
+		return list;
+	};
+	const manhattan = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+	const fmtTime = (ms) => {
+		const s = Math.max(0, Math.floor(ms / 1000));
+		return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+	};
+	const store = {
+		get(key, fallback) {
+			try {
+				const v = localStorage.getItem(key);
+				return v === null ? fallback : JSON.parse(v);
+			} catch {
+				return fallback;
+			}
+		},
+		set(key, value) {
+			try {
+				localStorage.setItem(key, JSON.stringify(value));
+			} catch {
+				// storage unavailable; settings just won't persist
+			}
+		},
+	};
+
+	// ------------------------------------------------------------------ sound: effects and music, made in the browser
+
+	const audio = (() => {
+		let ac = null, master = null, sfxBus = null, musicBus = null, noiseBuf = null;
+		let muted = store.get("vb:muted", false);
+		let musicTimer = 0, musicStep = 0;
+
+		function init() {
+			if (ac) {
+				ac.resume?.();
+				return;
+			}
+			const AC = window.AudioContext || window.webkitAudioContext;
+			if (!AC) return;
+			ac = new AC();
+			master = ac.createGain();
+			master.gain.value = muted ? 0 : 0.8;
+			master.connect(ac.destination);
+			sfxBus = ac.createGain();
+			sfxBus.gain.value = 0.9;
+			sfxBus.connect(master);
+			musicBus = ac.createGain();
+			musicBus.gain.value = 0.2;
+			musicBus.connect(master);
+		}
+
+		function tone(freq, dur, { type = "square", vol = 0.12, to = null, delay = 0, bus = null } = {}) {
+			if (!ac || muted) return;
+			const t = ac.currentTime + delay;
+			const o = ac.createOscillator();
+			const g = ac.createGain();
+			o.type = type;
+			o.frequency.setValueAtTime(freq, t);
+			if (to) o.frequency.exponentialRampToValueAtTime(Math.max(20, to), t + dur);
+			g.gain.setValueAtTime(vol, t);
+			g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+			o.connect(g);
+			g.connect(bus || sfxBus);
+			o.start(t);
+			o.stop(t + dur + 0.02);
+		}
+
+		function noise(dur, { vol = 0.2, freq = 1200, to = null, delay = 0 } = {}) {
+			if (!ac || muted) return;
+			if (!noiseBuf) {
+				noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate);
+				const d = noiseBuf.getChannelData(0);
+				for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+			}
+			const t = ac.currentTime + delay;
+			const src = ac.createBufferSource();
+			src.buffer = noiseBuf;
+			const f = ac.createBiquadFilter();
+			f.type = "lowpass";
+			f.frequency.setValueAtTime(freq, t);
+			if (to) f.frequency.exponentialRampToValueAtTime(to, t + dur);
+			const g = ac.createGain();
+			g.gain.setValueAtTime(vol, t);
+			g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+			src.connect(f);
+			f.connect(g);
+			g.connect(sfxBus);
+			src.start(t);
+			src.stop(t + dur + 0.02);
+		}
+
+		const arp = (notes, gap, opts) => notes.forEach((f, i) => tone(f, opts.dur ?? 0.12, { ...opts, delay: i * gap }));
+		const SOUNDS = {
+			place: () => tone(170, 0.05, { vol: 0.05 }),
+			hit: () => {
+				noise(0.08, { vol: 0.22, freq: 1800 });
+				tone(150, 0.1, { to: 70, vol: 0.1 });
+			},
+			crit: () => {
+				noise(0.1, { vol: 0.28, freq: 2600 });
+				tone(720, 0.16, { to: 240, vol: 0.08, type: "sawtooth" });
+			},
+			chest: () => arp([523, 659, 784], 0.06, { vol: 0.07, type: "triangle" }),
+			lucky: () => arp([659, 784, 988, 1319], 0.05, { vol: 0.07, type: "triangle" }),
+			trap: () => tone(110, 0.45, { to: 50, vol: 0.12, type: "sawtooth" }),
+			bow: () => tone(900, 0.12, { to: 260, vol: 0.07, type: "triangle" }),
+			fireball: () => noise(0.35, { vol: 0.18, freq: 400, to: 2500 }),
+			boom: () => {
+				noise(0.7, { vol: 0.5, freq: 900, to: 70 });
+				tone(70, 0.5, { to: 28, vol: 0.22, type: "sine" });
+			},
+			fall: () => tone(520, 0.7, { to: 60, vol: 0.09, type: "sine" }),
+			eat: () => arp([300, 420], 0.08, { vol: 0.07, dur: 0.09 }),
+			pearl: () => tone(1400, 0.25, { to: 500, vol: 0.07, type: "sine" }),
+			egg: () => arp([392, 523, 659, 784, 1047], 0.04, { vol: 0.05, dur: 0.08 }),
+			fuse: () => noise(0.18, { vol: 0.07, freq: 5000 }),
+			rumble: () => noise(1.3, { vol: 0.25, freq: 220, to: 60 }),
+			glide: () => tone(300, 0.5, { to: 900, vol: 0.06, type: "sine" }),
+			win: () => arp([523, 659, 784, 1047, 1319], 0.12, { vol: 0.1, type: "triangle", dur: 0.25 }),
+			lose: () => arp([392, 330, 262, 196], 0.16, { vol: 0.1, type: "triangle", dur: 0.32 }),
+		};
+
+		// A short chiptune loop in A minor at 132 bpm.
+		const BASS = [110, 0, 110, 110, 87.3, 0, 87.3, 87.3, 130.8, 0, 130.8, 130.8, 98, 0, 123.5, 123.5];
+		const LEAD = [440, 523, 659, 523, 349, 440, 523, 440, 523, 659, 784, 659, 392, 494, 587, 659];
+		function startMusic() {
+			if (!ac) return;
+			stopMusic();
+			musicStep = 0;
+			const stepDur = 60 / 132 / 2;
+			musicTimer = setInterval(() => {
+				if (!muted) {
+					const i = musicStep % 16;
+					if (BASS[i]) tone(BASS[i], stepDur * 0.9, { type: "triangle", vol: 0.5, bus: musicBus });
+					const bar = Math.floor(musicStep / 16) % 4;
+					if (bar > 0 && (i % 2 === 0 || bar === 3)) tone(LEAD[i] * (bar === 2 ? 1.5 : 1), stepDur * 0.6, { type: "square", vol: 0.1, bus: musicBus });
+				}
+				musicStep++;
+			}, stepDur * 1000);
+		}
+		function stopMusic() {
+			clearInterval(musicTimer);
+			musicTimer = 0;
+		}
+		function setMuted(m) {
+			muted = m;
+			store.set("vb:muted", m);
+			if (master) master.gain.value = m ? 0 : 0.8;
+		}
+		return {
+			init,
+			play(name) {
+				if (SOUNDS[name]) SOUNDS[name]();
+			},
+			startMusic,
+			stopMusic,
+			setMuted,
+			get muted() {
+				return muted;
+			},
+		};
+	})();
+
+	// ------------------------------------------------------------------ constants
+
+	const W = 64, H = 64, C = 32;
+	const VOID = 0, LAND_A = 1, LAND_B = 2, QUARTZ = 3, PLANK = 4, EGGBLOCK = 5;
+	const THEMES = {
+		grass: { a: ["#5aa84a", "#4f9a42", "#7a5236"], b: ["#7c8c6a", "#6f7f5f", "#5b5a52"] },
+		sand: { a: ["#e2c47c", "#d4b56c", "#a07a45"], b: ["#c99f68", "#bb935c", "#86643d"] },
+		snow: { a: ["#eef3f8", "#dce6ef", "#8aa3bd"], b: ["#a9c7e0", "#97b7d2", "#5d7c99"] },
+		nether: { a: ["#a83b3b", "#963434", "#4a1f1f"], b: ["#6a4040", "#5c3737", "#2e1b1b"] },
+		candy: { a: ["#ff9ecf", "#f28bc0", "#b0507f"], b: ["#bfa2ff", "#ad8ff2", "#6c4fb0"] },
+	};
+	const FIXED_COLORS = {
+		[QUARTZ]: ["#e7e1d3", "#d8d1c0", "#9c958a"],
+		[PLANK]: ["#c08a4e", "#b27c43", "#7e5530"],
+		[EGGBLOCK]: ["#f2d24b", "#e6c43c", "#a8892a"],
+	};
+	const MAPS = [
+		{ id: "ring", name: "Sky Ring", theme: "grass", sky: ["#2a2f6b", "#0c0e26"] },
+		{ id: "cross", name: "Desert Cross", theme: "sand", sky: ["#5b3a5e", "#1c1026"] },
+		{ id: "scatter", name: "Frost Scatter", theme: "snow", sky: ["#2c4a72", "#0b1426"] },
+		{ id: "spiral", name: "Nether Spiral", theme: "nether", sky: ["#4a1622", "#14060b"] },
+		{ id: "isles", name: "Candy Isles", theme: "candy", sky: ["#3a2a6e", "#120d2a"] },
+	];
+	const WEAPONS = {
+		fist: { name: "Fist", dmg: 1, tier: 0 },
+		wood: { name: "Wood Sword", dmg: 3, tier: 1, color: "#b98a52" },
+		gold: { name: "Gold Sword", dmg: 3.5, tier: 2, color: "#f4c542" },
+		stone: { name: "Stone Sword", dmg: 4, tier: 3, color: "#9a9a9a" },
+		iron: { name: "Iron Sword", dmg: 5, tier: 4, color: "#dcdcdc" },
+		diamond: { name: "Diamond Sword", dmg: 7, tier: 5, color: "#5fe0d8" },
+	};
+	const ARMORS = {
+		none: { name: "None", def: 0, tier: 0 },
+		leather: { name: "Leather", def: 0.12, tier: 1, color: "#9a5c34" },
+		gold: { name: "Gold", def: 0.18, tier: 2, color: "#f4c542" },
+		chain: { name: "Chain", def: 0.26, tier: 3, color: "#a7adb8" },
+		iron: { name: "Iron", def: 0.34, tier: 4, color: "#e8e8e8" },
+		diamond: { name: "Diamond", def: 0.46, tier: 5, color: "#5fe0d8" },
+	};
+	const DIFF = {
+		easy: { step: 290, hitCd: 760, miss: 0.38, aggro: 4, blocks: 6, idle: 0.22, egg: 0, bow: 0.12, fireball: 0.1, tnt: 0.05, shotCd: 1700 },
+		medium: { step: 215, hitCd: 560, miss: 0.2, aggro: 7, blocks: 10, idle: 0.06, egg: 0.5, bow: 0.3, fireball: 0.25, tnt: 0.12, shotCd: 1150 },
+		hard: { step: 165, hitCd: 400, miss: 0.08, aggro: 11, blocks: 16, idle: 0, egg: 1, bow: 0.55, fireball: 0.45, tnt: 0.2, shotCd: 800 },
+	};
+	const MODE_HINTS = {
+		solo: "Every player for themselves.",
+		teams: "You and a bot teammate against teams of two. No friendly fire.",
+		lucky: "Every chest is a Lucky Block: amazing loot, or a nasty trap.",
+	};
+	const BOT_NAMES = ["Blaze", "Comet", "Echo", "Flint", "Jinx", "Nova", "Onyx", "Pixel", "Quinn", "Rex", "Vex", "Wren", "Zed"];
+	const BOT_COLORS = ["#ff7a59", "#5bc0ff", "#b98bff", "#ffd166", "#06d6a0", "#ff6fb5", "#9be15d"];
+	const TEAM_COLORS = ["#f4b942", "#5bc0ff", "#ff6fb5", "#06d6a0"];
+	const PLAYER_COLOR = "#ffffff";
+	const COLLAPSE_AT = 75000;
+	const COLLAPSE_STEP = 1500;
+	const PLAYER_STEP = 135;
+	const PLAYER_HIT_CD = 300;
+	const PLAYER_SHOT_CD = 450;
+	const TNT_FUSE = 1600;
+	const ITEM_LABELS = { blocks: "blocks", apples: "golden apple", pearls: "ender pearl", eggs: "Bridge Egg", elytra: "Elytra", tnt: "TNT", arrows: "arrows", fireballs: "fireball", bow: "Bow" };
+
+	// ------------------------------------------------------------------ state
+
+	let tiles, chests, ents, particles, floaters, projectiles, tnts, feed, palette, sky;
+	let player, game;
+	let settings = {
+		difficulty: store.get("vb:difficulty", "medium"),
+		bots: store.get("vb:bots", 5),
+		mode: store.get("vb:mode", "solo"),
+		map: store.get("vb:map", "random"),
+	};
+	let shakeUntil = 0;
+
+	const inBounds = (x, y) => x >= 0 && y >= 0 && x < W && y < H;
+	const tileAt = (x, y) => (inBounds(x, y) ? tiles[y * W + x] : VOID);
+	const setTile = (x, y, t) => {
+		if (inBounds(x, y)) tiles[y * W + x] = t;
+	};
+	const chestAt = (x, y) => chests.find((c) => c.x === x && c.y === y && !c.gone);
+	const entAt = (x, y) => ents.find((e) => e.alive && e.x === x && e.y === y);
+	const walkable = (x, y) => tileAt(x, y) !== VOID && !chestAt(x, y);
+	const sameTeam = (a, b) => a && b && a.team === b.team;
+	const nearCamera = (x, y) => Math.hypot(x - cam.x, y - cam.y) < 13;
+	const sound = (name, x, y) => {
+		if (x === undefined || nearCamera(x, y)) audio.play(name);
+	};
+
+	// ------------------------------------------------------------------ world
+
+	function island(cx, cy, r, type) {
+		const phase = Math.random() * 6.28;
+		for (let y = cy - r - 1; y <= cy + r + 1; y++) {
+			for (let x = cx - r - 1; x <= cx + r + 1; x++) {
+				const a = Math.atan2(y - cy, x - cx);
+				const edge = r + 0.45 + 0.35 * Math.sin(3 * a + phase);
+				if (Math.hypot(x - cx, y - cy) <= edge) setTile(x, y, type);
+			}
+		}
+	}
+
+	function placeChest(x, y, kind) {
+		if (tileAt(x, y) === VOID || chestAt(x, y)) return;
+		chests.push({ x, y, kind, opened: false, gone: false });
+	}
+
+	/** Where the spawn islands and middle islands go on each map. */
+	function layout(id) {
+		const TAU = Math.PI * 2, off = -Math.PI / 2;
+		const polar = (a, r) => ({ x: Math.round(C + Math.cos(a) * r), y: Math.round(C + Math.sin(a) * r), a });
+		const spawns = [];
+		const middles = [];
+		const fits = (p, r, list) => list.every((o) => Math.hypot(o.x - p.x, o.y - p.y) >= o.r + r + 3);
+		if (id === "ring") {
+			for (let i = 0; i < 8; i++) {
+				spawns.push(polar((i / 8) * TAU + off, 19));
+				middles.push({ ...polar(((i + 0.5) / 8) * TAU + off, 11), r: 2 });
+			}
+		} else if (id === "cross") {
+			for (let i = 0; i < 8; i++) {
+				spawns.push(polar((i / 8) * TAU + off, i % 2 === 0 ? 21 : 17));
+				middles.push({ ...polar((i / 8) * TAU + off, i % 2 === 0 ? 12 : 10), r: 2 });
+			}
+		} else if (id === "scatter") {
+			const taken = [{ x: C, y: C, r: 4 }];
+			for (let i = 0; i < 8; i++) {
+				let p;
+				for (let tries = 0; tries < 30; tries++) {
+					p = polar((i / 8) * TAU + off + rand(-0.28, 0.28), rand(16, 23));
+					if (fits(p, 3, taken)) break;
+				}
+				spawns.push(p);
+				taken.push({ ...p, r: 3 });
+			}
+			for (let tries = 0; tries < 120 && middles.length < 8; tries++) {
+				const p = { ...polar(rand(0, TAU), rand(8, 14)), r: 2 };
+				if (fits(p, 2, taken)) {
+					middles.push(p);
+					taken.push(p);
+				}
+			}
+		} else if (id === "spiral") {
+			for (let i = 0; i < 8; i++) {
+				spawns.push(polar((i / 8) * TAU + off, 14.5 + i * 1.15));
+				middles.push({ ...polar(((i + 0.5) / 8) * TAU + off + 0.3, 8.5 + i * 0.55), r: 2 });
+			}
+		} else {
+			for (let i = 0; i < 8; i++) {
+				spawns.push(polar((i / 8) * TAU + off, 20));
+				middles.push({ ...polar(((i + 0.5) / 8) * TAU + off, 12), r: 2 });
+				middles.push({ ...polar(((i + 0.25) / 8) * TAU + off, 16.5), r: 1 });
+			}
+		}
+		return { spawns, middles };
+	}
+
+	function buildWorld(mapDef) {
+		tiles = new Uint8Array(W * H);
+		chests = [];
+		const theme = THEMES[mapDef.theme];
+		palette = { [LAND_A]: theme.a, [LAND_B]: theme.b, ...FIXED_COLORS };
+		sky = mapDef.sky;
+		const { spawns, middles } = layout(mapDef.id);
+		for (const s of spawns) {
+			island(s.x, s.y, 3, LAND_A);
+			// Two chests either side of the spawn, across the line to the middle.
+			const px = Math.round(-Math.sin(s.a) * 2);
+			const py = Math.round(Math.cos(s.a) * 2);
+			placeChest(s.x + px, s.y + py, "spawn");
+			placeChest(s.x - px, s.y - py, "spawn");
+		}
+		for (const m of middles) {
+			island(m.x, m.y, m.r, LAND_B);
+			if (m.r > 1 || chance(0.5)) placeChest(m.x, m.y, "middle");
+		}
+		island(C, C, 4, QUARTZ);
+		for (const [dx, dy] of [[2, 0], [-2, 0], [0, 2], [0, -2]]) placeChest(C + dx, C + dy, "center");
+		return spawns;
+	}
+
+	// ------------------------------------------------------------------ loot
+
+	function roll(kind) {
+		const loot = [];
+		const mobility = () => {
+			const r = Math.random();
+			if (r < 0.37) loot.push({ elytra: 1 });
+			else if (r < 0.74) loot.push({ eggs: 1 });
+		};
+		if (kind === "spawn") {
+			loot.push({ blocks: randInt(16, 28) });
+			loot.push({ weapon: pick(["wood", "wood", "gold", "stone"]) });
+			if (chance(0.6)) loot.push({ armor: pick(["leather", "leather", "gold"]) });
+			if (chance(0.3)) loot.push({ apples: 1 });
+			if (chance(0.25)) loot.push({ bow: 1, arrows: randInt(4, 8) });
+			if (chance(0.2)) loot.push({ tnt: 1 });
+			if (chance(0.15)) loot.push({ fireballs: 1 });
+			mobility();
+		} else if (kind === "middle") {
+			loot.push({ blocks: randInt(12, 24) });
+			loot.push({ weapon: chance(0.6) ? "iron" : "stone" });
+			loot.push({ armor: chance(0.55) ? "iron" : "chain" });
+			if (chance(0.5)) loot.push({ pearls: 1 });
+			if (chance(0.5)) loot.push({ apples: 1 });
+			if (chance(0.4)) loot.push({ bow: 1, arrows: randInt(6, 10) });
+			if (chance(0.35)) loot.push({ tnt: randInt(1, 2) });
+			if (chance(0.3)) loot.push({ fireballs: randInt(1, 2) });
+			mobility();
+		} else {
+			loot.push({ blocks: randInt(16, 32) });
+			loot.push({ weapon: chance(0.7) ? "diamond" : "iron" });
+			loot.push({ armor: chance(0.6) ? "diamond" : "iron" });
+			loot.push({ apples: randInt(1, 2) });
+			loot.push({ pearls: randInt(1, 2) });
+			if (chance(0.5)) loot.push({ bow: 1, arrows: randInt(8, 16) });
+			loot.push({ tnt: randInt(1, 2) });
+			loot.push({ fireballs: randInt(1, 2) });
+		}
+		return loot;
+	}
+
+	/** Adds items to an entity. Returns short labels for what it actually got. */
+	function applyLoot(e, items) {
+		const got = [];
+		for (const item of items) {
+			for (const [key, value] of Object.entries(item)) {
+				if (key === "weapon") {
+					const w = WEAPONS[value];
+					if (w.tier > e.weapon.tier) {
+						e.weapon = w;
+						got.push(w.name);
+					}
+				} else if (key === "armor") {
+					const a = ARMORS[value];
+					if (a.tier > e.armor.tier) {
+						e.armor = a;
+						got.push(a.name + " armor");
+					}
+				} else if (key === "bow") {
+					if (!e.hasBow) {
+						e.hasBow = true;
+						got.push("Bow");
+					}
+				} else {
+					e[key] += value;
+					got.push(key === "blocks" || key === "arrows" ? `${value} ${ITEM_LABELS[key]}` : (value > 1 ? `${value}× ` : "") + ITEM_LABELS[key]);
+				}
+			}
+		}
+		return got;
+	}
+
+	function openChest(e, chest, now) {
+		chest.opened = true;
+		if (chest.kind === "lucky") return openLucky(e, chest, now);
+		const got = applyLoot(e, roll(chest.kind));
+		burst(chest.x + 0.5, chest.y + 0.5, "#f4b942", 10);
+		sound("chest", chest.x, chest.y);
+		if (e === player) toast(got.length ? "Looted: " + got.join(", ") : "Nothing better in here");
+	}
+
+	function openLucky(e, chest, now) {
+		burst(chest.x + 0.5, chest.y + 0.5, "#f2d24b", 16);
+		const r = Math.random();
+		let text;
+		if (r < 0.55) {
+			const pool = [{ weapon: "diamond" }, { weapon: "iron" }, { armor: "iron" }, { armor: "diamond" }, { apples: 2 }, { pearls: 2 },
+				{ bow: 1, arrows: 10 }, { tnt: 2 }, { fireballs: 2 }, { blocks: 24 }, { elytra: 1 }, { eggs: 2 }];
+			const got = applyLoot(e, shuffle(pool.slice()).slice(0, 2));
+			text = "Lucky! " + (got.length ? got.join(", ") : "nothing you didn't already have");
+			sound("lucky", chest.x, chest.y);
+		} else if (r < 0.8) {
+			const got = applyLoot(e, [pick([{ blocks: 16 }, { apples: 1 }, { arrows: 6 }, { pearls: 1 }])]);
+			text = "Lucky Block: " + got.join(", ");
+			sound("chest", chest.x, chest.y);
+		} else {
+			sound("trap", chest.x, chest.y);
+			const trap = randInt(0, 4);
+			if (trap === 0) {
+				tnts.push({ x: e.x, y: e.y, fuse: now + TNT_FUSE, owner: null });
+				text = "Trap! Lit TNT at your feet. Run!";
+			} else if (trap === 1) {
+				e.hp -= 6;
+				e.flash = now + 200;
+				floater(e.px + 0.5, e.py, "-6", "#ffd166");
+				burst(e.x + 0.5, e.y + 0.5, "#fff3a0", 14);
+				text = "Trap! Struck by lightning.";
+				if (e.hp <= 0) kill(e, "was struck by lightning", now);
+			} else if (trap === 2) {
+				e.blocks = 0;
+				text = "Trap! All your blocks vanished.";
+			} else if (trap === 3) {
+				const [dx, dy] = pick([[1, 0], [-1, 0], [0, 1], [0, -1]]);
+				text = "Trap! A gust of wind throws you.";
+				push(e, dx, dy, 2, now);
+			} else {
+				if (e.weapon.tier > 1) e.weapon = WEAPONS.wood;
+				text = "Trap! Your sword turned to wood.";
+			}
+		}
+		if (e === player) toast(text);
+	}
+
+	// ------------------------------------------------------------------ entities
+
+	function makeEnt(name, color, at, isPlayer, team) {
+		const cfg = DIFF[settings.difficulty];
+		return {
+			name, color, isPlayer, team,
+			x: at.x, y: at.y, px: at.x, py: at.y,
+			hp: 20, weapon: WEAPONS.fist, armor: ARMORS.none,
+			blocks: isPlayer ? 8 : cfg.blocks, apples: 0, pearls: 0, eggs: 0, elytra: 0, tnt: 0, arrows: 0, fireballs: 0, hasBow: false,
+			face: { x: 0, y: 1 }, alive: true, kills: 0,
+			nextMove: 0, nextHit: 0, nextShot: 0, lastHitBy: null, lastHitAt: 0, flash: 0, diedAt: 0,
+		};
+	}
+
+	function stepTime(e) {
+		return e.isPlayer ? PLAYER_STEP : DIFF[settings.difficulty].step;
+	}
+
+	function step(e, dx, dy, now) {
+		e.face = { x: dx, y: dy };
+		const nx = e.x + dx;
+		const ny = e.y + dy;
+		e.nextMove = now + stepTime(e);
+		if (!inBounds(nx, ny)) return false;
+		const other = entAt(nx, ny);
+		if (other) {
+			if (!sameTeam(e, other)) hit(e, other, now);
+			return true;
+		}
+		const chest = chestAt(nx, ny);
+		if (chest) {
+			if (!chest.opened) openChest(e, chest, now);
+			return true;
+		}
+		if (tileAt(nx, ny) === VOID) {
+			if (e.blocks <= 0) {
+				if (e.isPlayer) toast("Out of blocks! Loot a chest for more.");
+				return false;
+			}
+			setTile(nx, ny, PLANK);
+			e.blocks--;
+			burst(nx + 0.5, ny + 0.5, "#c08a4e", 4);
+			if (e.isPlayer) sound("place");
+		}
+		e.x = nx;
+		e.y = ny;
+		return true;
+	}
+
+	function hit(attacker, target, now) {
+		if (sameTeam(attacker, target)) return;
+		const cd = attacker.isPlayer ? PLAYER_HIT_CD : DIFF[settings.difficulty].hitCd;
+		if (now < attacker.nextHit) return;
+		attacker.nextHit = now + cd;
+		attacker.face = { x: Math.sign(target.x - attacker.x), y: Math.sign(target.y - attacker.y) };
+		if (!attacker.isPlayer && chance(DIFF[settings.difficulty].miss)) {
+			floater(target.px + 0.5, target.py, "miss", "#b9b6d3");
+			return;
+		}
+		const crit = chance(0.15);
+		const dmg = Math.max(1, Math.round(attacker.weapon.dmg * (crit ? 1.5 : 1) * (1 - target.armor.def)));
+		hurt(target, dmg, attacker, now, crit ? "#ffd166" : "#ff8c8c", crit ? "CRIT " : "");
+		sound(crit ? "crit" : "hit", target.x, target.y);
+		if (target.hp <= 0) return kill(target, "was slain by " + attacker.name, now);
+		push(target, attacker.face.x, attacker.face.y, crit ? 2 : 1, now);
+	}
+
+	function hurt(target, dmg, by, now, color, prefix = "") {
+		target.hp -= dmg;
+		target.flash = now + 140;
+		if (by && by !== target) {
+			target.lastHitBy = by;
+			target.lastHitAt = now;
+		}
+		floater(target.px + 0.5, target.py, prefix + "-" + dmg, color);
+		burst(target.x + 0.5, target.y + 0.5, "#ff6464", 6);
+	}
+
+	/** Knocks an entity n tiles along (dx, dy); it falls if it lands on the void. */
+	function push(target, dx, dy, n, now) {
+		for (let i = 0; i < n; i++) {
+			const nx = target.x + dx, ny = target.y + dy;
+			if (!inBounds(nx, ny) || entAt(nx, ny) || chestAt(nx, ny)) break;
+			target.x = nx;
+			target.y = ny;
+			if (tileAt(nx, ny) === VOID) {
+				fall(target, now);
+				break;
+			}
+		}
+	}
+
+	function fall(e, now) {
+		if (!e.alive) return;
+		if (e.elytra > 0) {
+			const spot = nearestLand(e.x, e.y);
+			if (spot) {
+				e.elytra--;
+				e.x = spot.x;
+				e.y = spot.y;
+				burst(e.x + 0.5, e.y + 0.5, "#b9b6d3", 12);
+				sound("glide", e.x, e.y);
+				if (e.isPlayer) toast("Your Elytra glided you to safety!");
+				else pushFeed(`${e.name} glided to safety`);
+				return;
+			}
+		}
+		sound("fall", e.x, e.y);
+		const by = e.lastHitBy && now - e.lastHitAt < 5000 ? " (knocked by " + e.lastHitBy.name + ")" : "";
+		kill(e, "fell into the void" + by, now, true);
+	}
+
+	function nearestLand(x, y) {
+		let best = null;
+		let bestD = Infinity;
+		for (let ty = 0; ty < H; ty++) {
+			for (let tx = 0; tx < W; tx++) {
+				if (!walkable(tx, ty) || entAt(tx, ty)) continue;
+				const d = Math.abs(tx - x) + Math.abs(ty - y);
+				if (d < bestD) {
+					bestD = d;
+					best = { x: tx, y: ty };
+				}
+			}
+		}
+		return best;
+	}
+
+	function kill(e, how, now, fell = false) {
+		if (!e.alive) return;
+		e.alive = false;
+		e.diedAt = now;
+		e.fell = fell;
+		const killer = e.lastHitBy && now - e.lastHitAt < 5000 ? e.lastHitBy : null;
+		if (killer && killer !== e && killer.alive) killer.kills++;
+		pushFeed(e.isPlayer ? `You ${how.replace(/^was /, "were ")}` : `${e.name} ${how}`);
+		burst(e.x + 0.5, e.y + 0.5, e.color, 18);
+		if (e.team === player.team && !ents.some((o) => o.alive && o.team === player.team)) {
+			game.place = new Set(ents.filter((o) => o.alive).map((o) => o.team)).size + 1;
+		}
+		if (e === player) game.playerDiedAt = now;
+		checkEnd(now);
+	}
+
+	const aliveCount = () => ents.filter((e) => e.alive).length;
+	const aliveTeams = () => new Set(ents.filter((e) => e.alive).map((e) => e.team));
+
+	// ------------------------------------------------------------------ items
+
+	function useApple(e) {
+		if (e.apples <= 0 || e.hp >= 20) return false;
+		e.apples--;
+		e.hp = Math.min(20, e.hp + 8);
+		floater(e.px + 0.5, e.py, "+8", "#7dffa0");
+		sound("eat", e.x, e.y);
+		return true;
+	}
+
+	function usePearl(e) {
+		if (e.pearls <= 0) return false;
+		let landing = null;
+		for (let d = 7; d >= 2; d--) {
+			const x = e.x + e.face.x * d, y = e.y + e.face.y * d;
+			if (walkable(x, y) && !entAt(x, y)) {
+				landing = { x, y };
+				break;
+			}
+		}
+		if (!landing) {
+			if (e.isPlayer) toast("No land to pearl to in that direction");
+			return false;
+		}
+		e.pearls--;
+		burst(e.x + 0.5, e.y + 0.5, "#b98bff", 10);
+		sound("pearl", e.x, e.y);
+		e.x = landing.x;
+		e.y = landing.y;
+		e.px = e.x;
+		e.py = e.y;
+		burst(e.x + 0.5, e.y + 0.5, "#b98bff", 10);
+		return true;
+	}
+
+	function useEgg(e) {
+		if (e.eggs <= 0) return false;
+		e.eggs--;
+		const { x: fx, y: fy } = e.face;
+		let placed = 0;
+		for (let d = 1; d <= 12; d++) {
+			const x = e.x + fx * d, y = e.y + fy * d;
+			if (!inBounds(x, y)) break;
+			if (tileAt(x, y) === VOID) {
+				setTile(x, y, EGGBLOCK);
+				placed++;
+				setTimeout(() => burst(x + 0.5, y + 0.5, "#f2d24b", 3), d * 35);
+			}
+		}
+		sound("egg", e.x, e.y);
+		if (e.isPlayer) toast(placed ? `Bridge Egg built ${placed} blocks!` : "Bridge Egg had nothing to bridge");
+		return true;
+	}
+
+	function placeTnt(e, now) {
+		if (e.tnt <= 0) return false;
+		let x = e.x + e.face.x, y = e.y + e.face.y;
+		if (!walkable(x, y) || tnts.some((t) => t.x === x && t.y === y)) {
+			x = e.x;
+			y = e.y;
+		}
+		e.tnt--;
+		tnts.push({ x, y, fuse: now + TNT_FUSE, owner: e });
+		sound("fuse", x, y);
+		if (e.isPlayer) toast("TNT lit! Get away from it.");
+		return true;
+	}
+
+	function shoot(e, kind, now) {
+		const cd = e.isPlayer ? PLAYER_SHOT_CD : 300;
+		if (now < e.nextShot) return false;
+		if (kind === "arrow") {
+			if (!e.hasBow || e.arrows <= 0) return false;
+			e.arrows--;
+			sound("bow", e.x, e.y);
+		} else {
+			if (e.fireballs <= 0) return false;
+			e.fireballs--;
+			sound("fireball", e.x, e.y);
+		}
+		e.nextShot = now + cd;
+		projectiles.push({
+			x: e.x + 0.5 + e.face.x * 0.5, y: e.y + 0.5 + e.face.y * 0.5, dx: e.face.x, dy: e.face.y,
+			speed: kind === "arrow" ? 16 : 9, range: kind === "arrow" ? 10 : 9, travelled: 0, kind, owner: e,
+		});
+		return true;
+	}
+
+	function explode(x, y, radius, maxDmg, kb, owner, now, breakLand) {
+		burst(x + 0.5, y + 0.5, "#ffb347", 26);
+		burst(x + 0.5, y + 0.5, "#ff5a36", 16);
+		sound("boom", x, y);
+		if (nearCamera(x, y)) shakeUntil = now + 320;
+		for (const e of ents) {
+			if (!e.alive) continue;
+			if (owner && e !== owner && sameTeam(e, owner)) continue;
+			const d = Math.hypot(e.x - x, e.y - y);
+			if (d > radius) continue;
+			const dmg = Math.max(1, Math.round(maxDmg * (1 - d / (radius + 1)) * (1 - e.armor.def)));
+			hurt(e, dmg, owner, now, "#ffb347");
+			if (e.hp <= 0) {
+				kill(e, "was blown up" + (owner && owner !== e ? " by " + owner.name : ""), now);
+				continue;
+			}
+			let dx = Math.sign(e.x - x), dy = Math.sign(e.y - y);
+			if (dx && dy) Math.abs(e.x - x) >= Math.abs(e.y - y) ? (dy = 0) : (dx = 0);
+			if (!dx && !dy) [dx, dy] = pick([[1, 0], [-1, 0], [0, 1], [0, -1]]);
+			push(e, dx, dy, kb, now);
+		}
+		// Bridges always break; natural ground sometimes does.
+		const r = Math.ceil(radius);
+		for (let ty = y - r; ty <= y + r; ty++) {
+			for (let tx = x - r; tx <= x + r; tx++) {
+				const t = tileAt(tx, ty);
+				const d = Math.hypot(tx - x, ty - y);
+				if (t === VOID || d > radius || chestAt(tx, ty)) continue;
+				if (t === PLANK || t === EGGBLOCK || (t !== QUARTZ && d <= radius - 1 && chance(breakLand))) {
+					setTile(tx, ty, VOID);
+				}
+			}
+		}
+		for (const e of ents) if (e.alive && tileAt(e.x, e.y) === VOID) fall(e, now);
+	}
+
+	function updateTnt(now) {
+		for (const t of tnts) {
+			if (t.done) continue;
+			if (tileAt(t.x, t.y) === VOID) {
+				t.done = true;
+				continue;
+			}
+			if (now >= t.fuse) {
+				t.done = true;
+				explode(t.x, t.y, 2.5, 9, 2, t.owner, now, 0.45);
+			}
+		}
+		tnts = tnts.filter((t) => !t.done);
+	}
+
+	function updateProjectiles(now, dt) {
+		for (const p of projectiles) {
+			const move = p.speed * dt;
+			p.x += p.dx * move;
+			p.y += p.dy * move;
+			p.travelled += move;
+			const tx = Math.floor(p.x), ty = Math.floor(p.y);
+			const target = entAt(tx, ty);
+			const blocked = !inBounds(tx, ty) || chestAt(tx, ty);
+			if (target && target !== p.owner && !sameTeam(target, p.owner)) {
+				p.done = true;
+				if (p.kind === "arrow") {
+					const dmg = Math.max(1, Math.round(3 * (1 - target.armor.def)));
+					hurt(target, dmg, p.owner, now, "#ff8c8c");
+					sound("hit", tx, ty);
+					if (target.hp <= 0) kill(target, "was shot by " + p.owner.name, now);
+					else push(target, p.dx, p.dy, 1, now);
+				} else {
+					explode(tx, ty, 1.5, 4, 2, p.owner, now, 0.5);
+				}
+			} else if (blocked || p.travelled >= p.range) {
+				p.done = true;
+				if (p.kind === "fireball") explode(tx, ty, 1.5, 4, 2, p.owner, now, 0.5);
+			}
+		}
+		projectiles = projectiles.filter((p) => !p.done);
+	}
+
+	// ------------------------------------------------------------------ bots
+
+	function lineDistance(a, b) {
+		if (a.x === b.x) return Math.abs(a.y - b.y);
+		if (a.y === b.y) return Math.abs(a.x - b.x);
+		return Infinity;
+	}
+
+	function botThink(b, now) {
+		const cfg = DIFF[settings.difficulty];
+		if (now < b.nextMove) return;
+		if (b.hp < 8) useApple(b);
+
+		// Get away from lit TNT first.
+		const danger = tnts.find((t) => Math.hypot(t.x - b.x, t.y - b.y) <= 2.6);
+		if (danger) {
+			let best = null;
+			let bestD = -1;
+			for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+				const nx = b.x + dx, ny = b.y + dy;
+				if (!walkable(nx, ny) || entAt(nx, ny)) continue;
+				const d = Math.hypot(nx - danger.x, ny - danger.y);
+				if (d > bestD) {
+					bestD = d;
+					best = [dx, dy];
+				}
+			}
+			if (best) {
+				step(b, best[0], best[1], now);
+				return;
+			}
+		}
+
+		if (chance(cfg.idle)) {
+			b.nextMove = now + cfg.step;
+			return;
+		}
+
+		let nearest = null;
+		let nearestD = Infinity;
+		for (const e of ents) {
+			if (e === b || !e.alive || sameTeam(e, b)) continue;
+			const d = manhattan(b, e);
+			if (d < nearestD) {
+				nearestD = d;
+				nearest = e;
+			}
+		}
+
+		let goal = null;
+		let fighting = false;
+		if (nearest && nearestD <= cfg.aggro) {
+			goal = nearest;
+			fighting = true;
+		} else {
+			let best = null;
+			let bestD = Infinity;
+			for (const c of chests) {
+				if (c.opened || c.gone) continue;
+				const d = manhattan(b, c);
+				if (d < bestD) {
+					bestD = d;
+					best = c;
+				}
+			}
+			goal = best || nearest || { x: C, y: C };
+			fighting = !best && !!nearest;
+		}
+
+		// Ranged attacks along a straight line.
+		if (fighting && goal === nearest) {
+			const line = lineDistance(b, goal);
+			if (line !== Infinity && now >= b.nextShot) {
+				const face = { x: Math.sign(goal.x - b.x), y: Math.sign(goal.y - b.y) };
+				if (b.fireballs > 0 && line >= 2 && line <= 7 && chance(cfg.fireball)) {
+					b.face = face;
+					shoot(b, "fireball", now);
+					b.nextShot = now + cfg.shotCd * 1.4;
+					b.nextMove = now + cfg.step;
+					return;
+				}
+				if (b.hasBow && b.arrows > 0 && line >= 3 && line <= 9 && chance(cfg.bow)) {
+					b.face = face;
+					shoot(b, "arrow", now);
+					b.nextShot = now + cfg.shotCd;
+					b.nextMove = now + cfg.step;
+					return;
+				}
+			}
+			if (b.tnt > 0 && nearestD <= 2 && chance(cfg.tnt)) {
+				b.face = { x: Math.sign(goal.x - b.x) || 0, y: Math.sign(goal.y - b.y) || 0 };
+				if (b.face.x && b.face.y) b.face.y = 0;
+				if (!b.face.x && !b.face.y) b.face = { x: 1, y: 0 };
+				placeTnt(b, now);
+				b.nextMove = now + cfg.step;
+				return;
+			}
+			if (b.eggs > 0 && line !== Infinity && line > 3 && chance(cfg.egg)) {
+				b.face = { x: Math.sign(goal.x - b.x), y: Math.sign(goal.y - b.y) };
+				if (tileAt(b.x + b.face.x, b.y + b.face.y) === VOID) useEgg(b);
+			}
+		}
+
+		const dx = goal.x - b.x;
+		const dy = goal.y - b.y;
+		const dirs = [];
+		const sx = Math.sign(dx), sy = Math.sign(dy);
+		if (Math.abs(dx) >= Math.abs(dy)) {
+			if (sx) dirs.push([sx, 0]);
+			if (sy) dirs.push([0, sy]);
+		} else {
+			if (sy) dirs.push([0, sy]);
+			if (sx) dirs.push([sx, 0]);
+		}
+		const side = shuffle([[1, 0], [-1, 0], [0, 1], [0, -1]]).filter(([x, y]) => !dirs.some(([a, c]) => a === x && c === y));
+
+		for (const [ddx, ddy] of [...dirs, ...side]) {
+			const nx = b.x + ddx, ny = b.y + ddy;
+			if (!inBounds(nx, ny)) continue;
+			const other = entAt(nx, ny);
+			if (other) {
+				if (!sameTeam(other, b) && (fighting || other === goal)) {
+					step(b, ddx, ddy, now);
+					return;
+				}
+				continue;
+			}
+			const chest = chestAt(nx, ny);
+			if (chest) {
+				if (!chest.opened) {
+					step(b, ddx, ddy, now);
+					return;
+				}
+				continue;
+			}
+			const isGoalDir = dirs.some(([a, c]) => a === ddx && c === ddy);
+			if (tileAt(nx, ny) !== VOID || (isGoalDir && b.blocks > 0)) {
+				step(b, ddx, ddy, now);
+				return;
+			}
+		}
+		b.nextMove = now + cfg.step;
+	}
+
+	// ------------------------------------------------------------------ effects and UI
+
+	function burst(x, y, color, n) {
+		for (let i = 0; i < n; i++) {
+			particles.push({ x, y, vx: rand(-2.5, 2.5), vy: rand(-3, 1), life: rand(0.35, 0.7), age: 0, color });
+		}
+	}
+
+	function floater(x, y, text, color) {
+		floaters.push({ x, y, text, color, age: 0 });
+	}
+
+	let toastTimer = 0;
+	function toast(text) {
+		const el = $("toast");
+		el.textContent = text;
+		el.hidden = false;
+		clearTimeout(toastTimer);
+		toastTimer = setTimeout(() => (el.hidden = true), 2400);
+	}
+
+	function pushFeed(text) {
+		feed.unshift({ text, at: performance.now() });
+		feed = feed.slice(0, 4);
+	}
+
+	function renderHud(now) {
+		const hearts = $("hearts");
+		const hp = Math.max(0, player.hp);
+		let html = "";
+		for (let i = 0; i < 10; i++) {
+			const v = hp - i * 2;
+			html += `<span class="heart${v >= 2 ? "" : v >= 1 ? " half" : " empty"}"></span>`;
+		}
+		if (hearts.innerHTML !== html) hearts.innerHTML = html;
+		$("alive").textContent = aliveCount();
+		$("kills").textContent = player.kills;
+		$("time").textContent = fmtTime((game.endedAt || now) - game.startedAt);
+		$("weapon").textContent = player.weapon.name;
+		$("armor").textContent = player.armor.name;
+		$("blocks").textContent = player.blocks;
+		$("apples").textContent = player.apples;
+		$("pearls").textContent = player.pearls;
+		$("eggs").textContent = player.eggs;
+		$("tnt").textContent = player.tnt;
+		$("arrows").textContent = player.hasBow ? player.arrows : "-";
+		$("fireballs").textContent = player.fireballs;
+		$("elytra").textContent = player.elytra;
+		const out = !player.alive || game.over;
+		$("useApple").disabled = out || player.apples <= 0;
+		$("usePearl").disabled = out || player.pearls <= 0;
+		$("useEgg").disabled = out || player.eggs <= 0;
+		$("useTnt").disabled = out || player.tnt <= 0;
+		$("useBow").disabled = out || !player.hasBow || player.arrows <= 0;
+		$("useFireball").disabled = out || player.fireballs <= 0;
+		$("banner").hidden = !(game.collapsing && !game.over);
+		const feedEl = $("feed");
+		const items = feed.filter((f) => now - f.at < 6000).map((f) => `<div>${f.text}</div>`).join("");
+		if (feedEl.innerHTML !== items) feedEl.innerHTML = items;
+	}
+
+	// ------------------------------------------------------------------ game flow
+
+	function startGame() {
+		audio.init();
+		if (settings.mode === "teams" && settings.bots < 3) {
+			settings.bots = 3;
+			syncBotSlider();
+		}
+		const mapDef = settings.map === "random" ? pick(MAPS) : MAPS.find((m) => m.id === settings.map) || MAPS[0];
+		const spawns = shuffle(buildWorld(mapDef));
+		if (settings.mode === "lucky") for (const c of chests) c.kind = "lucky";
+		particles = [];
+		floaters = [];
+		projectiles = [];
+		tnts = [];
+		feed = [];
+		ents = [];
+
+		const names = shuffle([...BOT_NAMES]);
+		const teams = settings.mode === "teams";
+		player = makeEnt("You", PLAYER_COLOR, spawns[0], true, 0);
+		ents.push(player);
+		for (let i = 0; i < settings.bots; i++) {
+			const team = teams ? Math.floor((i + 1) / 2) : i + 1;
+			const home = teams ? spawns[team] : spawns[i + 1];
+			let at = home;
+			if (teams && (i + 1) % 2 === 1) {
+				// The second player of a team stands one step inward on the same island.
+				at = { x: home.x - Math.round(Math.cos(home.a)), y: home.y - Math.round(Math.sin(home.a)) };
+			}
+			const color = teams ? TEAM_COLORS[team % TEAM_COLORS.length] : BOT_COLORS[i % BOT_COLORS.length];
+			ents.push(makeEnt(names[i], color, at, false, team));
+		}
+
+		const now = performance.now();
+		for (const b of ents) if (!b.isPlayer) b.nextMove = now + 900 + Math.random() * 400;
+		game = { startedAt: now, collapsing: false, collapseR: 36, nextCollapse: now + COLLAPSE_AT, over: false, place: 0, endedAt: 0, map: mapDef };
+		cam.x = player.x;
+		cam.y = player.y;
+		$("startScreen").hidden = true;
+		$("endScreen").hidden = true;
+		$("app").classList.remove("in-menu");
+		audio.startMusic();
+		const mate = teams ? ents.find((e) => e.team === 0 && !e.isPlayer) : null;
+		toast(`${mapDef.name}` + (mate ? `: your teammate is ${mate.name}` : settings.mode === "lucky" ? ": Lucky Blocks!" : ": loot your chests, then bridge to the middle"));
+	}
+
+	function checkEnd(now) {
+		if (game.over) return;
+		const teams = aliveTeams();
+		const mine = teams.has(player.team);
+		if (teams.size <= 1 || !mine) {
+			game.over = true;
+			game.endedAt = now;
+			const won = mine;
+			if (won) game.place = 1;
+			const record = store.get("vb:record", { wins: 0, games: 0, bestKills: 0 });
+			record.games++;
+			if (won) record.wins++;
+			record.bestKills = Math.max(record.bestKills, player.kills);
+			store.set("vb:record", record);
+			audio.stopMusic();
+			setTimeout(() => {
+				audio.play(won ? "win" : "lose");
+				showEnd(won);
+			}, won ? 900 : 1100);
+		} else if (!player.alive && !game.toldOut) {
+			game.toldOut = true;
+			toast("You're out! Your teammate is still fighting.");
+		}
+	}
+
+	function showEnd(won) {
+		const teams = settings.mode === "teams";
+		$("endTitle").textContent = won ? "Victory!" : "Eliminated";
+		$("endTitle").style.color = won ? "var(--gold)" : "var(--danger)";
+		const othersFighting = aliveTeams().size > 1;
+		let text;
+		if (won && teams && !player.alive) text = "Your teammate finished the job. Your team wins!";
+		else if (won && teams) text = "Your team was the last one standing.";
+		else if (won) text = `You were the last one standing against ${settings.bots} ${settings.difficulty} bot${settings.bots > 1 ? "s" : ""}.`;
+		else if (othersFighting) text = "The others are still fighting. Keep watching to see who wins.";
+		else text = "Better luck next round.";
+		$("endText").textContent = text;
+		$("endPlace").textContent = "#" + game.place;
+		$("endKills").textContent = player.kills;
+		$("endTime").textContent = fmtTime((game.playerDiedAt || game.endedAt) - game.startedAt);
+		$("watch").hidden = won || !othersFighting;
+		$("endScreen").hidden = false;
+		$("app").classList.add("in-menu");
+		$("again").focus();
+	}
+
+	function showRecord() {
+		const r = store.get("vb:record", null);
+		$("record").textContent = r && r.games ? `Your record: ${r.wins} win${r.wins === 1 ? "" : "s"} in ${r.games} game${r.games === 1 ? "" : "s"} · best ${r.bestKills} kill${r.bestKills === 1 ? "" : "s"} in a game` : "";
+	}
+
+	function collapse(now) {
+		if (!game.collapsing && now - game.startedAt >= COLLAPSE_AT) {
+			game.collapsing = true;
+			game.nextCollapse = now;
+			pushFeed("The sky is collapsing from the edges!");
+			audio.play("rumble");
+		}
+		if (!game.collapsing || now < game.nextCollapse || game.collapseR <= 3) return;
+		game.nextCollapse = now + COLLAPSE_STEP;
+		game.collapseR -= 1;
+		for (let y = 0; y < H; y++) {
+			for (let x = 0; x < W; x++) {
+				if (tiles[y * W + x] !== VOID && Math.hypot(x - C, y - C) > game.collapseR) {
+					tiles[y * W + x] = VOID;
+					if (chance(0.25)) burst(x + 0.5, y + 0.5, "#8a7d6a", 2);
+				}
+			}
+		}
+		for (const c of chests) if (Math.hypot(c.x - C, c.y - C) > game.collapseR) c.gone = true;
+		for (const e of ents) if (e.alive && tileAt(e.x, e.y) === VOID) fall(e, now);
+	}
+
+	// ------------------------------------------------------------------ input
+
+	const held = new Set();
+	const keyDirs = { ArrowUp: [0, -1], KeyW: [0, -1], ArrowDown: [0, 1], KeyS: [0, 1], ArrowLeft: [-1, 0], KeyA: [-1, 0], ArrowRight: [1, 0], KeyD: [1, 0] };
+	let lastDir = null;
+	let touchDir = null;
+	const playing = () => game && !game.over && player.alive && $("startScreen").hidden;
+
+	const ITEM_KEYS = {
+		Digit1: () => useApple(player),
+		Digit2: () => usePearl(player),
+		Digit3: () => useEgg(player),
+		Digit4: () => placeTnt(player, performance.now()),
+		Digit5: () => shoot(player, "arrow", performance.now()) || (!player.hasBow ? toast("You need a bow") : player.arrows <= 0 ? toast("No arrows left") : 0),
+		Digit6: () => shoot(player, "fireball", performance.now()),
+	};
+
+	window.addEventListener("keydown", (ev) => {
+		if (!playing()) return;
+		if (keyDirs[ev.code]) {
+			held.add(ev.code);
+			lastDir = keyDirs[ev.code];
+			ev.preventDefault();
+		} else if (ev.code === "Space" || ev.code === "KeyJ") {
+			playerHit();
+			ev.preventDefault();
+		} else if (ITEM_KEYS[ev.code]) {
+			ITEM_KEYS[ev.code]();
+		}
+	});
+	window.addEventListener("keyup", (ev) => {
+		held.delete(ev.code);
+		const remaining = [...held];
+		lastDir = remaining.length ? keyDirs[remaining[remaining.length - 1]] : null;
+	});
+	window.addEventListener("blur", () => {
+		held.clear();
+		lastDir = null;
+		touchDir = null;
+	});
+
+	for (const btn of document.querySelectorAll(".dpad button")) {
+		const dir = btn.dataset.dir.split(",").map(Number);
+		btn.addEventListener("pointerdown", (ev) => {
+			ev.preventDefault();
+			touchDir = dir;
+			btn.classList.add("down");
+			btn.setPointerCapture?.(ev.pointerId);
+		});
+		const release = () => {
+			btn.classList.remove("down");
+			if (touchDir === dir) touchDir = null;
+		};
+		btn.addEventListener("pointerup", release);
+		btn.addEventListener("pointercancel", release);
+		btn.addEventListener("lostpointercapture", release);
+	}
+	$("hitBtn").addEventListener("pointerdown", (ev) => {
+		ev.preventDefault();
+		playerHit();
+	});
+	$("useApple").addEventListener("click", () => playing() && ITEM_KEYS.Digit1());
+	$("usePearl").addEventListener("click", () => playing() && ITEM_KEYS.Digit2());
+	$("useEgg").addEventListener("click", () => playing() && ITEM_KEYS.Digit3());
+	$("useTnt").addEventListener("click", () => playing() && ITEM_KEYS.Digit4());
+	$("useBow").addEventListener("click", () => playing() && ITEM_KEYS.Digit5());
+	$("useFireball").addEventListener("click", () => playing() && ITEM_KEYS.Digit6());
+
+	function playerHit() {
+		if (!playing()) return;
+		const now = performance.now();
+		let target = entAt(player.x + player.face.x, player.y + player.face.y);
+		if (!target || sameTeam(target, player)) target = ents.find((e) => e.alive && !sameTeam(e, player) && manhattan(e, player) === 1);
+		if (target) hit(player, target, now);
+		else if (now >= player.nextHit) {
+			player.nextHit = now + PLAYER_HIT_CD;
+			player.swing = now + 120;
+		}
+	}
+
+	// Start-screen settings.
+	function bindSeg(selector, key, storeKey, after) {
+		const buttons = document.querySelectorAll(selector);
+		for (const b of buttons) {
+			const value = b.dataset[key];
+			b.setAttribute("aria-pressed", String(value === settings[storeKey]));
+			b.addEventListener("click", () => {
+				settings[storeKey] = value;
+				store.set("vb:" + storeKey, value);
+				for (const o of buttons) o.setAttribute("aria-pressed", String(o === b));
+				after?.();
+			});
+		}
+	}
+	function syncBotSlider() {
+		const min = settings.mode === "teams" ? 3 : 1;
+		$("botCount").min = min;
+		if (settings.bots < min) settings.bots = min;
+		$("botCount").value = settings.bots;
+		$("botLabel").textContent = settings.bots + (settings.mode === "teams" ? ` (1 teammate, ${settings.bots - 1} enemies)` : "");
+	}
+	bindSeg("[data-diff]", "diff", "difficulty");
+	bindSeg("[data-mode]", "mode", "mode", () => {
+		$("modeHint").textContent = MODE_HINTS[settings.mode];
+		syncBotSlider();
+	});
+	$("modeHint").textContent = MODE_HINTS[settings.mode];
+	const mapSelect = $("mapSelect");
+	mapSelect.innerHTML = `<option value="random">Random map</option>` + MAPS.map((m) => `<option value="${m.id}">${m.name}</option>`).join("");
+	mapSelect.value = settings.map;
+	mapSelect.addEventListener("change", () => {
+		settings.map = mapSelect.value;
+		store.set("vb:map", settings.map);
+		const m = MAPS.find((x) => x.id === settings.map);
+		if (m) buildWorld(m);
+	});
+	syncBotSlider();
+	$("botCount").addEventListener("input", (ev) => {
+		settings.bots = Number(ev.target.value);
+		store.set("vb:bots", settings.bots);
+		syncBotSlider();
+	});
+	$("play").addEventListener("click", startGame);
+	$("again").addEventListener("click", startGame);
+	$("watch").addEventListener("click", () => ($("endScreen").hidden = true));
+	$("menu").addEventListener("click", () => {
+		$("endScreen").hidden = true;
+		$("startScreen").hidden = false;
+		showRecord();
+	});
+	function syncSound() {
+		$("sound").textContent = audio.muted ? "♪ Off" : "♪ On";
+		$("sound").setAttribute("aria-label", audio.muted ? "Turn sound on" : "Turn sound off");
+	}
+	$("sound").addEventListener("click", () => {
+		audio.init();
+		audio.setMuted(!audio.muted);
+		syncSound();
+	});
+	syncSound();
+
+	// ------------------------------------------------------------------ rendering
+
+	const canvas = $("view");
+	const ctx = canvas.getContext("2d");
+	const cam = { x: C, y: C };
+	let T = 32, vw = 0, vh = 0, dpr = 1;
+	const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+	const clouds = Array.from({ length: 14 }, () => ({ x: rand(0, 1), y: rand(0, 1), s: rand(0.6, 1.6), v: rand(0.004, 0.012) }));
+
+	function resize() {
+		const rect = canvas.getBoundingClientRect();
+		dpr = Math.min(window.devicePixelRatio || 1, 2);
+		vw = rect.width;
+		vh = rect.height;
+		canvas.width = Math.max(1, Math.round(vw * dpr));
+		canvas.height = Math.max(1, Math.round(vh * dpr));
+		T = Math.max(22, Math.min(44, Math.min(vw, vh) / 13));
+	}
+	new ResizeObserver(resize).observe(canvas);
+
+	function shade(hex, f) {
+		const n = parseInt(hex.slice(1), 16);
+		const r = Math.min(255, ((n >> 16) & 255) * f);
+		const g = Math.min(255, ((n >> 8) & 255) * f);
+		const b = Math.min(255, (n & 255) * f);
+		return `rgb(${r | 0},${g | 0},${b | 0})`;
+	}
+
+	function draw(now, dt) {
+		ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+		const g0 = ctx.createLinearGradient(0, 0, 0, vh);
+		g0.addColorStop(0, sky[0]);
+		g0.addColorStop(1, sky[1]);
+		ctx.fillStyle = g0;
+		ctx.fillRect(0, 0, vw, vh);
+
+		ctx.fillStyle = "rgba(200, 205, 255, 0.07)";
+		for (const c of clouds) {
+			if (!reduceMotion) c.x = (c.x + c.v * dt) % 1.2;
+			const cx = ((c.x - 0.1) * vw * 1.3 - cam.x * T * 0.15) % (vw * 1.3);
+			const cy = ((c.y * vh * 1.2 - cam.y * T * 0.15) % (vh * 1.2) + vh * 1.2) % (vh * 1.2) - vh * 0.1;
+			ctx.beginPath();
+			ctx.ellipse((cx + vw * 1.3) % (vw * 1.3) - vw * 0.15, cy, 70 * c.s, 22 * c.s, 0, 0, Math.PI * 2);
+			ctx.fill();
+		}
+
+		let sx0 = 0, sy0 = 0;
+		if (now < shakeUntil && !reduceMotion) {
+			const k = (shakeUntil - now) / 320;
+			sx0 = rand(-5, 5) * k;
+			sy0 = rand(-5, 5) * k;
+		}
+		const ox = vw / 2 - (cam.x + 0.5) * T + sx0;
+		const oy = vh / 2 - (cam.y + 0.5) * T + sy0;
+		const x0 = Math.max(0, Math.floor(-ox / T) - 1), x1 = Math.min(W - 1, Math.ceil((vw - ox) / T) + 1);
+		const y0 = Math.max(0, Math.floor(-oy / T) - 1), y1 = Math.min(H - 1, Math.ceil((vh - oy) / T) + 1);
+
+		// Cliff faces under every edge give the islands their floating depth.
+		for (let y = y0; y <= y1; y++) {
+			for (let x = x0; x <= x1; x++) {
+				const t = tileAt(x, y);
+				if (t === VOID || tileAt(x, y + 1) !== VOID) continue;
+				const px = ox + x * T, py = oy + (y + 1) * T;
+				const depth = t === PLANK || t === EGGBLOCK ? T * 0.22 : T * 0.75;
+				const g = ctx.createLinearGradient(0, py, 0, py + depth);
+				g.addColorStop(0, palette[t][2]);
+				g.addColorStop(1, "rgba(12,14,38,0)");
+				ctx.fillStyle = g;
+				ctx.fillRect(px, py, T + 0.5, depth);
+			}
+		}
+		for (let y = y0; y <= y1; y++) {
+			for (let x = x0; x <= x1; x++) {
+				const t = tileAt(x, y);
+				if (t === VOID) continue;
+				const px = ox + x * T, py = oy + y * T;
+				const [a, b] = palette[t];
+				ctx.fillStyle = (x + y) % 2 ? a : b;
+				ctx.fillRect(px, py, T + 0.5, T + 0.5);
+				if (t === PLANK || t === EGGBLOCK) {
+					ctx.fillStyle = "rgba(0,0,0,0.12)";
+					ctx.fillRect(px, py + T * 0.48, T, Math.max(1, T * 0.05));
+				}
+			}
+		}
+
+		if (game && game.collapsing && game.collapseR > 3) {
+			ctx.strokeStyle = "rgba(255, 100, 100, 0.55)";
+			ctx.setLineDash([8, 8]);
+			ctx.lineWidth = 2;
+			ctx.beginPath();
+			ctx.arc(ox + (C + 0.5) * T, oy + (C + 0.5) * T, (game.collapseR - 0.5) * T, 0, Math.PI * 2);
+			ctx.stroke();
+			ctx.setLineDash([]);
+		}
+
+		for (const c of chests) {
+			if (c.gone) continue;
+			const px = ox + c.x * T, py = oy + c.y * T, p = T * 0.14, s = T - p * 2;
+			if (c.kind === "lucky" && !c.opened) {
+				ctx.fillStyle = "#f2d24b";
+				ctx.fillRect(px + p, py + p, s, s);
+				ctx.strokeStyle = "#a8892a";
+				ctx.lineWidth = Math.max(1.5, T * 0.06);
+				ctx.strokeRect(px + p, py + p, s, s);
+				ctx.fillStyle = "#7a5a10";
+				ctx.font = `700 ${T * 0.55}px "Pixelify Sans", sans-serif`;
+				ctx.textAlign = "center";
+				ctx.textBaseline = "middle";
+				ctx.fillText("?", px + T / 2, py + T / 2 + T * 0.03);
+				ctx.textBaseline = "alphabetic";
+				continue;
+			}
+			const wood = c.kind === "center" ? "#5fd1c9" : c.kind === "middle" ? "#a8acb8" : c.kind === "lucky" ? "#c9a93a" : "#a8672f";
+			ctx.fillStyle = "rgba(0,0,0,0.25)";
+			ctx.fillRect(px + p, py + p + s * 0.85, s, s * 0.2);
+			ctx.fillStyle = c.opened ? shade(wood, 0.55) : wood;
+			ctx.fillRect(px + p, py + p, s, s);
+			ctx.fillStyle = c.opened ? "#2a1d14" : shade(wood, 0.7);
+			ctx.fillRect(px + p, py + p + s * 0.38, s, s * (c.opened ? 0.3 : 0.08));
+			if (!c.opened) {
+				ctx.fillStyle = "#f4b942";
+				ctx.fillRect(px + T / 2 - T * 0.06, py + p + s * 0.32, T * 0.12, T * 0.16);
+			}
+		}
+
+		for (const t of tnts) {
+			const px = ox + t.x * T, py = oy + t.y * T, p = T * 0.18, s = T - p * 2;
+			const blink = (t.fuse - now) < 700 && Math.floor(now / 90) % 2 === 0;
+			ctx.fillStyle = blink ? "#ffffff" : "#d43a2f";
+			ctx.fillRect(px + p, py + p, s, s);
+			ctx.fillStyle = "#f4efe1";
+			ctx.fillRect(px + p, py + p + s * 0.38, s, s * 0.24);
+			ctx.fillStyle = "#1d1630";
+			ctx.font = `700 ${T * 0.22}px "Chakra Petch", sans-serif`;
+			ctx.textAlign = "center";
+			ctx.fillText("TNT", px + T / 2, py + p + s * 0.58);
+		}
+
+		for (const e of ents) {
+			if (!e.alive && (now - e.diedAt > 600 || !e.fell)) continue;
+			const k = Math.min(1, dt * 16);
+			e.px += (e.x - e.px) * k;
+			e.py += (e.y - e.py) * k;
+			const scale = e.alive ? 1 : Math.max(0, 1 - (now - e.diedAt) / 600);
+			const cx = ox + (e.px + 0.5) * T, cy = oy + (e.py + 0.5) * T;
+			const s = T * 0.72 * scale;
+			const teamMode = settings.mode === "teams" && game;
+			ctx.fillStyle = teamMode ? TEAM_COLORS[e.team % TEAM_COLORS.length] + "88" : "rgba(0,0,0,0.3)";
+			ctx.beginPath();
+			ctx.ellipse(cx, cy + s * 0.48, s * 0.46, s * 0.16, 0, 0, Math.PI * 2);
+			ctx.fill();
+			ctx.fillStyle = now < e.flash ? "#ff4d4d" : e.color;
+			ctx.beginPath();
+			if (ctx.roundRect) ctx.roundRect(cx - s / 2, cy - s / 2, s, s, s * 0.22);
+			else ctx.rect(cx - s / 2, cy - s / 2, s, s);
+			ctx.fill();
+			ctx.lineWidth = Math.max(2, T * 0.08);
+			ctx.strokeStyle = e.armor.color || "rgba(0,0,0,0.45)";
+			ctx.stroke();
+			ctx.fillStyle = "#1d1630";
+			const ex = e.face.x * s * 0.14, ey = e.face.y * s * 0.14;
+			ctx.fillRect(cx - s * 0.2 + ex, cy - s * 0.12 + ey, s * 0.12, s * 0.16);
+			ctx.fillRect(cx + s * 0.08 + ex, cy - s * 0.12 + ey, s * 0.12, s * 0.16);
+			if (e.weapon.color && e.alive) {
+				ctx.strokeStyle = e.weapon.color;
+				ctx.lineWidth = Math.max(2, T * 0.09);
+				const cd = e.isPlayer ? PLAYER_HIT_CD : DIFF[settings.difficulty].hitCd;
+				const swing = e.nextHit - now > cd - 140 || (e.swing && now < e.swing) ? 0.32 : 0;
+				ctx.beginPath();
+				ctx.moveTo(cx + e.face.x * s * 0.4 - e.face.y * s * 0.3, cy + e.face.y * s * 0.4 + e.face.x * s * 0.3);
+				ctx.lineTo(cx + e.face.x * s * (0.85 + swing) - e.face.y * s * 0.1, cy + e.face.y * s * (0.85 + swing) + e.face.x * s * 0.1);
+				ctx.stroke();
+			}
+			if (!e.alive) continue;
+			const bw = T * 0.9, bx = cx - bw / 2, by = cy - s / 2 - T * 0.28;
+			ctx.fillStyle = "rgba(12,14,38,0.8)";
+			ctx.fillRect(bx, by, bw, T * 0.1);
+			ctx.fillStyle = e.hp > 10 ? "#7dffa0" : e.hp > 5 ? "#ffd166" : "#ff6464";
+			ctx.fillRect(bx, by, (bw * Math.max(0, e.hp)) / 20, T * 0.1);
+			ctx.font = `600 ${Math.max(10, T * 0.32)}px "Chakra Petch", system-ui, sans-serif`;
+			ctx.textAlign = "center";
+			ctx.fillStyle = e.isPlayer ? "#f4b942" : teamMode ? TEAM_COLORS[e.team % TEAM_COLORS.length] : "#f4efe1";
+			ctx.fillText(e.name + (teamMode && e.team === 0 && !e.isPlayer ? " (mate)" : ""), cx, by - T * 0.08);
+		}
+
+		for (const p of projectiles) {
+			const px = ox + p.x * T, py = oy + p.y * T;
+			if (p.kind === "arrow") {
+				ctx.strokeStyle = "#e8e2d0";
+				ctx.lineWidth = Math.max(2, T * 0.07);
+				ctx.beginPath();
+				ctx.moveTo(px - p.dx * T * 0.35, py - p.dy * T * 0.35);
+				ctx.lineTo(px + p.dx * T * 0.2, py + p.dy * T * 0.2);
+				ctx.stroke();
+			} else {
+				ctx.fillStyle = "rgba(255, 140, 50, 0.35)";
+				ctx.beginPath();
+				ctx.arc(px, py, T * 0.34, 0, Math.PI * 2);
+				ctx.fill();
+				ctx.fillStyle = "#ff7a2f";
+				ctx.beginPath();
+				ctx.arc(px, py, T * 0.2, 0, Math.PI * 2);
+				ctx.fill();
+				if (chance(0.5)) particles.push({ x: p.x, y: p.y, vx: rand(-0.6, 0.6), vy: rand(-0.6, 0.6), life: 0.3, age: 0, color: "#ffb347" });
+			}
+		}
+
+		for (const p of particles) {
+			p.age += dt;
+			p.x += p.vx * dt;
+			p.y += p.vy * dt;
+			p.vy += 6 * dt;
+			ctx.globalAlpha = Math.max(0, 1 - p.age / p.life);
+			ctx.fillStyle = p.color;
+			const ps = T * 0.13;
+			ctx.fillRect(ox + p.x * T - ps / 2, oy + p.y * T - ps / 2, ps, ps);
+		}
+		ctx.globalAlpha = 1;
+		particles = particles.filter((p) => p.age < p.life);
+
+		ctx.textAlign = "center";
+		ctx.font = `700 ${Math.max(12, T * 0.4)}px "Pixelify Sans", sans-serif`;
+		for (const f of floaters) {
+			f.age += dt;
+			ctx.globalAlpha = Math.max(0, 1 - f.age / 0.9);
+			ctx.fillStyle = f.color;
+			ctx.fillText(f.text, ox + f.x * T, oy + (f.y - f.age * 1.2) * T);
+		}
+		ctx.globalAlpha = 1;
+		floaters = floaters.filter((f) => f.age < 0.9);
+	}
+
+	// ------------------------------------------------------------------ loop
+
+	let last = performance.now();
+	function frame(now) {
+		const dt = Math.min(0.05, (now - last) / 1000);
+		last = now;
+		if (game) {
+			if (player.alive && !game.over) {
+				const dir = lastDir || touchDir;
+				if (dir && now >= player.nextMove) step(player, dir[0], dir[1], now);
+			}
+			// Everyone else keeps playing after you are out, until one team is left.
+			if (aliveTeams().size > 1) {
+				for (const b of ents) if (b.alive && !b.isPlayer) botThink(b, now);
+				updateTnt(now);
+				updateProjectiles(now, dt);
+				collapse(now);
+			} else {
+				updateProjectiles(now, dt);
+			}
+			let focus = player;
+			if (!player.alive) {
+				const alive = ents.filter((e) => e.alive);
+				focus = alive.find((e) => e.team === player.team) || alive.sort((a, b) => b.kills - a.kills)[0] || player;
+			}
+			const k = Math.min(1, dt * 6);
+			cam.x += (focus.px - cam.x) * k;
+			cam.y += (focus.py - cam.y) * k;
+			renderHud(now);
+			if (game.over && aliveTeams().size <= 1 && !game.spectateDone) {
+				game.spectateDone = true;
+				const winner = ents.find((e) => e.alive);
+				if (winner && !sameTeam(winner, player)) pushFeed(`${winner.name} won the round!`);
+			}
+		}
+		draw(now, dt);
+		requestAnimationFrame(frame);
+	}
+
+	// Idle backdrop behind the start screen: the chosen map (or the first one).
+	buildWorld(MAPS.find((m) => m.id === settings.map) || MAPS[0]);
+	ents = [];
+	particles = [];
+	floaters = [];
+	projectiles = [];
+	tnts = [];
+	feed = [];
+	showRecord();
+	resize();
+	requestAnimationFrame(frame);
+})();
+</script>
+<script>if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});</script>
+</body>
+</html>
