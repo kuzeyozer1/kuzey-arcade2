@@ -82,7 +82,11 @@ h1{font-family:var(--display);font-weight:900;font-size:clamp(34px,9vw,64px);lin
     </a>
     <a class="game" href="crypt.html" style="--acc:#b98bff">
       <canvas id="n8" width="160" height="90" aria-hidden="true"></canvas>
-      <div class="info"><h2>Crypt Crawler</h2><p>NEW! A dungeon adventure that is different every time: 6 heroes, 50 items, pets, shops, secret rooms, 4 bosses and permanent upgrades.</p><span class="play">PLAY</span></div>
+      <div class="info"><h2>Crypt Crawler</h2><p>NEW! A dungeon adventure that is different every time: 6 heroes, 40+ items, pets, shops, secret rooms, 4 bosses and permanent upgrades.</p><span class="play">PLAY</span></div>
+    </a>
+    <a class="game" href="farm.html" style="--acc:#ffd23f">
+      <canvas id="n9" width="160" height="90" aria-hidden="true"></canvas>
+      <div class="info"><h2>Little Farmstead</h2><p>NEW! Run your own farm: 14 crops, 4 seasons, chickens, cows and sheep, machines, cooking, fishing, villagers, festivals and a farmer who wears your avatar.</p><span class="play">PLAY</span></div>
     </a>
   </div>
 
@@ -297,6 +301,9 @@ NP.n8=(x,t)=>{x.fillStyle='#2a2430';x.fillRect(0,0,160,90);x.fillStyle='#4a3a5a'
   const T=still?0:t/1000,hx=50+Math.sin(T)*20,hy=50+Math.cos(T*1.3)*12;x.fillStyle='#4f8bff';x.beginPath();x.arc(hx,hy,6,0,7);x.fill();x.font='9px sans-serif';x.fillText('🦊',hx-5,hy-6);
   [[110,40],[120,62]].forEach(([a,b],i)=>{x.fillStyle=i?'#5cf2b4':'#e8e0d0';x.beginPath();x.arc(a+Math.sin(T*2+i)*6,b,6,0,7);x.fill()});x.fillStyle='#ff8a3d';x.beginPath();x.arc(hx+((T*120)%60),hy,3,0,7);x.fill();
   x.fillStyle='#ff8a3d';x.beginPath();x.arc(30,14,3+Math.sin(T*9),0,7);x.arc(130,14,3+Math.cos(T*9),0,7);x.fill()};
+NP.n9=(x,t)=>{x.fillStyle='#5cb04a';x.fillRect(0,0,160,90);x.fillStyle='#7a5432';for(let i=0;i<4;i++)for(let j=0;j<2;j++)x.fillRect(20+i*22,46+j*20,18,16);
+  const T=still?3:t/1000;for(let i=0;i<4;i++)for(let j=0;j<2;j++){const g=Math.min(1,((T*.4+i*.2+j*.3)%1.6));x.fillStyle='#3aa83a';x.beginPath();x.arc(29+i*22,54+j*20,2+g*4,0,7);x.fill();if(g>.95){x.font='10px sans-serif';x.fillText('🥕',24+i*22,58+j*20)}}
+  x.fillStyle='#b83a3a';x.beginPath();x.moveTo(110,30);x.lineTo(130,12);x.lineTo(150,30);x.fill();x.fillStyle='#c8945a';x.fillRect(114,30,32,22);x.font='12px sans-serif';x.fillText('🐔',112+Math.sin(T)*6,70);x.fillText('🦊',60+Math.sin(T*.7)*30,34)};
 function megaP(t){for(const id in NP){const c=document.getElementById(id);if(c)NP[id](c.getContext('2d'),t)}}
 NP.n1=(x,t)=>{x.fillStyle='#050a1e';x.fillRect(0,0,160,90);x.fillStyle='#fff';for(let i=0;i<30;i++){const y=((i*37+(still?0:t/20)*(1+i%3))%90);x.fillRect((i*53)%160,y,1+i%2,1+i%2)}
   const sx=80+Math.sin(still?0:t/600)*40;x.fillStyle='#3ef0ff';for(let i=0;i<5;i++){const y=(70-((still?0:t/4)+i*18)%70);x.fillRect(sx-3,y,2,5);x.fillRect(sx+2,y,2,5)}
