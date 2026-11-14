@@ -1,0 +1,867 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#070512">
+<title>Laser Labyrinth</title>
+<link rel="icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Chakra+Petch:wght@400;600&display=swap">
+<style>
+/* Laser Labyrinth: a puzzle board in the middle, pieces to place underneath, buttons on top. */
+:root{--night:#070512;--panel:#141030;--line:#2c2468;--ink:#ecebff;--mute:#9a94c9;--cyan:#3ef0ff;--pink:#ff3d9a;--gold:#ffd23f;--green:#5cf2b4;--red:#ff4d6a;
+  --display:'Orbitron',ui-monospace,monospace;--body:'Chakra Petch',system-ui,sans-serif;color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%;background:radial-gradient(ellipse at 50% 30%,#1a1240,#070512 70%) fixed,#070512;color:var(--ink);font-family:var(--body);overflow:hidden;user-select:none;-webkit-user-select:none}
+#play{z-index:2;position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;padding:calc(8px + env(safe-area-inset-top,0px)) 10px calc(8px + env(safe-area-inset-bottom,0px));gap:8px}
+#bar{width:min(720px,100%);display:flex;gap:6px;align-items:center}
+#bar button{font:900 13px var(--display);border:2px solid var(--line);background:var(--panel);color:var(--ink);border-radius:10px;min-width:44px;height:44px;padding:0 10px;cursor:pointer}
+#bar button:hover{border-color:var(--cyan)}
+#bar .title{flex:1;min-width:0;text-align:center}
+#bar .title b{display:block;font:900 15px var(--display);color:var(--cyan);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#bar .title small{color:var(--mute)}
+#boardWrap{flex:1;width:100%;display:grid;place-items:center;min-height:0;position:relative}
+#cv{display:block;touch-action:none;border-radius:14px}
+#tip{width:min(720px,100%);background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:8px 12px;display:flex;gap:10px;align-items:center;font-size:14px;color:var(--mute)}
+#tip .prof{font-size:28px}
+#tip b{color:var(--ink)}
+#inv{width:min(720px,100%);display:flex;gap:8px;justify-content:center;flex-wrap:wrap;min-height:70px}
+.pc{width:66px;height:66px;border:2px solid var(--line);background:var(--panel);border-radius:14px;cursor:pointer;position:relative;padding:0}
+.pc canvas{width:100%;height:100%}
+.pc.on{border-color:var(--gold);box-shadow:0 0 0 3px #ffd23f55}
+.pc .n{position:absolute;right:4px;bottom:2px;font:900 13px var(--display);color:var(--gold)}
+.pc[disabled]{opacity:.3}
+#moves{font:900 13px var(--display);color:var(--mute)}
+.screen{position:fixed;inset:0;display:flex;padding:16px;z-index:10;background:rgba(7,5,18,.82);overflow:auto}
+.box{width:min(760px,100%);display:flex;flex-direction:column;gap:14px;margin:auto}
+h1{font-family:var(--display);font-weight:900;font-size:clamp(34px,9vw,62px);margin:0;line-height:1.05;text-align:center;color:#fff;
+  text-shadow:0 0 12px var(--pink),0 0 30px var(--pink),0 0 2px #fff}
+h1 span{color:#fff;text-shadow:0 0 12px var(--cyan),0 0 30px var(--cyan)}
+h2{font-family:var(--display);font-size:22px;margin:0;color:var(--gold)}
+.tag{text-align:center;color:var(--mute);margin:-4px 0 4px}
+.btn{font:900 15px var(--display);letter-spacing:.06em;border:2px solid var(--line);background:var(--panel);color:var(--ink);border-radius:12px;padding:14px 16px;cursor:pointer;text-align:left;display:flex;align-items:center;gap:12px;width:100%}
+.btn:hover{border-color:var(--cyan)}
+.btn.main{background:linear-gradient(90deg,var(--pink),#b98bff,var(--cyan));color:#fff;border:0;justify-content:center;font-size:18px;text-shadow:0 1px 0 #0006}
+.btn small{display:block;font:400 13px var(--body);color:var(--mute);letter-spacing:0}
+.btn.main small{color:#fff}
+.btn .ic{font-size:24px}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1 1 160px}
+.back{align-self:flex-start;background:none;border:0;color:var(--cyan);font:900 13px var(--display);cursor:pointer;padding:6px 0}
+.who{display:flex;align-items:center;gap:10px;justify-content:center;color:var(--mute)}
+.who b{color:var(--ink)}.who button{background:none;border:1px solid var(--line);color:var(--mute);border-radius:8px;padding:4px 10px;cursor:pointer;font:inherit}
+.worlds{display:flex;flex-direction:column;gap:16px}
+.world{background:var(--panel);border:2px solid var(--line);border-radius:16px;padding:12px;border-top:4px solid var(--c)}
+.world h3{margin:0;font:900 16px var(--display);color:var(--c)}
+.world p{margin:4px 0 10px;color:var(--mute);font-size:14px}
+.lvls{display:grid;grid-template-columns:repeat(auto-fill,minmax(54px,1fr));gap:6px}
+.lv{aspect-ratio:1;border:2px solid var(--line);background:#0b0820;border-radius:12px;color:var(--ink);font:900 16px var(--display);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+.lv small{font-size:10px;color:var(--gold);letter-spacing:-1px}
+.lv.done{border-color:var(--c)}
+.lv[disabled]{opacity:.3;cursor:default}
+.big{font:900 clamp(28px,7vw,46px) var(--display);text-align:center;margin:0;color:#fff;text-shadow:0 0 16px var(--green)}
+.endstars{font-size:52px;text-align:center;color:var(--gold);letter-spacing:6px;text-shadow:0 0 20px #ffd23f88}
+.center{text-align:center}.mute{color:var(--mute)}
+.skins{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.skin{border:2px solid var(--line);background:var(--panel);border-radius:14px;padding:8px;cursor:pointer;color:var(--ink);font:600 13px var(--body);display:flex;flex-direction:column;gap:4px;align-items:center}
+.skin.on{border-color:var(--gold)}.skin[disabled]{opacity:.4;cursor:default}
+.skin canvas{width:100%;aspect-ratio:2/1;border-radius:8px;background:#070512}
+.skin small{color:var(--mute)}
+.ed{display:flex;flex-direction:column;gap:10px}
+.palette{display:flex;gap:6px;flex-wrap:wrap}
+.palette button{width:54px;height:54px;border:2px solid var(--line);background:var(--panel);border-radius:12px;cursor:pointer;padding:0;position:relative}
+.palette button canvas{width:100%;height:100%}
+.palette button.on{border-color:var(--gold)}
+.palette button span{position:absolute;inset:auto 0 2px 0;font:600 9px var(--body);color:var(--mute)}
+.opts{display:flex;gap:8px;flex-wrap:wrap;align-items:center;color:var(--mute);font-size:14px}
+.opts button{border:2px solid var(--line);background:var(--panel);color:var(--ink);border-radius:10px;padding:6px 12px;cursor:pointer;font:600 14px var(--body)}
+.opts button.on{border-color:var(--gold);color:var(--gold)}
+textarea{width:100%;min-height:70px;background:#0b0820;border:2px solid var(--line);border-radius:10px;color:var(--ink);font:13px ui-monospace,monospace;padding:8px}
+.mylv{display:flex;flex-direction:column;gap:6px}
+.mylv div{display:flex;gap:6px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 10px}
+.mylv div b{flex:1}
+.mylv button{border:2px solid var(--line);background:#0b0820;color:var(--ink);border-radius:8px;padding:6px 10px;cursor:pointer;font:600 13px var(--body)}
+.legend{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px}
+.legend div{display:flex;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px}
+.legend canvas{width:48px;height:48px;flex:none}
+.legend p{margin:0;font-size:13px;color:var(--mute)}.legend b{color:var(--ink);display:block;font-size:14px}
+</style>
+</head>
+<body>
+<canvas id="bgCv" style="position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none" aria-hidden="true"></canvas>
+<div id="play" hidden>
+  <div id="bar">
+    <button id="bBack" aria-label="Back to levels">←</button>
+    <button id="bUndo" aria-label="Undo">↶</button>
+    <div class="title"><b id="lvTitle">Level</b><small id="moves">Moves 0 · Par 0</small></div>
+    <button id="bHint" aria-label="Hint">💡<span id="hintN"></span></button>
+    <button id="bReset" aria-label="Reset">⟲</button>
+  </div>
+  <div id="tip" hidden><span class="prof">👩‍🔬</span><span id="tipText"></span></div>
+  <div id="rushBar" hidden style="width:min(720px,100%);height:10px;background:#141030;border-radius:5px;overflow:hidden"><i id="rushFill" style="display:block;height:100%;width:100%;background:linear-gradient(90deg,#ff3d9a,#ffd23f)"></i></div>
+  <div id="boardWrap"><canvas id="cv" aria-label="Puzzle board"></canvas></div>
+  <div id="inv"></div>
+</div>
+
+<div class="screen" id="sMenu">
+  <div class="box" style="width:min(560px,100%)">
+    <a href="index.html" class="back">← ARCADE</a>
+    <h1>LASER<br><span>LABYRINTH</span></h1>
+    <p class="tag">Bend the light. Light every target. Don't break the crystals.</p>
+    <div class="who"><span id="whoAv" style="font-size:26px">🦊</span><span>Scientist <b id="whoName">Player</b></span><button id="whoEdit">edit</button></div>
+    <p class="center" style="margin:0;font:900 16px var(--display);color:var(--gold)">⭐ <span id="mStars">0</span> / <span id="mStarsMax">0</span></p>
+    <button class="btn main" id="mPlay">▶ PLAY<small>6 labs, 90 puzzles</small></button>
+    <div class="row">
+      <button class="btn" id="mDaily"><span class="ic">📅</span><span>DAILY PUZZLE<small id="dailyInfo">A new one every day</small></span></button>
+      <button class="btn" id="mEndless"><span class="ic">♾️</span><span>ENDLESS LAB<small id="endlessInfo">Random puzzles forever</small></span></button>
+    </div>
+    <div class="row">
+      <button class="btn" id="mChal"><span class="ic">🎯</span><span>CHALLENGES<small id="chalInfo">20 special puzzles with twists</small></span></button>
+      <button class="btn" id="mRush"><span class="ic">⏱️</span><span>LIGHT RUSH<small id="rushInfo">Solve as many as you can in 3 minutes</small></span></button>
+    </div>
+    <div class="row">
+      <button class="btn" id="mEditor"><span class="ic">🛠️</span><span>LEVEL MAKER<small>Build and share puzzles</small></span></button>
+      <button class="btn" id="mSkins"><span class="ic">🌈</span><span>LASER STYLES<small>Change how your lasers look</small></span></button>
+    </div>
+    <div class="row">
+      <button class="btn" id="mGuide"><span class="ic">📘</span><span>PIECE GUIDE<small>What every piece does</small></span></button>
+      <button class="btn" id="mAch"><span class="ic">🏅</span><span>AWARDS<small id="achInfo">0/0</small></span></button>
+    </div>
+    <button class="btn" id="mStats"><span class="ic">📊</span><span>LAB NOTEBOOK<small>Your records and story</small></span></button>
+    <div class="opts"><span>Sound</span><button id="oSound">ON</button><span>Colour-blind marks</span><button id="oCb">OFF</button></div>
+  </div>
+</div>
+
+<div class="screen" id="sLevels" hidden>
+  <div class="box">
+    <button class="back" data-go="sMenu">← BACK</button>
+    <h2>CHOOSE A PUZZLE</h2>
+    <div class="worlds" id="worlds"></div>
+  </div>
+</div>
+
+<div class="screen" id="sChal" hidden>
+  <div class="box">
+    <button class="back" data-go="sMenu">← BACK</button>
+    <h2>🎯 CHALLENGES</h2>
+    <p class="mute" style="margin:0">Each challenge has a special rule. Finish 5 labs' worth of puzzles to open them all — or just try the ones that are open.</p>
+    <div class="legend" id="chalList"></div>
+  </div>
+</div>
+
+<div class="screen" id="sStats" hidden>
+  <div class="box">
+    <button class="back" data-go="sMenu">← BACK</button>
+    <h2>📊 LAB NOTEBOOK</h2>
+    <div class="legend" id="statList"></div>
+    <h2 style="font-size:16px">PROFESSOR LUMEN'S DIARY</h2>
+    <div id="story" style="display:flex;flex-direction:column;gap:8px"></div>
+  </div>
+</div>
+
+<div class="screen" id="sWin" hidden>
+  <div class="box" style="width:min(480px,100%)">
+    <p class="big" id="wTitle">SOLVED!</p>
+    <div class="endstars" id="wStars"></div>
+    <p class="center mute" id="wNote"></p>
+    <button class="btn main" id="wNext">▶ NEXT PUZZLE</button>
+    <div class="row"><button class="btn" id="wRetry"><span class="ic">🔁</span><span>AGAIN</span></button><button class="btn" id="wMenu"><span class="ic">🗺️</span><span>LEVELS</span></button></div>
+  </div>
+</div>
+
+<div class="screen" id="sSkins" hidden>
+  <div class="box">
+    <button class="back" data-go="sMenu">← BACK</button>
+    <h2>🌈 LASER STYLES</h2>
+    <p class="mute" style="margin:0">Earn stars to unlock new looks for your lasers and your lab.</p>
+    <div class="skins" id="skinList"></div>
+    <h2 style="font-size:16px">LAB FLOOR</h2>
+    <div class="skins" id="floorList"></div>
+  </div>
+</div>
+
+<div class="screen" id="sGuide" hidden>
+  <div class="box">
+    <button class="back" data-go="sMenu">← BACK</button>
+    <h2>📘 PIECE GUIDE</h2>
+    <p class="mute" style="margin:0"><b style="color:var(--ink)">How to play:</b> tap a piece on the board to turn it. Pieces with a 🔒 dot can't move. Pick a piece from the tray underneath and tap an empty square to place it. Tap a placed piece to turn it, or press and hold it (or right-click) to put it back. Light every target with the right colour!</p>
+    <p class="mute" style="margin:0"><b style="color:var(--ink)">Keyboard:</b> arrow keys move the yellow cursor, Space or Enter turns or places a piece, Backspace takes it back, 1–9 pick from the tray, U = undo, R = restart, H = hint, Esc = back.</p>
+    <div class="legend" id="legend"></div>
+  </div>
+</div>
+
+<div class="screen" id="sEditor" hidden>
+  <div class="box ed">
+    <button class="back" data-go="sMenu">← BACK</button>
+    <h2>🛠️ LEVEL MAKER</h2>
+    <p class="mute" style="margin:0">Pick a piece and tap the board. Tap again to turn it. Use <b>Movable</b> to choose if players can turn a piece (🔄) or must place it from the tray (✋). Then press TEST — you must solve your own puzzle before you can share it.</p>
+    <div class="opts"><span>Size</span><button data-sz="6">6×6</button><button data-sz="8">8×8</button><button data-sz="10">10×10</button><span>Colour</span><button data-col="1" style="color:#ff4d6a">RED</button><button data-col="2" style="color:#5cf2b4">GREEN</button><button data-col="4" style="color:#4f8bff">BLUE</button></div>
+    <div class="palette" id="palette"></div>
+    <div class="opts"><span>Movable</span><button data-mv="fixed">🔒 FIXED</button><button data-mv="rot">🔄 TURN</button><button data-mv="loose">✋ TRAY</button></div>
+    <div style="display:grid;place-items:center"><canvas id="edCv" style="border-radius:12px;touch-action:none"></canvas></div>
+    <div class="row"><button class="btn" id="edTest"><span class="ic">▶</span><span>TEST<small>Play your puzzle</small></span></button><button class="btn" id="edClear"><span class="ic">🧹</span><span>CLEAR</span></button><button class="btn" id="edSave"><span class="ic">💾</span><span>SAVE<small>Keep it on this device</small></span></button></div>
+    <h2 style="font-size:16px">SHARE CODE</h2>
+    <textarea id="edCode" placeholder="Solve your puzzle in TEST to get a code you can send to a friend. Or paste a friend's code here and press LOAD."></textarea>
+    <div class="row"><button class="btn" id="edLoad"><span class="ic">📥</span><span>LOAD CODE</span></button><button class="btn" id="edCopy"><span class="ic">📋</span><span>COPY CODE</span></button></div>
+    <h2 style="font-size:16px">MY PUZZLES</h2>
+    <div class="mylv" id="myList"></div>
+  </div>
+</div>
+
+<script src="kit.js"></script>
+<script>
+'use strict';
+/* ================================================================
+   DATA
+   ================================================================ */
+const {sfx:SFX,util:U,ach:ACH,profile:PROF,ui:UI}=KIT;
+const GAME='laser';
+// directions: 0 right, 1 down, 2 left, 3 up
+const DX=[1,0,-1,0],DY=[0,1,0,-1];
+// mirror '/' (o=0) and '\' (o=1): which way the light goes after bouncing
+const BOUNCE=[[3,2,1,0],[1,0,3,2]];
+// colours are bits: red 1, green 2, blue 4. Mixed light adds them up.
+const CNAME={1:'red',2:'green',3:'yellow',4:'blue',5:'magenta',6:'cyan',7:'white'};
+const CHEX={1:'#ff4d6a',2:'#5cf2b4',3:'#ffe04a',4:'#4f8bff',5:'#ff5ad8',6:'#3ef0ff',7:'#ffffff'};
+const CLETTER={1:'R',2:'G',3:'Y',4:'B',5:'M',6:'C',7:'W'};
+
+const WORLDS=[
+ {name:'Mirror Lab',col:'#3ef0ff',sub:'Turn the mirrors to guide the laser to the target.',prof:'Welcome to the lab! Tap a mirror to turn it. Guide the red laser into the target.',
+  p:{w:[5,7],h:[5,7],beams:[1,2],turns:[1,4],split:0,colors:[1],loose:0,rot:1,walls:[0,3],crystals:0,portals:0,filters:0,mix:0,glass:0}},
+ {name:'Toolbox',col:'#ffd23f',sub:'Some mirrors are missing. Place them from your tray.',prof:'Some mirrors are in your tray. Pick one, then tap an empty square to place it.',
+  p:{w:[6,7],h:[6,8],beams:[1,2],turns:[2,4],split:0,colors:[1,2],loose:.6,rot:.4,walls:[1,4],crystals:0,portals:0,filters:0,mix:0,glass:.2}},
+ {name:'Splitter Station',col:'#5cf2b4',sub:'Half mirrors split one laser into two.',prof:'A splitter lets half the light through and bounces the other half. One laser can light two targets!',
+  p:{w:[6,8],h:[6,8],beams:[1,2],turns:[2,5],split:.9,colors:[1,2,4],loose:.45,rot:.45,walls:[2,5],crystals:0,portals:0,filters:0,mix:0,glass:.3}},
+ {name:'Colour Works',col:'#ff5ad8',sub:'Filters and mixing: red + green makes yellow!',prof:'Filters only let one colour through. Two colours on one target mix: red and green make yellow, red and blue make magenta.',
+  p:{w:[7,8],h:[7,9],beams:[2,3],turns:[2,4],split:.4,colors:[1,2,4],loose:.45,rot:.45,walls:[2,5],crystals:0,portals:0,filters:.5,mix:.6,glass:.2}},
+ {name:'Portal Vault',col:'#b98bff',sub:'Portals and fragile crystals.',prof:'Light that enters a portal comes out of its twin. And careful — if a laser touches a crystal it breaks!',
+  p:{w:[7,9],h:[7,9],beams:[1,3],turns:[2,5],split:.25,colors:[1,2,4],loose:.5,rot:.4,walls:[3,6],crystals:[2,5],portals:.5,filters:.2,mix:.3,glass:.2}},
+ {name:'Master Core',col:'#ff4d6a',sub:'Everything at once. Only for true laser masters.',prof:'This is the reactor core. Every trick you have learned, all at once. Good luck!',
+  p:{w:[8,10],h:[8,10],beams:[2,4],turns:[3,6],split:.6,colors:[1,2,4],loose:.55,rot:.45,walls:[4,8],crystals:[2,5],portals:.4,filters:.3,mix:.4,glass:.3}}
+];
+const PER_WORLD=15;
+const SKINS=[
+ {id:'classic',name:'Classic',need:0,desc:'Bright glowing beams'},
+ {id:'pulse',name:'Pulse',need:15,desc:'Light flows along the beam'},
+ {id:'sparkle',name:'Sparkle',need:40,desc:'Sparkles fly off the beam'},
+ {id:'zap',name:'Lightning',need:70,desc:'Crackling electric beams'},
+ {id:'rainbow',name:'Rainbow',need:110,desc:'Every beam shimmers in rainbow colours'},
+ {id:'dots',name:'Photon Dots',need:160,desc:'Little packets of light zooming along'},
+ {id:'avatar',name:'Avatar Beam',need:220,desc:'Your avatar rides the laser!'}
+];
+const FLOORS=[
+ {id:'grid',name:'Lab Grid',need:0,a:'#141030',b:'#18133a'},
+ {id:'steel',name:'Steel',need:20,a:'#1c2230',b:'#222a3a'},
+ {id:'space',name:'Starfield',need:50,a:'#070512',b:'#0b0820'},
+ {id:'wood',name:'Wood',need:90,a:'#3a2a1a',b:'#43301e'},
+ {id:'candy',name:'Candy',need:130,a:'#3a1a3a',b:'#442046'},
+ {id:'gold',name:'Gold',need:200,a:'#3a3010',b:'#463a14'}
+];
+ACH.define(GAME,[
+ {id:'first',icon:'🔦',name:'Let There Be Light',desc:'Solve your first puzzle'},
+ {id:'w1',icon:'🪞',name:'Mirror Master',desc:'Finish the Mirror Lab'},
+ {id:'w2',icon:'🧰',name:'Handy',desc:'Finish the Toolbox'},
+ {id:'w3',icon:'🔀',name:'Splitting Image',desc:'Finish Splitter Station'},
+ {id:'w4',icon:'🎨',name:'Colour Theory',desc:'Finish Colour Works'},
+ {id:'w5',icon:'🌀',name:'Thinking With Portals',desc:'Finish Portal Vault'},
+ {id:'w6',icon:'☢️',name:'Core Engineer',desc:'Finish the Master Core'},
+ {id:'perfect10',icon:'⭐',name:'Sharp Mind',desc:'Get 3 stars on 10 puzzles'},
+ {id:'perfect50',icon:'🌟',name:'Genius',desc:'Get 3 stars on 50 puzzles'},
+ {id:'allstars',icon:'💫',name:'Perfect Lab',desc:'Get 3 stars on all 90 puzzles'},
+ {id:'nohint',icon:'🧠',name:'No Help Needed',desc:'Finish a whole lab without hints'},
+ {id:'daily',icon:'📅',name:'Daily Thinker',desc:'Solve a Daily Puzzle'},
+ {id:'daily7',icon:'🗓️',name:'Week of Light',desc:'Solve 7 Daily Puzzles'},
+ {id:'endless10',icon:'♾️',name:'Lab Rat',desc:'Solve 10 Endless puzzles in a row'},
+ {id:'endless30',icon:'🧪',name:'Mad Scientist',desc:'Solve 30 Endless puzzles in a row'},
+ {id:'maker',icon:'🛠️',name:'Puzzle Maker',desc:'Make and solve your own puzzle'},
+ {id:'shared',icon:'📨',name:'Pass It On',desc:'Play a puzzle from a share code'},
+ {id:'crash',icon:'💥',name:'Oops!',desc:'Break a crystal with a laser'},
+ {id:'white',icon:'⚪',name:'Pure Light',desc:'Light a white target (all three colours)'},
+ {id:'skin',icon:'🌈',name:'Stylish',desc:'Change your laser style'},
+ {id:'speed',icon:'⚡',name:'Lightning Fast',desc:'Solve a puzzle in under 10 seconds'},
+ {id:'fifty',icon:'🏁',name:'Halfway There',desc:'Solve 45 campaign puzzles'}
+]);
+const SAVE_KEY='laser:v1';
+const D=Object.assign({best:{},hints:3,skin:'classic',floor:'grid',daily:{},endless:0,endlessBest:0,mine:[],cb:false,noHint:{},solved:0},U.load(SAVE_KEY,{}));
+function save(){U.save(SAVE_KEY,D)}
+const starsTotal=()=>Object.values(D.best).reduce((a,b)=>a+b,0);
+
+/* ================================================================
+   THE LIGHT: trace every beam through the board
+   cell: {t:'emit'|'target'|'mirror'|'split'|'wall'|'glass'|'filter'|'portal'|'crystal', o, c, mv:'fixed'|'rot'|'loose', id}
+   ================================================================ */
+function trace(L){const{w,h,cells}=L,at=(x,y)=>cells[y*w+x],segs=[],hit={},broke=[],seen=new Set();
+  const q=[];for(let i=0;i<cells.length;i++){const c=cells[i];if(c&&c.t==='emit')q.push({x:i%w,y:Math.floor(i/w),d:c.o,col:c.c})}
+  let guard=0;
+  while(q.length&&guard<4000){guard++;const b=q.shift();let x=b.x,y=b.y,d=b.d;const pts=[[x+.5,y+.5]];
+    while(true){x+=DX[d];y+=DY[d];if(x<0||y<0||x>=w||y>=h){pts.push([x+.5-DX[d]*.5,y+.5-DY[d]*.5]);break}
+      const key=x+','+y+','+d+','+b.col;if(seen.has(key)){pts.push([x+.5,y+.5]);break}seen.add(key);
+      const c=at(x,y);if(!c||c.t==='glass'){continue}
+      if(c.t==='mirror'){pts.push([x+.5,y+.5]);d=BOUNCE[c.o][d];continue}
+      if(c.t==='split'){pts.push([x+.5,y+.5]);q.push({x,y,d:BOUNCE[c.o][d],col:b.col});continue}
+      if(c.t==='target'){pts.push([x+.5,y+.5]);const k=y*w+x;hit[k]=(hit[k]||0)|b.col;break}
+      if(c.t==='filter'){if(c.c&b.col){b.col=b.col&c.c;segs.push({pts:pts.slice(),col:b.col});pts.length=0;pts.push([x+.5,y+.5]);continue}pts.push([x+.5-DX[d]*.3,y+.5-DY[d]*.3]);break}
+      if(c.t==='portal'){pts.push([x+.5,y+.5]);const twin=cells.findIndex((o,i)=>o&&o.t==='portal'&&o.id===c.id&&i!==y*w+x);segs.push({pts:pts.slice(),col:b.col,portal:true});pts.length=0;
+        if(twin<0)break;x=twin%w;y=Math.floor(twin/w);pts.push([x+.5,y+.5]);continue}
+      if(c.t==='crystal'){pts.push([x+.5,y+.5]);broke.push(y*w+x);break}
+      pts.push([x+.5-DX[d]*.5,y+.5-DY[d]*.5]);break}
+    if(pts.length>1)segs.push({pts,col:b.col})}
+  let lit=0,total=0;for(let i=0;i<cells.length;i++){const c=cells[i];if(c&&c.t==='target'){total++;if(hit[i]===c.c)lit++}}
+  return{segs,hit,broke,lit,total,solved:total>0&&lit===total&&!broke.length}}
+
+/* ================================================================
+   PUZZLE MAKER: draws light paths first, then hides the answer
+   ================================================================ */
+function rint(r,a,b){return a+Math.floor(r()*(b-a+1))}
+function generate(seed,P){const r=U.rng(seed);
+  for(let attempt=0;attempt<120;attempt++){const L=tryGen(r,P);if(L)return L}
+  // fall back to an easy board
+  return tryGen(U.rng(seed+1),WORLDS[0].p)||tryGen(U.rng(7),WORLDS[0].p)}
+function tryGen(r,P){const w=rint(r,P.w[0],P.w[1]),h=rint(r,P.h[0],P.h[1]),cells=new Array(w*h).fill(null),lane=new Array(w*h).fill(0);
+  const free=(x,y)=>x>=0&&y>=0&&x<w&&y<h&&!cells[y*w+x];
+  let portalId=0,ok=true;
+  // walk from a start square in a direction, bending a few times, returns the end square or null
+  function walk(x,y,d,col,turns,depth=0){let bends=0,steps=0;const path=[];
+    while(steps<60){steps++;const nx=x+DX[d],ny=y+DY[d];
+      if(nx<0||ny<0||nx>=w||ny>=h)return null;
+      x=nx;y=ny;const i=y*w+x;
+      if(cells[i]){if(cells[i].t==='glass'||cells[i].t==='filter'&&cells[i].c===col){lane[i]|=1;continue}return null}
+      const wantEnd=bends>=turns&&steps>1;
+      if(wantEnd&&r()<.5&&!lane[i]){cells[i]={t:'target',c:col,o:0};return i}
+      // bend here?
+      const canBend=!lane[i]&&steps>1&&bends<turns;
+      if(canBend&&r()<(P.split?.5:.4)){const turnLeft=r()<.5,nd=turnLeft?(d+3)%4:(d+1)%4,o=BOUNCE[0][d]===nd?0:1;
+        if(depth<1&&P.split&&r()<P.split){cells[i]={t:'split',o,col};
+          const end=walk(x,y,nd,col,Math.max(1,turns-bends-1),depth+1);if(end==null){cells[i]=null;}else{bends++;continue}}
+        cells[i]={t:'mirror',o};d=nd;bends++;continue}
+      if(!lane[i]&&P.portals&&portalId<2&&r()<P.portals*.12&&steps>1){// jump through a portal pair
+        const spots=[];for(let j=0;j<w*h;j++){const sx=j%w,sy=Math.floor(j/w);if(!cells[j]&&!lane[j]&&Math.abs(sx-x)+Math.abs(sy-y)>3)spots.push(j)}
+        if(spots.length){const j=spots[Math.floor(r()*spots.length)];cells[i]={t:'portal',id:portalId,o:0};cells[j]={t:'portal',id:portalId,o:0};portalId++;x=j%w;y=Math.floor(j/w);lane[i]|=1;continue}}
+      if(!lane[i]&&P.filters&&r()<P.filters*.15){cells[i]={t:'filter',c:col,o:0};lane[i]|=1;continue}
+      if(!lane[i]&&P.glass&&r()<P.glass*.08){cells[i]={t:'glass',o:0};lane[i]|=1;continue}
+      lane[i]|=1}
+    return null}
+  const nBeams=rint(r,P.beams[0],P.beams[1]);
+  for(let b=0;b<nBeams;b++){const col=P.colors[Math.floor(r()*P.colors.length)];let done=false;
+    for(let tries=0;tries<40&&!done;tries++){// emitter on the edge, pointing inwards
+      const side=rint(r,0,3);let x,y,d;if(side===0){x=0;y=rint(r,0,h-1);d=0}else if(side===1){x=w-1;y=rint(r,0,h-1);d=2}else if(side===2){y=0;x=rint(r,0,w-1);d=1}else{y=h-1;x=rint(r,0,w-1);d=3}
+      const i=y*w+x;if(cells[i]||lane[i])continue;const snapC=cells.slice(),snapL=lane.slice(),snapP=portalId;cells[i]={t:'emit',c:col,o:d};
+      const end=walk(x,y,d,col,rint(r,P.turns[0],P.turns[1]));
+      if(end==null){for(let k=0;k<cells.length;k++){cells[k]=snapC[k];lane[k]=snapL[k]}portalId=snapP;continue}
+      // colour mixing: a second laser of another colour must reach the same target
+      if(P.mix&&r()<P.mix){const c2=[1,2,4].filter(c=>c!==col)[rint(r,0,1)];const tx=end%w,ty=Math.floor(end/w);let mixed=false;
+        for(let t2=0;t2<30&&!mixed;t2++){const s2C=cells.slice(),s2L=lane.slice(),s2P=portalId;const d0=rint(r,0,3);
+          // walk backwards from the target and put an emitter where the walk leaves the board
+          const res=walkBack(tx,ty,d0,c2,rint(r,1,3));if(res){cells[end].c=col|c2;mixed=true}else{for(let k=0;k<cells.length;k++){cells[k]=s2C[k];lane[k]=s2L[k]}portalId=s2P}}}
+      done=true}
+    if(!done&&b===0)return null}
+  function walkBack(x,y,d,col,turns){let bends=0,steps=0;
+    while(steps<50){steps++;const nx=x+DX[d],ny=y+DY[d];
+      if(nx<0||ny<0||nx>=w||ny>=h){// the light enters from here: put the emitter on the edge square we are on, pointing back
+        if(steps<3||bends<turns)return false;const i=y*w+x;if(cells[i])return false;cells[i]={t:'emit',c:col,o:(d+2)%4};return true}
+      x=nx;y=ny;const i=y*w+x;if(cells[i]){if(cells[i].t==='glass')continue;return false}
+      if(!lane[i]&&bends<turns&&steps>1&&r()<.35){const nd=r()<.5?(d+3)%4:(d+1)%4;// light travels the other way, so the mirror must send nd back into (d+2)
+        const o=BOUNCE[0][(nd+2)%4]===(d+2)%4?0:1;cells[i]={t:'mirror',o};d=nd;bends++;continue}
+      lane[i]|=1}return false}
+  if(!cells.some(c=>c&&c.t==='target'))return null;
+  // the solution must actually work
+  const L={w,h,cells};if(!trace(L).solved)return null;
+  const solution=cells.map(c=>c?Object.assign({},c):null);
+  // decorations: walls, crystals and spare decoys away from the light
+  const empties=[];for(let i=0;i<w*h;i++)if(!cells[i]&&!lane[i])empties.push(i);
+  const nW=rint(r,P.walls[0],P.walls[1]);for(let k=0;k<nW&&empties.length;k++){const j=empties.splice(Math.floor(r()*empties.length),1)[0];cells[j]={t:'wall',o:0}}
+  if(P.crystals){const nC=rint(r,P.crystals[0],P.crystals[1]);for(let k=0;k<nC&&empties.length;k++){const j=empties.splice(Math.floor(r()*empties.length),1)[0];cells[j]={t:'crystal',o:0}}}
+  // now hide the answer: some mirrors go to the tray, some get turned the wrong way
+  const tray=[];let par=0;
+  for(let i=0;i<w*h;i++){const c=cells[i];if(!c||(c.t!=='mirror'&&c.t!=='split'))continue;
+    const roll=r();if(roll<P.loose){tray.push({t:c.t,o:c.o});cells[i]=null;par++;continue}
+    if(roll<P.loose+P.rot){c.mv='rot';if(r()<.75){c.o=1-c.o;par++}continue}c.mv='fixed'}
+  for(const c of cells)if(c&&!c.mv)c.mv='fixed';
+  if(trace({w,h,cells}).solved){// already solved? turn one movable piece, or try again
+    const m=cells.find(c=>c&&c.mv==='rot');if(m&&!tray.length){m.o=1-m.o;par++;if(trace({w,h,cells}).solved)return null}else return null}
+  return{w,h,cells,tray,par:Math.max(1,par),solution}}
+function levelSeed(wi,li){return(wi+1)*1000003+li*7919+42}
+function levelParams(wi,li){const P=JSON.parse(JSON.stringify(WORLDS[wi].p)),k=li/(PER_WORLD-1);
+  // later levels in a lab are bigger and twistier
+  P.w=[P.w[0],Math.round(P.w[0]+(P.w[1]-P.w[0])*Math.min(1,k*1.3))];P.h=[P.h[0],Math.round(P.h[0]+(P.h[1]-P.h[0])*Math.min(1,k*1.3))];
+  P.turns=[P.turns[0],Math.max(P.turns[0],Math.round(P.turns[0]+(P.turns[1]-P.turns[0])*k))];P.beams=[P.beams[0],Math.round(P.beams[0]+(P.beams[1]-P.beams[0])*k)];
+  if(wi===0&&li<3){P.w=[5,5];P.h=[5,5];P.turns=[1,1+li];P.walls=[0,1]}
+  return P}
+const LVCACHE={};
+function getLevel(wi,li){const k=wi+':'+li;if(!LVCACHE[k])LVCACHE[k]=generate(levelSeed(wi,li),levelParams(wi,li));return JSON.parse(JSON.stringify(LVCACHE[k]))}
+
+/* ================================================================
+   DRAWING PIECES
+   ================================================================ */
+function glow(c,x,y,r,col,a=1){const g=c.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,col);g.addColorStop(1,col+'00');c.globalAlpha=a;c.fillStyle=g;c.fillRect(x-r,y-r,r*2,r*2);c.globalAlpha=1}
+function lockDot(c,s){const x=s*.62,y=s*.62,r=s*.13;c.fillStyle='#0b0820';c.beginPath();c.arc(x,y,r*1.5,0,7);c.fill();c.strokeStyle='#9a94c9';c.lineWidth=r*.45;c.beginPath();c.arc(x,y-r*.35,r*.55,Math.PI,0);c.stroke();c.fillStyle='#9a94c9';c.fillRect(x-r*.75,y-r*.3,r*1.5,r*1.05)}
+function drawPiece(c,p,s,t=0,lit=false,cb=false){c.save();const S=s/2;
+  switch(p.t){
+   case'mirror':case'split':{c.rotate(p.o?Math.PI/4:-Math.PI/4);const g=c.createLinearGradient(0,-S*.12,0,S*.12);
+     if(p.t==='mirror'){g.addColorStop(0,'#e8f8ff');g.addColorStop(.5,'#9ad0ff');g.addColorStop(1,'#3a5a8a')}else{g.addColorStop(0,'#e8fff4');g.addColorStop(.5,'#5cf2b4aa');g.addColorStop(1,'#1a6a5a')}
+     c.fillStyle='#0006';c.fillRect(-S*.82,-S*.1+2,S*1.64,S*.2);c.fillStyle=g;c.fillRect(-S*.82,-S*.1,S*1.64,S*.2);c.fillStyle='#ffffffaa';c.fillRect(-S*.78,-S*.08,S*1.56,S*.04);
+     if(p.t==='split'){c.setLineDash([S*.12,S*.08]);c.strokeStyle='#ffffff';c.lineWidth=1.5;c.beginPath();c.moveTo(-S*.8,0);c.lineTo(S*.8,0);c.stroke();c.setLineDash([])}
+     c.fillStyle='#6a6a8a';c.beginPath();c.arc(0,0,S*.13,0,7);c.fill();c.restore();c.save();if(p.mv==='fixed')lockDot(c,S*2*.5*2/2);
+     if(p.mv==='rot'){c.strokeStyle='#ffffff30';c.lineWidth=1.5;c.beginPath();c.arc(0,0,S*.86,0,7);c.stroke()}if(p.mv==='loose'){c.strokeStyle='#ffd23f66';c.lineWidth=2;c.setLineDash([3,4]);c.beginPath();c.arc(0,0,S*.86,0,7);c.stroke();c.setLineDash([])}break}
+   case'emit':{const col=CHEX[p.c];c.fillStyle='#2a2440';c.beginPath();c.roundRect(-S*.7,-S*.7,S*1.4,S*1.4,S*.25);c.fill();c.rotate(p.o*Math.PI/2);c.fillStyle='#4a4268';c.fillRect(-S*.5,-S*.35,S*1.1,S*.7);
+     c.fillStyle=col;c.fillRect(S*.45,-S*.2,S*.35,S*.4);glow(c,S*.7,0,S*.6,col,.8);c.rotate(-p.o*Math.PI/2);c.fillStyle=col;c.beginPath();c.arc(-S*.15,0,S*.18,0,7);c.fill();
+     if(cb){c.fillStyle='#000';c.font=`900 ${S*.4}px Orbitron`;c.textAlign='center';c.textBaseline='middle';c.fillText(CLETTER[p.c],-S*.15,1)}break}
+   case'target':{const col=CHEX[p.c];c.fillStyle='#1a1630';c.beginPath();c.arc(0,0,S*.78,0,7);c.fill();c.strokeStyle=col;c.lineWidth=S*.12;c.beginPath();c.arc(0,0,S*.62,0,7);c.stroke();
+     c.lineWidth=S*.08;c.beginPath();c.arc(0,0,S*.36,0,7);c.stroke();if(lit){glow(c,0,0,S*1.3,col,.9+.1*Math.sin(t*8));c.fillStyle='#fff';c.beginPath();c.arc(0,0,S*.22,0,7);c.fill()}else{c.fillStyle=col+'55';c.beginPath();c.arc(0,0,S*.14,0,7);c.fill()}
+     if(cb||p.c===3||p.c===5||p.c===6||p.c===7){c.fillStyle=lit?'#000':'#fff';c.font=`900 ${S*.38}px Orbitron`;c.textAlign='center';c.textBaseline='middle';c.fillText(CLETTER[p.c],0,1)}break}
+   case'wall':{c.fillStyle='#3a3456';c.fillRect(-S*.92,-S*.92,S*1.84,S*1.84);c.fillStyle='#4a4468';c.fillRect(-S*.92,-S*.92,S*1.84,S*.3);c.strokeStyle='#2a2440';c.lineWidth=2;
+     c.beginPath();c.moveTo(-S*.92,0);c.lineTo(S*.92,0);c.moveTo(0,-S*.62);c.lineTo(0,0);c.moveTo(-S*.4,0);c.lineTo(-S*.4,S*.92);c.moveTo(S*.4,0);c.lineTo(S*.4,S*.92);c.stroke();break}
+   case'glass':{c.fillStyle='#bfe8ff22';c.strokeStyle='#bfe8ff88';c.lineWidth=2;c.beginPath();c.roundRect(-S*.7,-S*.7,S*1.4,S*1.4,S*.15);c.fill();c.stroke();c.strokeStyle='#ffffff55';c.beginPath();c.moveTo(-S*.4,-S*.5);c.lineTo(-S*.1,-S*.5);c.stroke();break}
+   case'filter':{const col=CHEX[p.c];c.fillStyle=col+'44';c.strokeStyle=col;c.lineWidth=2;c.beginPath();c.roundRect(-S*.3,-S*.85,S*.6,S*1.7,S*.1);c.fill();c.stroke();c.beginPath();c.roundRect(-S*.85,-S*.3,S*1.7,S*.6,S*.1);c.fill();c.stroke();
+     c.fillStyle='#fff';c.font=`900 ${S*.36}px Orbitron`;c.textAlign='center';c.textBaseline='middle';c.fillText(CLETTER[p.c],0,1);break}
+   case'portal':{const pc=['#b98bff','#ff8a3d','#3ef0ff','#ffd23f'][p.id%4];c.rotate(t*2);for(let k=0;k<3;k++){c.strokeStyle=pc;c.globalAlpha=1-k*.28;c.lineWidth=S*.1;c.beginPath();c.arc(0,0,S*(.7-k*.18),k,k+4.5);c.stroke()}c.globalAlpha=1;glow(c,0,0,S*.6,pc,.6);break}
+   case'crystal':{const br=p.broken;c.fillStyle=br?'#5a3a5a':'#ff8ad8';c.beginPath();c.moveTo(0,-S*.8);c.lineTo(S*.45,-S*.15);c.lineTo(S*.3,S*.7);c.lineTo(-S*.3,S*.7);c.lineTo(-S*.45,-S*.15);c.closePath();c.fill();
+     if(!br){c.fillStyle='#ffffff88';c.beginPath();c.moveTo(0,-S*.8);c.lineTo(S*.12,-S*.1);c.lineTo(0,S*.3);c.lineTo(-S*.15,-S*.15);c.fill();glow(c,0,0,S*.9,'#ff8ad8',.25+.15*Math.sin(t*3))}else{c.strokeStyle='#fff';c.lineWidth=1.5;c.beginPath();c.moveTo(-S*.3,-S*.3);c.lineTo(S*.1,0);c.lineTo(-S*.1,S*.4);c.stroke()}break}}
+  c.restore()}
+
+/* ================================================================
+   GAME STATE
+   ================================================================ */
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+let L=null,P=null;   // L = current board, P = play state
+let CS=40,OX=0,OY=0,DPR=1;
+function fitBoard(){if(!L)return;const wrap=document.getElementById('boardWrap'),r=wrap.getBoundingClientRect();DPR=Math.min(2,devicePixelRatio||1);
+  CS=Math.floor(Math.min((r.width-8)/L.w,(r.height-8)/L.h,74));if(CS<16)CS=16;const W=CS*L.w,H=CS*L.h;cv.style.width=W+'px';cv.style.height=H+'px';cv.width=W*DPR;cv.height=H*DPR}
+addEventListener('resize',fitBoard);
+function startLevel(level,meta){L=level;P=Object.assign({moves:0,undo:[],sel:null,start:performance.now(),won:false,hints:0,lastTrace:null,flash:0,sparks:[]},meta);
+  document.getElementById('play').hidden=false;show(null);
+  document.getElementById('lvTitle').textContent=meta.title;const tip=document.getElementById('tip');if(meta.tip){tip.hidden=false;document.getElementById('tipText').innerHTML=meta.tip}else tip.hidden=true;
+  requestAnimationFrame(()=>{fitBoard();drawInv();refreshBar()});SFX.power()}
+function refreshBar(){document.getElementById('moves').textContent=`Moves ${P.moves} · Par ${L.par}`;document.getElementById('hintN').textContent=' '+D.hints;document.getElementById('bHint').disabled=!D.hints||P.won||P.mode==='test'}
+function snapshot(){P.undo.push(JSON.stringify({cells:L.cells,tray:L.tray}));if(P.undo.length>80)P.undo.shift()}
+function undo(){if(!P.undo.length||P.won)return;const s=JSON.parse(P.undo.pop());L.cells=s.cells;L.tray=s.tray;P.moves=Math.max(0,P.moves-1);SFX.click();drawInv();refreshBar();check()}
+function trayGroups(){const g={};for(const p of L.tray){const k=p.t;(g[k]=g[k]||[]).push(p)}return g}
+function drawInv(){const inv=document.getElementById('inv'),g=trayGroups();const kinds=Object.keys(g);
+  if(P.sel&&!g[P.sel])P.sel=null;if(!P.sel&&kinds.length)P.sel=kinds[0];
+  inv.innerHTML=kinds.map(k=>`<button class="pc ${P.sel===k?'on':''}" data-k="${k}" aria-label="${k}"><canvas width="132" height="132"></canvas><span class="n">×${g[k].length}</span></button>`).join('')||(L.tray.length===0&&L.hadTray?'<span class="mute" style="align-self:center">Tray empty — tap pieces to turn them</span>':'');
+  inv.querySelectorAll('[data-k]').forEach(b=>{const c=b.querySelector('canvas').getContext('2d');c.scale(2,2);c.translate(33,33);drawPiece(c,{t:b.dataset.k,o:0,mv:'loose'},50);b.onclick=()=>{P.sel=b.dataset.k;SFX.click();drawInv()}})}
+function cellAt(e){const r=cv.getBoundingClientRect(),x=Math.floor((e.clientX-r.left)/CS),y=Math.floor((e.clientY-r.top)/CS);if(x<0||y<0||x>=L.w||y>=L.h)return null;return{x,y,i:y*L.w+x}}
+let pressT=null,pressCell=null,longDone=false;
+cv.addEventListener('pointerdown',e=>{if(!L||P.won)return;e.preventDefault();const c=cellAt(e);if(!c)return;pressCell=c;longDone=false;
+  if(e.button===2){pickUp(c.i);return}
+  pressT=setTimeout(()=>{longDone=true;pickUp(c.i)},450)});
+cv.addEventListener('pointerup',e=>{if(!L||P.won)return;clearTimeout(pressT);if(longDone||e.button===2)return;const c=cellAt(e);if(!c||!pressCell||c.i!==pressCell.i)return;tap(c.i)});
+cv.addEventListener('pointerleave',()=>clearTimeout(pressT));
+cv.addEventListener('contextmenu',e=>e.preventDefault());
+function tap(i){const c=L.cells[i];
+  if(c&&(c.t==='mirror'||c.t==='split')&&(c.mv==='rot'||c.mv==='loose')&&!c.hinted){snapshot();c.o=1-c.o;P.moves++;SFX.tone(700+c.o*200,.06,{type:'triangle',vol:.06});P.spin={i,t:.15};after();return}
+  if(!c&&P.sel){const k=L.tray.findIndex(p=>p.t===P.sel);if(k<0)return;snapshot();const p=L.tray.splice(k,1)[0];L.cells[i]={t:p.t,o:p.o,mv:'loose'};P.moves++;SFX.place();drawInv();after();return}
+  if(c&&c.mv==='fixed'){SFX.error();P.shake={i,t:.25}}}
+function pickUp(i){const c=L.cells[i];if(!c||c.mv!=='loose'||c.hinted)return;snapshot();L.cells[i]=null;L.tray.push({t:c.t,o:c.o});P.moves++;P.sel=c.t;SFX.tone(400,.08,{type:'triangle',vol:.06});drawInv();after()}
+function after(){refreshBar();check()}
+function check(){const tr=trace(L);P.lastTrace=tr;
+  if(tr.broke.length){for(const i of tr.broke)if(!L.cells[i].broken){L.cells[i].broken=true;SFX.noise(.3,{vol:.12,lp:4000});ACH.unlock(GAME,'crash');P.flash=.4}}
+  for(let i=0;i<L.cells.length;i++){const c=L.cells[i];if(c&&c.t==='crystal'&&c.broken&&!tr.broke.includes(i))c.broken=false}
+  const lit=tr.lit;if(P.prevLit!=null&&lit>P.prevLit)SFX.tone(880+lit*120,.12,{type:'sine',vol:.07});P.prevLit=lit;
+  if(tr.solved&&!P.won){P.won=true;P.wonAt=performance.now();SFX.win();for(let i=0;i<L.cells.length;i++){const c=L.cells[i];if(c&&c.t==='target')for(let k=0;k<16;k++)P.sparks.push({x:(i%L.w+.5)*CS,y:(Math.floor(i/L.w)+.5)*CS,vx:U.rand(-160,160),vy:U.rand(-160,160),life:1,col:CHEX[c.c]})}
+    setTimeout(()=>win(),900)}}
+function useHint(){if(!D.hints||P.won||!L.solution)return;const sol=L.solution;
+  for(let i=0;i<sol.length;i++){const s=sol[i];if(!s||(s.t!=='mirror'&&s.t!=='split'))continue;const c=L.cells[i];
+    if(c&&c.t===s.t&&c.o===s.o){if(c.mv!=='fixed')c.hinted=true;continue}
+    snapshot();
+    if(c&&c.t===s.t){c.o=s.o;c.hinted=true}
+    else{if(c&&c.mv==='loose'){L.tray.push({t:c.t,o:c.o});L.cells[i]=null}else if(c)continue;
+      let k=L.tray.findIndex(p=>p.t===s.t);if(k<0){// borrow a piece that was put in the wrong place
+        const j=L.cells.findIndex((o,jj)=>o&&o.t===s.t&&o.mv==='loose'&&!o.hinted&&(!sol[jj]||sol[jj].t!==s.t));if(j<0)continue;L.cells[j]=null;L.tray.push({t:s.t,o:s.o});k=L.tray.length-1}
+      L.tray.splice(k,1);L.cells[i]={t:s.t,o:s.o,mv:'loose',hinted:true}}
+    D.hints--;P.hints++;save();P.hintFx={i,t:1};SFX.power();drawInv();refreshBar();check();return}
+  UI.toast('Everything that can be fixed is already right. Look at the tray!')}
+
+/* ================================================================
+   DRAW THE BOARD
+   ================================================================ */
+function floorCols(){return FLOORS.find(f=>f.id===D.floor)||FLOORS[0]}
+function rainbow(t,k){return`hsl(${(t*120+k*40)%360},100%,65%)`}
+function render(){if(!L||document.getElementById('play').hidden){requestAnimationFrame(render);return}
+  const t=performance.now()/1000,W=L.w*CS,H=L.h*CS;ctx.setTransform(DPR,0,0,DPR,0,0);const F=floorCols();
+  ctx.fillStyle=F.a;ctx.fillRect(0,0,W,H);for(let y=0;y<L.h;y++)for(let x=0;x<L.w;x++){if((x+y)%2){ctx.fillStyle=F.b;ctx.fillRect(x*CS,y*CS,CS,CS)}}
+  if(D.floor==='space'){for(let k=0;k<40;k++){ctx.fillStyle=`rgba(255,255,255,${.3+.3*Math.sin(t*2+k)})`;ctx.fillRect((k*97)%W,(k*53)%H,1.5,1.5)}}
+  ctx.strokeStyle='#ffffff0c';ctx.lineWidth=1;for(let x=0;x<=L.w;x++){ctx.beginPath();ctx.moveTo(x*CS+.5,0);ctx.lineTo(x*CS+.5,H);ctx.stroke()}for(let y=0;y<=L.h;y++){ctx.beginPath();ctx.moveTo(0,y*CS+.5);ctx.lineTo(W,y*CS+.5);ctx.stroke()}
+  const tr=P.lastTrace||trace(L);P.lastTrace=tr;
+  // beams under the pieces
+  ctx.lineCap='round';ctx.lineJoin='round';ctx.globalCompositeOperation='lighter';const skin=D.skin;
+  tr.segs.forEach((s,si)=>{const col=CHEX[s.col],pts=s.pts.map(p=>[p[0]*CS,p[1]*CS]);if(pts.length<2)return;
+    const path=()=>{ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]))};
+    const c1=skin==='rainbow'?rainbow(t,si):col;
+    if(skin==='zap'){for(let k=0;k<2;k++){ctx.strokeStyle=c1;ctx.globalAlpha=.6;ctx.lineWidth=2;ctx.beginPath();pts.forEach((p,i)=>{if(!i){ctx.moveTo(p[0],p[1]);return}const q=pts[i-1],n=Math.max(2,Math.round(Math.hypot(p[0]-q[0],p[1]-q[1])/12));for(let j=1;j<=n;j++){const f=j/n;ctx.lineTo(q[0]+(p[0]-q[0])*f+(j<n?U.rand(-4,4):0),q[1]+(p[1]-q[1])*f+(j<n?U.rand(-4,4):0))}});ctx.stroke()}ctx.globalAlpha=1}
+    path();ctx.strokeStyle=c1;ctx.globalAlpha=.18;ctx.lineWidth=CS*.42;ctx.stroke();ctx.globalAlpha=.45;ctx.lineWidth=CS*.18;ctx.stroke();ctx.globalAlpha=1;ctx.strokeStyle='#ffffff';ctx.lineWidth=Math.max(1.5,CS*.05);ctx.stroke();
+    if(skin==='pulse'||skin==='dots'||skin==='avatar'){ctx.setLineDash(skin==='dots'?[2,CS*.6]:[CS*.25,CS*.5]);ctx.lineDashOffset=-t*CS*3;ctx.strokeStyle=skin==='dots'?'#fff':c1;ctx.lineWidth=skin==='dots'?CS*.16:CS*.12;path();ctx.stroke();ctx.setLineDash([])}
+    if(skin==='sparkle'&&Math.random()<.4){const k=Math.floor(Math.random()*(pts.length-1)),f=Math.random(),a=pts[k],b=pts[k+1];P.sparks.push({x:a[0]+(b[0]-a[0])*f,y:a[1]+(b[1]-a[1])*f,vx:U.rand(-30,30),vy:U.rand(-30,30),life:.5,col:'#fff'})}});
+  ctx.globalCompositeOperation='source-over';
+  if(skin==='avatar'){ctx.font=`${CS*.4}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';tr.segs.forEach(s=>{const pts=s.pts;let len=0;const ls=[];for(let i=1;i<pts.length;i++){const l=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]);ls.push(l);len+=l}if(!len)return;
+    let d=(t*2)%len;for(let i=0;i<ls.length;i++){if(d<=ls[i]){const f=d/ls[i];ctx.fillText(PROF.avatar,(pts[i][0]+(pts[i+1][0]-pts[i][0])*f)*CS,(pts[i][1]+(pts[i+1][1]-pts[i][1])*f)*CS);break}d-=ls[i]}})}
+  // pieces
+  for(let i=0;i<L.cells.length;i++){const c=L.cells[i];if(!c)continue;const x=(i%L.w+.5)*CS,y=(Math.floor(i/L.w)+.5)*CS;ctx.save();ctx.translate(x,y);
+    if(P.shake&&P.shake.i===i)ctx.translate(Math.sin(t*80)*3,0);if(P.spin&&P.spin.i===i)ctx.rotate((c.o?-1:1)*P.spin.t/.15*Math.PI/2);
+    drawPiece(ctx,c,CS*.94,t,c.t==='target'&&tr.hit[i]===c.c,D.cb);
+    if(c.t==='target'&&tr.hit[i]&&tr.hit[i]!==c.c){ctx.fillStyle=CHEX[tr.hit[i]];ctx.beginPath();ctx.arc(0,0,CS*.1,0,7);ctx.fill()}
+    if(c.hinted){ctx.strokeStyle='#ffd23f';ctx.lineWidth=2;ctx.strokeRect(-CS*.46,-CS*.46,CS*.92,CS*.92)}ctx.restore()}
+  if(P.hintFx&&P.hintFx.t>0){const i=P.hintFx.i;glow(ctx,(i%L.w+.5)*CS,(Math.floor(i/L.w)+.5)*CS,CS*1.2*P.hintFx.t,'#ffd23f',P.hintFx.t)}
+  // hover preview of the piece you are about to place
+  if(P.hover!=null&&P.sel&&!L.cells[P.hover]&&L.tray.some(p=>p.t===P.sel)){ctx.save();ctx.globalAlpha=.35;ctx.translate((P.hover%L.w+.5)*CS,(Math.floor(P.hover/L.w)+.5)*CS);drawPiece(ctx,{t:P.sel,o:0},CS*.94,t);ctx.restore()}
+  // sparks
+  for(const s of P.sparks){s.x+=s.vx/60;s.y+=s.vy/60;s.life-=1/60;ctx.globalAlpha=Math.max(0,s.life);ctx.fillStyle=s.col;ctx.fillRect(s.x-2,s.y-2,4,4)}ctx.globalAlpha=1;P.sparks=P.sparks.filter(s=>s.life>0);
+  if(P.flash>0){ctx.fillStyle=`rgba(255,80,120,${P.flash})`;ctx.fillRect(0,0,W,H);P.flash-=1/60}
+  if(P.won){const k=Math.min(1,(performance.now()-P.wonAt)/600);ctx.fillStyle=`rgba(255,255,255,${.25*Math.sin(k*Math.PI)})`;ctx.fillRect(0,0,W,H)}
+  if(P.spin){P.spin.t-=1/60;if(P.spin.t<=0)P.spin=null}if(P.shake){P.shake.t-=1/60;if(P.shake.t<=0)P.shake=null}if(P.hintFx)P.hintFx.t-=1/90;
+  requestAnimationFrame(render)}
+cv.addEventListener('pointermove',e=>{if(!L)return;const c=cellAt(e);P.hover=c?c.i:null});
+requestAnimationFrame(render);
+
+/* ================================================================
+   PLAYING LEVELS
+   ================================================================ */
+const $=id=>document.getElementById(id);
+const TIPS={'0:0':'Tap the mirror to turn it so the red laser reaches the target.','0:1':'Mirrors have two positions: / and \\. Each tap switches.','0:4':'Pieces with a little 🔒 dot are stuck. Work around them!',
+ '1:0':'Pick the mirror in the tray below, then tap an empty square to place it. Press and hold a placed mirror to take it back.','1:3':'Light can pass through glass blocks.',
+ '2:0':'A splitter (green, dashed) lets light go straight AND bounces a copy.','2:5':'One laser, two targets — splitters make it possible.',
+ '3:0':'A filter only lets its own colour through.','3:2':'Targets with a letter need mixed colours: Y = red + green, M = red + blue, C = green + blue.',
+ '4:0':'A portal sends light out of its twin, going the same way.','4:2':'Never let a laser touch a pink crystal!',
+ '0:7':'Follow the light backwards from the target — which mirror must it come from?','0:10':'Bigger boards! Start with the mirror nearest the laser.','1:6':'You don\'t always need every square. Leave the walls alone.','1:9':'If you are stuck, press 💡 for a hint. You earn more hints by solving puzzles.',
+ '2:3':'A splitter turned the wrong way still lets light through. Look where the copy goes!','3:5':'Count the colours: each target needs exactly the right mix — too much light is wrong too.','4:6':'Portals keep the direction of the light. Imagine the board folding.','5:0':'Welcome to the core. Take your time — use undo ↶ as much as you like.'};
+function playCampaign(wi,li){const lvl=getLevel(wi,li);lvl.hadTray=lvl.tray.length>0;startLevel(lvl,{mode:'camp',wi,li,title:`${WORLDS[wi].name} ${li+1}`,tip:li===0&&!D.best[wi+':0']?`<b>Professor Lumen:</b> ${WORLDS[wi].prof}`:TIPS[wi+':'+li]?`<b>Tip:</b> ${TIPS[wi+':'+li]}`:''})}
+const dayKey=()=>{const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()};
+function dailyLevel(){const k=dayKey(),seed=[...k].reduce((h,c)=>Math.imul(h^c.charCodeAt(0),16777619),2166136261)>>>0;const wi=2+seed%4;return generate(seed,levelParams(wi,10))}
+function endlessLevel(n){const wi=Math.min(5,Math.floor(n/4)),li=Math.min(14,(n%4)*4+Math.floor(n/8));return generate(987654+n*7717+Math.floor(Math.random()*1e6),levelParams(wi,li))}
+function win(){if(!P.won)return;const secs=(performance.now()-P.start)/1000,stars=P.moves<=L.par?3:P.moves<=L.par+4?2:1;let title='SOLVED!',note='',next=false,starsTxt='★'.repeat(stars)+'☆'.repeat(3-stars);
+  if(secs<10)ACH.unlock(GAME,'speed');ACH.unlock(GAME,'first');
+  if(L.cells.some((c,i)=>c&&c.t==='target'&&c.c===7))ACH.unlock(GAME,'white');
+  if(P.mode==='camp'){const k=P.wi+':'+P.li,old=D.best[k]||0;if(stars>old)D.best[k]=stars;if(!old){D.solved++;if(D.solved%4===0){D.hints++;note+='+1 💡 hint! '}}
+    if(!P.hints){D.noHint[k]=1}
+    const done=n=>Array.from({length:PER_WORLD},(_,i)=>D.best[n+':'+i]).every(Boolean);if(done(P.wi)){ACH.unlock(GAME,'w'+(P.wi+1));if(Array.from({length:PER_WORLD},(_,i)=>D.noHint[P.wi+':'+i]).every(Boolean))ACH.unlock(GAME,'nohint')}
+    const three=Object.values(D.best).filter(s=>s===3).length;if(three>=10)ACH.unlock(GAME,'perfect10');if(three>=50)ACH.unlock(GAME,'perfect50');if(three>=WORLDS.length*PER_WORLD)ACH.unlock(GAME,'allstars');if(Object.keys(D.best).length>=45)ACH.unlock(GAME,'fifty');
+    next=P.li<PER_WORLD-1||P.wi<WORLDS.length-1;note+=`Moves: ${P.moves} (par ${L.par}) · ${secs.toFixed(1)}s`;
+    const unlocked=SKINS.concat(FLOORS).filter(s=>s.need>starsTotal()-(stars-old)&&s.need<=starsTotal());if(unlocked.length)note+=` · Unlocked: ${unlocked.map(s=>s.name).join(', ')}!`}
+  else if(P.mode==='daily'){const k=dayKey();if(!D.daily[k]){D.daily[k]=stars;D.hints+=2;note='+2 💡 hints! '}ACH.unlock(GAME,'daily');if(Object.keys(D.daily).length>=7)ACH.unlock(GAME,'daily7');title='DAILY SOLVED!';note+=`Come back tomorrow for a new one.`}
+  else if(P.mode==='endless'){D.endless++;D.endlessBest=Math.max(D.endlessBest,D.endless);if(D.endless>=10)ACH.unlock(GAME,'endless10');if(D.endless>=30)ACH.unlock(GAME,'endless30');title=`STREAK ${D.endless}!`;note=`Best streak: ${D.endlessBest}`;next=true}
+  else if(P.mode==='test'){ACH.unlock(GAME,'maker');title='IT WORKS!';note='Your puzzle can be solved. The share code is ready in the Level Maker.';starsTxt='🛠️';ED.verified=true;ED.code=encodeLevel(ED.toLevel(true));}
+  else if(P.mode==='shared'){ACH.unlock(GAME,'shared');title='SOLVED!';note='Nice — you solved a friend\'s puzzle.'}
+  save();$('wTitle').textContent=title;$('wStars').textContent=starsTxt;$('wNote').textContent=note;$('wNext').hidden=!next;$('wNext').textContent=P.mode==='endless'?'▶ NEXT RANDOM PUZZLE':'▶ NEXT PUZZLE';show('sWin')}
+$('wNext').onclick=()=>{if(P.mode==='endless'){playEndless();return}let wi=P.wi,li=P.li+1;if(li>=PER_WORLD){wi++;li=0}playCampaign(wi,li)};
+$('wRetry').onclick=()=>{if(P.mode==='camp')playCampaign(P.wi,P.li);else if(P.mode==='daily')playDaily();else if(P.mode==='test')edTest();else if(P.mode==='shared')playCode(P.code);else playEndless(true)};
+$('wMenu').onclick=()=>{if(P.mode==='test'){openEditor();return}if(P.mode==='camp'){show('sLevels');drawLevels()}else show('sMenu')};
+$('bBack').onclick=()=>{if(P&&P.mode==='endless'&&!P.won){D.endless=0;save()}if(P&&P.mode==='test'){openEditor();return}if(P&&P.mode==='camp'){show('sLevels');drawLevels()}else show('sMenu')};
+$('bUndo').onclick=undo;$('bReset').onclick=()=>{if(!P||P.won)return;if(P.mode==='camp')playCampaign(P.wi,P.li);else if(P.mode==='daily')playDaily();else if(P.mode==='test')edTest();else if(P.mode==='shared')playCode(P.code);else{const s=P.seedLevel;L=JSON.parse(s);P.moves=0;P.undo=[];drawInv();refreshBar();check()}};
+$('bHint').onclick=useHint;
+addEventListener('keydown',e=>{if($('play').hidden)return;const k=e.key.toLowerCase();if((e.ctrlKey||e.metaKey)&&k==='z'||k==='u'){e.preventDefault();undo()}if(k==='r')$('bReset').click();if(k==='h')useHint();if(k==='escape')$('bBack').click()});
+function playDaily(){const lvl=dailyLevel();lvl.hadTray=lvl.tray.length>0;startLevel(lvl,{mode:'daily',title:'Daily Puzzle',tip:D.daily[dayKey()]?'You already solved today\'s puzzle — this one is just for fun.':''})}
+function playEndless(again){if(!again&&P&&P.mode!=='endless')D.endless=D.endless;const lvl=endlessLevel(D.endless);lvl.hadTray=lvl.tray.length>0;startLevel(lvl,{mode:'endless',title:'Endless · Puzzle '+(D.endless+1),seedLevel:JSON.stringify(lvl),tip:D.endless===0?'Solve puzzles in a row. Going back to the menu ends your streak!':''})}
+
+/* ================================================================
+   MENUS
+   ================================================================ */
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.hidden=s.id!==id);if(id)$('play').hidden=true;if(id==='sMenu')refreshMenu();if(id==='sSkins')drawSkins();if(id==='sGuide')drawGuide()}
+document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{SFX.click();show(b.dataset.go)});
+function refreshMenu(){$('whoAv').textContent=PROF.avatar;$('whoName').textContent=PROF.name;$('mStars').textContent=starsTotal();$('mStarsMax').textContent=WORLDS.length*PER_WORLD*3;const c=ACH.count(GAME);$('achInfo').textContent=c.got+'/'+c.total+' unlocked';
+  $('dailyInfo').textContent=D.daily[dayKey()]?'✅ Solved today!':'A new one every day · +2 💡';$('endlessInfo').textContent=D.endlessBest?`Best streak: ${D.endlessBest}`:'Random puzzles forever';$('oSound').textContent=SFX.muted?'OFF':'ON';$('oCb').textContent=D.cb?'ON':'OFF'}
+$('whoEdit').onclick=()=>UI.profileEditor(refreshMenu);$('mPlay').onclick=()=>{show('sLevels');drawLevels()};$('mDaily').onclick=playDaily;$('mEndless').onclick=()=>{D.endless=0;playEndless()};
+$('mEditor').onclick=()=>openEditor();$('mSkins').onclick=()=>show('sSkins');$('mGuide').onclick=()=>show('sGuide');$('mAch').onclick=()=>UI.achievements(GAME,'Laser awards');
+$('oSound').onclick=()=>{SFX.toggle();refreshMenu()};$('oCb').onclick=()=>{D.cb=!D.cb;save();refreshMenu()};
+function worldOpen(wi){if(wi===0)return true;const prev=Array.from({length:PER_WORLD},(_,i)=>D.best[(wi-1)+':'+i]).filter(Boolean).length;return prev>=10}
+function levelOpen(wi,li){return worldOpen(wi)&&(li<3||D.best[wi+':'+(li-1)]||D.best[wi+':'+(li-2)])}
+function drawLevels(){$('worlds').innerHTML=WORLDS.map((w,wi)=>{const open=worldOpen(wi),st=Array.from({length:PER_WORLD},(_,i)=>D.best[wi+':'+i]||0).reduce((a,b)=>a+b,0);
+  return`<div class="world" style="--c:${w.col}"><h3>${wi+1}. ${w.name} <span style="float:right;color:var(--gold)">⭐ ${st}/${PER_WORLD*3}</span></h3><p>${open?w.sub:'🔒 Solve 10 puzzles in the lab before to open this one.'}</p>
+   <div class="lvls">${Array.from({length:PER_WORLD},(_,li)=>{const s=D.best[wi+':'+li]||0,o=levelOpen(wi,li);return`<button class="lv ${s?'done':''}" data-l="${wi}:${li}" ${o?'':'disabled'}>${li+1}<small>${s?'★'.repeat(s):''}</small></button>`}).join('')}</div></div>`}).join('');
+  document.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>{const[wi,li]=b.dataset.l.split(':').map(Number);playCampaign(wi,li)})}
+function skinPreview(c,id,w,h){c.fillStyle='#070512';c.fillRect(0,0,w,h);const t=performance.now()/1000,y=h/2;c.lineCap='round';c.globalCompositeOperation='lighter';const col=id==='rainbow'?rainbow(t,0):'#ff4d6a';
+  c.strokeStyle=col;c.globalAlpha=.25;c.lineWidth=14;c.beginPath();c.moveTo(16,y);c.lineTo(w-16,y);c.stroke();c.globalAlpha=1;c.strokeStyle='#fff';c.lineWidth=2;c.stroke();
+  if(id==='pulse'||id==='dots'){c.setLineDash(id==='dots'?[2,16]:[8,14]);c.lineDashOffset=-t*60;c.strokeStyle=id==='dots'?'#fff':col;c.lineWidth=id==='dots'?6:4;c.stroke();c.setLineDash([])}
+  if(id==='zap'){c.strokeStyle=col;c.lineWidth=2;c.beginPath();for(let x=16;x<w-16;x+=10)c.lineTo(x,y+U.rand(-5,5));c.stroke()}
+  if(id==='sparkle')for(let k=0;k<6;k++){c.fillStyle='#fff';c.fillRect(16+Math.random()*(w-32),y+U.rand(-10,10),2,2)}
+  c.globalCompositeOperation='source-over';if(id==='avatar'){c.font='18px sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText(PROF.avatar,16+((t*60)%(w-32)),y)}}
+function drawSkins(){const st=starsTotal();
+  $('skinList').innerHTML=SKINS.map(s=>`<button class="skin ${D.skin===s.id?'on':''}" data-sk="${s.id}" ${st<s.need?'disabled':''}><canvas width="240" height="120"></canvas><b>${s.name}</b><small>${st<s.need?'🔒 '+s.need+' ⭐':s.desc}</small></button>`).join('');
+  $('floorList').innerHTML=FLOORS.map(f=>`<button class="skin ${D.floor===f.id?'on':''}" data-fl="${f.id}" ${st<f.need?'disabled':''}><canvas width="240" height="120" style="background:repeating-conic-gradient(${f.a} 0 25%,${f.b} 0 50%) 0 0/40px 40px"></canvas><b>${f.name}</b><small>${st<f.need?'🔒 '+f.need+' ⭐':''}</small></button>`).join('');
+  document.querySelectorAll('[data-sk]').forEach(b=>b.onclick=()=>{if(b.disabled)return;D.skin=b.dataset.sk;save();ACH.unlock(GAME,'skin');SFX.click();drawSkins()});
+  document.querySelectorAll('[data-fl]').forEach(b=>b.onclick=()=>{if(b.disabled)return;D.floor=b.dataset.fl;save();SFX.click();drawSkins()})}
+setInterval(()=>{if($('sSkins').hidden)return;document.querySelectorAll('[data-sk] canvas').forEach(cv=>skinPreview(cv.getContext('2d'),cv.parentNode.dataset.sk,240,120))},50);
+const GUIDE=[[{t:'emit',c:1,o:0},'Laser','Shoots a beam of light in one direction. Lasers come in red, green and blue.'],[{t:'target',c:1},'Target','Light it up with the right colour. Light every target to win.'],
+ [{t:'mirror',o:0,mv:'rot'},'Mirror','Bounces light around a corner. Tap to switch between / and \\.'],[{t:'split',o:1,mv:'rot'},'Splitter','Half the light goes straight on, half bounces like a mirror.'],
+ [{t:'wall'},'Wall','Blocks light. Nothing can be placed here.'],[{t:'glass'},'Glass','Light passes straight through. You can\'t put pieces here.'],
+ [{t:'filter',c:2},'Filter','Only lets its own colour through. Other colours stop here.'],[{t:'portal',id:0},'Portal','Light goes in one portal and comes out of its twin (same colour ring).'],
+ [{t:'crystal'},'Crystal','Fragile! If any laser touches it, it breaks and the puzzle fails.'],[{t:'target',c:3},'Mixed target','Y needs red + green, M needs red + blue, C needs green + blue, W needs all three.'],
+ [{t:'mirror',o:1,mv:'fixed'},'Locked piece','Pieces with a 🔒 dot cannot be turned.'],[{t:'mirror',o:0,mv:'loose'},'Placed piece','Pieces you placed from the tray. Press and hold (or right-click) to put them back.']];
+function drawGuide(){$('legend').innerHTML=GUIDE.map((g,i)=>`<div><canvas width="96" height="96" data-g="${i}"></canvas><p><b>${g[1]}</b>${g[2]}</p></div>`).join('');
+  document.querySelectorAll('[data-g]').forEach(cv=>{const c=cv.getContext('2d');c.fillStyle='#141030';c.fillRect(0,0,96,96);c.translate(48,48);drawPiece(c,GUIDE[+cv.dataset.g][0],84,0,GUIDE[+cv.dataset.g][0].t==='target',D.cb)})}
+
+/* ================================================================
+   LEVEL MAKER
+   ================================================================ */
+const edCv=$('edCv'),edCtx=edCv.getContext('2d');
+const ED={sz:8,cells:new Array(64).fill(null),tool:'mirror',col:1,mv:'rot',verified:false,code:'',
+  toLevel(full){const cells=this.cells.map(c=>c?Object.assign({},c):null);return{w:this.sz,h:this.sz,cells,full}}};
+const TOOLS=[['emit','Laser'],['target','Target'],['mirror','Mirror'],['split','Splitter'],['wall','Wall'],['glass','Glass'],['filter','Filter'],['portal','Portal'],['crystal','Crystal'],['erase','Eraser']];
+function edResize(){const max=Math.min(innerWidth-48,520);const cs=Math.floor(max/ED.sz);edCv.width=cs*ED.sz*2;edCv.height=cs*ED.sz*2;edCv.style.width=cs*ED.sz+'px';edCv.style.height=cs*ED.sz+'px';ED.cs=cs}
+function openEditor(){show('sEditor');edResize();drawPalette();edDraw();drawMine();$('edCode').value=ED.verified?ED.code:''}
+function drawPalette(){$('palette').innerHTML=TOOLS.map(([k,n])=>`<button data-tool="${k}" class="${ED.tool===k?'on':''}" title="${n}"><canvas width="108" height="108"></canvas><span>${n}</span></button>`).join('');
+  document.querySelectorAll('[data-tool]').forEach(b=>{const c=b.querySelector('canvas').getContext('2d'),k=b.dataset.tool;c.translate(54,48);if(k==='erase'){c.font='44px sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText('🧽',0,0)}else drawPiece(c,{t:k,o:0,c:ED.col,id:0,mv:'rot'},76,0,k==='target');b.onclick=()=>{ED.tool=k;SFX.click();drawPalette()}});
+  document.querySelectorAll('[data-sz]').forEach(b=>{b.classList.toggle('on',+b.dataset.sz===ED.sz);b.onclick=()=>{const n=+b.dataset.sz;if(n===ED.sz)return;ED.sz=n;ED.cells=new Array(n*n).fill(null);ED.verified=false;edResize();drawPalette();edDraw()}});
+  document.querySelectorAll('[data-col]').forEach(b=>{b.classList.toggle('on',+b.dataset.col===ED.col);b.onclick=()=>{ED.col=+b.dataset.col;drawPalette()}});
+  document.querySelectorAll('[data-mv]').forEach(b=>{b.classList.toggle('on',b.dataset.mv===ED.mv);b.onclick=()=>{ED.mv=b.dataset.mv;drawPalette()}})}
+function edDraw(){const c=edCtx,cs=ED.cs,n=ED.sz;c.setTransform(2,0,0,2,0,0);c.fillStyle='#141030';c.fillRect(0,0,cs*n,cs*n);for(let y=0;y<n;y++)for(let x=0;x<n;x++)if((x+y)%2){c.fillStyle='#18133a';c.fillRect(x*cs,y*cs,cs,cs)}
+  const L2={w:n,h:n,cells:ED.cells},tr=trace(L2);c.globalCompositeOperation='lighter';c.lineCap='round';
+  for(const s of tr.segs){c.beginPath();s.pts.forEach((p,i)=>i?c.lineTo(p[0]*cs,p[1]*cs):c.moveTo(p[0]*cs,p[1]*cs));c.strokeStyle=CHEX[s.col];c.globalAlpha=.4;c.lineWidth=cs*.2;c.stroke();c.globalAlpha=1;c.strokeStyle='#fff';c.lineWidth=1.5;c.stroke()}
+  c.globalCompositeOperation='source-over';
+  for(let i=0;i<ED.cells.length;i++){const p=ED.cells[i];if(!p)continue;c.save();c.translate((i%n+.5)*cs,(Math.floor(i/n)+.5)*cs);drawPiece(c,p,cs*.94,0,p.t==='target'&&tr.hit[i]===p.c,true);
+    if(p.mv==='loose'){c.font=`${cs*.3}px sans-serif`;c.fillText('✋',-cs*.45,-cs*.18)}c.restore()}
+  const st=$('edTest');st.querySelector('small').textContent=tr.solved?'Solved as built — now hide the answer and test':ED.cells.some(p=>p&&p.t==='target')?`${tr.lit}/${tr.total} targets lit right now`:'Add a laser and a target'}
+edCv.addEventListener('pointerdown',e=>{const r=edCv.getBoundingClientRect(),x=Math.floor((e.clientX-r.left)/ED.cs),y=Math.floor((e.clientY-r.top)/ED.cs);if(x<0||y<0||x>=ED.sz||y>=ED.sz)return;const i=y*ED.sz+x,p=ED.cells[i];ED.verified=false;
+  if(ED.tool==='erase'){ED.cells[i]=null}
+  else if(p&&p.t===ED.tool){if(p.t==='emit')p.o=(p.o+1)%4;else if(p.t==='mirror'||p.t==='split'){p.o=1-p.o;p.mv=ED.mv}else if(p.t==='target'||p.t==='filter'){p.c=p.c===ED.col?(p.c%7)+1:ED.col}else if(p.t==='portal'){p.id=(p.id+1)%4}}
+  else{const np={t:ED.tool,o:0};if(ED.tool==='emit'){np.c=ED.col;np.o=x===0?0:x===ED.sz-1?2:y===0?1:y===ED.sz-1?3:0}if(ED.tool==='target'||ED.tool==='filter')np.c=ED.col;if(ED.tool==='mirror'||ED.tool==='split')np.mv=ED.mv;
+    if(ED.tool==='portal'){const ps=ED.cells.filter(q=>q&&q.t==='portal');np.id=Math.floor(ps.length/2)%4}ED.cells[i]=np}
+  SFX.place();edDraw()});
+function playable(src){// turn a designed board into a puzzle: tray pieces leave the board, turnable ones get flipped
+  const cells=src.cells.map(c=>c?Object.assign({},c):null),solution=cells.map(c=>c?Object.assign({},c):null),tray=[];let par=0;
+  for(let i=0;i<cells.length;i++){const c=cells[i];if(!c)continue;if((c.t==='mirror'||c.t==='split')){if(c.mv==='loose'){tray.push({t:c.t,o:0});cells[i]=null;par++}else if(c.mv==='rot'&&(i*7+3)%3!==0){c.o=1-c.o;par++}else if(!c.mv)c.mv='fixed'}}
+  return{w:src.w,h:src.h,cells,tray,par:Math.max(1,par),solution,hadTray:tray.length>0}}
+function edTest(){const src=ED.toLevel(true);if(!trace(src).solved){UI.toast('First build it so every target is lit — then press TEST.','Not ready yet');return}if(!src.cells.some(c=>c&&(c.mv==='rot'||c.mv==='loose'))){UI.toast('Make at least one mirror 🔄 TURN or ✋ TRAY so there is something to solve.','Nothing to solve');return}
+  startLevel(playable(src),{mode:'test',title:'Testing your puzzle',tip:'Solve your own puzzle to unlock its share code.'})}
+$('edTest').onclick=edTest;$('edClear').onclick=()=>{ED.cells=new Array(ED.sz*ED.sz).fill(null);ED.verified=false;edDraw()};
+function encodeLevel(l){const a=[];l.cells.forEach((c,i)=>{if(c)a.push([i,c.t[0]+c.t[1],c.o||0,c.c||0,c.mv?c.mv[0]:'',c.id||0])});return'LL1.'+btoa(JSON.stringify({w:l.w,h:l.h,a})).replace(/=+$/,'')}
+const TCODE={em:'emit',ta:'target',mi:'mirror',sp:'split',wa:'wall',gl:'glass',fi:'filter',po:'portal',cr:'crystal'},MCODE={f:'fixed',r:'rot',l:'loose'};
+function decodeLevel(code){try{const s=code.trim().replace(/^LL1\./,'');const o=JSON.parse(atob(s+'==='.slice((s.length+3)%4)));if(!(o.w>=3&&o.w<=12&&o.h>=3&&o.h<=12))return null;const cells=new Array(o.w*o.h).fill(null);
+  for(const[i,t,oo,c,mv,id]of o.a){if(!TCODE[t]||i<0||i>=cells.length)return null;cells[i]={t:TCODE[t],o:oo,c,id};if(mv)cells[i].mv=MCODE[mv]}return{w:o.w,h:o.h,cells}}catch(e){return null}}
+function playCode(code){const src=decodeLevel(code);if(!src||!trace(src).solved){UI.toast('That code doesn\'t look right. Check you copied all of it.','Oops');return}startLevel(playable(src),{mode:'shared',code,title:'Friend\'s puzzle'})}
+$('edLoad').onclick=()=>{const v=$('edCode').value.trim();if(!v)return;const src=decodeLevel(v);if(!src){UI.toast('That code doesn\'t look right.','Oops');return}
+  UI.modal(`<h2>📥 Puzzle code</h2><p>Play this puzzle now, or open it in the Level Maker to change it?</p><div style="display:flex;gap:8px;justify-content:flex-end"><button class="kbtn2 alt" id="cEdit">EDIT</button><button class="kbtn2" id="cPlay">PLAY</button></div>`,(m,close)=>{
+    m.querySelector('#cPlay').onclick=()=>{close();playCode(v)};m.querySelector('#cEdit').onclick=()=>{close();ED.sz=src.w;ED.cells=src.cells;ED.verified=false;edResize();drawPalette();edDraw()}})};
+$('edCopy').onclick=()=>{if(!ED.verified){UI.toast('Test and solve your puzzle first.','No code yet');return}$('edCode').value=ED.code;navigator.clipboard&&navigator.clipboard.writeText(ED.code).then(()=>UI.toast('Copied! Send it to a friend.'),()=>{});$('edCode').select()};
+$('edSave').onclick=()=>{const name=prompt('Name your puzzle:','My puzzle '+(D.mine.length+1));if(!name)return;D.mine.push({name:name.slice(0,30),code:encodeLevel(ED.toLevel(true)),ok:ED.verified});if(D.mine.length>30)D.mine.shift();save();drawMine();SFX.coin()};
+function drawMine(){$('myList').innerHTML=D.mine.length?D.mine.map((m,i)=>`<div><b>${m.name.replace(/</g,'&lt;')}</b>${m.ok?'✅':''}<button data-mp="${i}">▶</button><button data-me="${i}">✏️</button><button data-md="${i}">🗑️</button></div>`).join(''):'<p class="mute" style="margin:0">Nothing saved yet.</p>';
+  document.querySelectorAll('[data-mp]').forEach(b=>b.onclick=()=>playCode(D.mine[+b.dataset.mp].code));
+  document.querySelectorAll('[data-me]').forEach(b=>b.onclick=()=>{const src=decodeLevel(D.mine[+b.dataset.me].code);if(!src)return;ED.sz=src.w;ED.cells=src.cells;ED.verified=false;edResize();drawPalette();edDraw()});
+  document.querySelectorAll('[data-md]').forEach(b=>b.onclick=()=>{D.mine.splice(+b.dataset.md,1);save();drawMine()})}
+// a starter puzzle so the Level Maker isn't empty the first time
+(function(){const n=8;ED.cells=new Array(n*n).fill(null);ED.cells[1*n+0]={t:'emit',c:1,o:0};ED.cells[1*n+5]={t:'mirror',o:1,mv:'rot'};ED.cells[6*n+5]={t:'mirror',o:0,mv:'loose'};ED.cells[6*n+2]={t:'target',c:1,o:0};ED.cells[3*n+3]={t:'wall',o:0}})();
+
+
+/* ================================================================
+   CHALLENGES: puzzles with a special rule
+   ================================================================ */
+const BASE=()=>JSON.parse(JSON.stringify(WORLDS[2].p));
+const CHALLENGES=[
+ {name:'One Mirror',icon:'1️⃣',desc:'Only one piece to place — but where?',p:{...BASE(),beams:[1,1],turns:[2,2],split:0,loose:1,rot:0,walls:[6,10],w:[8,8],h:[8,8]}},
+ {name:'Hall of Mirrors',icon:'🪞',desc:'So many mirrors! All of them can turn.',p:{...BASE(),beams:[2,3],turns:[4,6],split:0,loose:0,rot:1,walls:[0,1],w:[8,9],h:[8,9]}},
+ {name:'Empty Room',icon:'⬜',desc:'Nothing on the board. Every piece comes from your tray.',p:{...BASE(),beams:[1,2],turns:[2,4],split:.3,loose:1,rot:0,walls:[0,0]}},
+ {name:'Splitter Storm',icon:'🔀',desc:'Splitters everywhere.',p:{...BASE(),beams:[1,2],turns:[3,5],split:1,loose:.4,rot:.5}},
+ {name:'Rainbow',icon:'🌈',desc:'Three colours, three lasers.',p:{...BASE(),beams:[3,3],turns:[2,3],colors:[1,2,4],split:0,mix:0,filters:.3,w:[8,8],h:[8,8]}},
+ {name:'Colour Mixer',icon:'🎨',desc:'Every target needs mixed light.',p:{...BASE(),beams:[2,2],turns:[2,3],mix:1,split:0,w:[8,8],h:[8,8]}},
+ {name:'Crystal Garden',icon:'💎',desc:'Crystals all around. Don\'t break a single one!',p:{...BASE(),crystals:[8,12],walls:[0,1],split:.2,w:[8,8],h:[8,8]}},
+ {name:'Portal Maze',icon:'🌀',desc:'Light jumps all over the place.',p:{...BASE(),portals:1,beams:[1,2],turns:[2,4],split:0,w:[8,9],h:[8,9]}},
+ {name:'Tiny Lab',icon:'🐜',desc:'A very small board with a lot going on.',p:{...BASE(),w:[5,5],h:[5,5],beams:[2,2],turns:[1,2],split:.4,walls:[0,1]}},
+ {name:'Giant Lab',icon:'🐘',desc:'The biggest board in the game.',p:{...BASE(),w:[11,11],h:[11,11],beams:[3,4],turns:[3,6],split:.4,walls:[6,10],crystals:[2,4]}},
+ {name:'Glass House',icon:'🧊',desc:'Lots of glass blocks the light can pass.',p:{...BASE(),glass:1,walls:[0,2],split:.3}},
+ {name:'Filter Factory',icon:'🧪',desc:'Filters on every path.',p:{...BASE(),filters:1,beams:[2,3],colors:[1,2,4],split:.2,w:[8,8],h:[8,8]}},
+ {name:'Long Way Round',icon:'🐌',desc:'Long laser paths with many bends.',p:{...BASE(),beams:[1,1],turns:[6,8],split:0,w:[9,9],h:[9,9]}},
+ {name:'Twin Beams',icon:'👯',desc:'Two lasers of the same colour.',p:{...BASE(),beams:[2,2],colors:[1],split:0,turns:[2,4],w:[8,8],h:[8,8]}},
+ {name:'Locked Down',icon:'🔒',desc:'Most mirrors are locked. Find the few that move.',p:{...BASE(),loose:.15,rot:.25,beams:[2,3],turns:[3,5],split:.3}},
+ {name:'Brick Maze',icon:'🧱',desc:'Walls, walls, walls.',p:{...BASE(),walls:[14,20],w:[9,9],h:[9,9],split:.2}},
+ {name:'White Light',icon:'⚪',desc:'Bring red, green and blue together.',p:{...BASE(),beams:[2,2],turns:[2,3],mix:1,colors:[1,2,4],split:0,w:[8,8],h:[8,8],white:true}},
+ {name:'Speed Puzzle',icon:'⚡',desc:'Solve it in under 20 seconds for the badge.',p:{...BASE(),w:[6,6],h:[6,6],beams:[1,2],turns:[2,3],split:.2},timer:20},
+ {name:'Perfectionist',icon:'🎯',desc:'Only counts if you match par exactly.',p:{...BASE(),beams:[2,2],turns:[3,4],split:.3},exact:true},
+ {name:'Mirror Twins',icon:'🪞',desc:'Two splitters, one laser, four targets.',p:{...BASE(),beams:[1,1],turns:[3,4],split:1,loose:.5,rot:.5,w:[8,8],h:[8,8]}},
+ {name:'Night Shift',icon:'🌙',desc:'A dark, cramped lab full of walls and crystals.',p:{...BASE(),walls:[10,14],crystals:[3,5],w:[8,8],h:[8,8],split:.3}},
+ {name:'Colour Parade',icon:'🎉',desc:'Three lasers and colour filters on the way.',p:{...BASE(),beams:[3,3],turns:[2,3],filters:.7,mix:.4,split:0,w:[9,9],h:[9,9]}},
+ {name:'Wormhole',icon:'🕳️',desc:'Portals and splitters together.',p:{...BASE(),portals:1,split:.6,beams:[1,2],turns:[3,4],w:[9,9],h:[9,9]}},
+ {name:'Spaghetti',icon:'🍝',desc:'Four lasers that cross all over the board.',p:{...BASE(),beams:[4,4],turns:[2,3],split:0,colors:[1,2,4],w:[9,9],h:[9,9],walls:[2,4]}},
+ {name:'The Final Exam',icon:'🎓',desc:'Everything the Professor ever taught you.',p:{...JSON.parse(JSON.stringify(WORLDS[5].p)),w:[10,10],h:[10,10]}}
+];
+D.chal=D.chal||{};
+function chalLevel(i){const C=CHALLENGES[i],L0=generate(55555+i*3331,C.p);if(C.p.white){// add the third colour to the mixed target
+  const ti=L0.cells.findIndex(c=>c&&c.t==='target'&&[3,5,6].includes(c.c));if(ti>=0){const miss=7^L0.cells[ti].c;const w=L0.w,h=L0.h,tx=ti%w,ty=Math.floor(ti/w);
+   // put a third laser in line with the target if there is a clear straight line from an edge
+   for(const d of[0,1,2,3]){let x=tx,y=ty,ok=true,path=[];while(true){x-=DX[d];y-=DY[d];if(x<0||y<0||x>=w||y>=h)break;const c=L0.cells[y*w+x];if(c&&c.t!=='glass'){ok=false;break}path.push(y*w+x)}
+     if(ok&&path.length>1){const last=path[path.length-1];const sv=L0.cells.slice(),ss=L0.solution.slice();L0.cells[last]={t:'emit',c:miss,o:d,mv:'fixed'};L0.solution[last]={t:'emit',c:miss,o:d};L0.cells[ti].c=7;L0.solution[ti].c=7;
+       if(trace({w,h,cells:L0.solution}).solved&&!trace(L0).solved)break;L0.cells=sv;L0.solution=ss;L0.cells[ti].c=7^miss;L0.solution[ti].c=7^miss}}}}
+  L0.hadTray=L0.tray.length>0;return L0}
+function chalOpen(i){return i<5||starsTotal()>=(i-4)*12}
+function drawChal(){$('chalList').innerHTML=CHALLENGES.map((c,i)=>`<div style="cursor:pointer;${chalOpen(i)?'':'opacity:.4'}" data-ch="${i}"><span style="font-size:32px;width:48px;text-align:center">${D.chal[i]?'✅':c.icon}</span><p><b>${i+1}. ${c.name}</b>${c.desc}${chalOpen(i)?'':`<br>🔒 ${(i-4)*12} ⭐`}</p></div>`).join('');
+  document.querySelectorAll('[data-ch]').forEach(el=>el.onclick=()=>{const i=+el.dataset.ch;if(!chalOpen(i))return;startLevel(chalLevel(i),{mode:'chal',ci:i,title:'Challenge: '+CHALLENGES[i].name,tip:'<b>Rule:</b> '+CHALLENGES[i].desc})})}
+$('mChal').onclick=()=>{show('sChal');drawChal()};
+ACH.define(GAME,ACH.list(GAME).map(a=>({id:a.id,icon:a.icon,name:a.name,desc:a.desc})).concat([
+ {id:'chal5',icon:'🎯',name:'Challenger',desc:'Beat 5 challenges'},{id:'chalall',icon:'🏆',name:'Grand Challenger',desc:'Beat all 25 challenges'},
+ {id:'rush5',icon:'⏱️',name:'Quick Thinker',desc:'Solve 5 puzzles in one Light Rush'},{id:'rush12',icon:'🚀',name:'Light Speed',desc:'Solve 12 puzzles in one Light Rush'},
+ {id:'exam',icon:'🎓',name:'Graduate',desc:'Pass the Final Exam'},
+ {id:'rank',icon:'🔬',name:'Promoted!',desc:'Reach the rank of Scientist (80 stars)'},{id:'nobel',icon:'🏅',name:'Nobel Prize',desc:'Reach the top rank'},{id:'style',icon:'✨',name:'Fancy Mirrors',desc:'Change your mirror style'},{id:'kbd',icon:'⌨️',name:'Keyboard Wizard',desc:'Solve a puzzle using only the keyboard'}]));
+
+/* ================================================================
+   LIGHT RUSH: 3 minutes, as many puzzles as you can
+   ================================================================ */
+let RUSH=null;
+function rushLevel(n){const wi=Math.min(4,Math.floor(n/2)),P0=levelParams(wi,Math.min(10,n));P0.w=[Math.min(P0.w[0],7),Math.min(P0.w[1],7)];P0.h=[Math.min(P0.h[0],7),Math.min(P0.h[1],7)];const l=generate(Date.now()%1e7+n*97,P0);l.hadTray=l.tray.length>0;return l}
+function startRush(){RUSH={n:0,end:performance.now()+180000};$('rushBar').hidden=false;startLevel(rushLevel(0),{mode:'rush',title:'Light Rush · 0 solved',tip:'Solve as many puzzles as you can before the bar runs out! Hints are off.'})}
+$('mRush').onclick=startRush;
+setInterval(()=>{if(!RUSH||$('play').hidden)return;const left=RUSH.end-performance.now();$('rushFill').style.width=Math.max(0,left/1800)+'%';if(left<=0)rushOver()},100);
+function rushOver(){if(!RUSH)return;const n=RUSH.n;RUSH=null;$('rushBar').hidden=true;D.rush=Math.max(D.rush||0,n);save();if(n>=5)ACH.unlock(GAME,'rush5');if(n>=12)ACH.unlock(GAME,'rush12');SFX.win();
+  $('wTitle').textContent='TIME!';$('wStars').textContent=n+' 🔦';$('wNote').textContent=`You solved ${n} puzzle${n===1?'':'s'}. Best: ${D.rush}.`;$('wNext').hidden=true;P.mode='rushdone';show('sWin')}
+
+/* hook the new modes into winning */
+const _win=win;
+win=function(){if(!P.won)return;
+  if(P.mode==='rush'){RUSH.n++;SFX.coin();const l=rushLevel(RUSH.n);startLevel(l,{mode:'rush',title:`Light Rush · ${RUSH.n} solved`});return}
+  if(P.mode==='chal'){const C=CHALLENGES[P.ci],secs=(performance.now()-P.start)/1000;let ok=true,why='';if(C.timer&&secs>C.timer){ok=false;why=`Too slow: ${secs.toFixed(1)}s (goal ${C.timer}s). `}if(C.exact&&P.moves!==L.par){ok=false;why=`You used ${P.moves} moves — the goal is exactly ${L.par}. `}
+    if(ok){D.chal[P.ci]=1;const n=Object.keys(D.chal).length;if(n>=5)ACH.unlock(GAME,'chal5');if(n>=CHALLENGES.length)ACH.unlock(GAME,'chalall');if(P.ci===CHALLENGES.length-1)ACH.unlock(GAME,'exam');D.hints++}
+    save();SFX[ok?'win':'lose']();$('wTitle').textContent=ok?'CHALLENGE BEATEN!':'ALMOST!';$('wStars').textContent=ok?CHALLENGES[P.ci].icon:'🔁';$('wNote').textContent=ok?'+1 💡 hint. '+C.desc:why+'Try again!';$('wNext').hidden=true;show('sWin');return}
+  _win()};
+const _retry=$('wRetry').onclick;$('wRetry').onclick=()=>{if(P.mode==='chal'){startLevel(chalLevel(P.ci),{mode:'chal',ci:P.ci,title:'Challenge: '+CHALLENGES[P.ci].name});return}if(P.mode==='rushdone'){startRush();return}_retry()};
+const _menu=$('wMenu').onclick;$('wMenu').onclick=()=>{if(P.mode==='chal'){show('sChal');drawChal();return}if(P.mode==='rushdone'){show('sMenu');return}_menu()};
+const _back=$('bBack').onclick;$('bBack').onclick=()=>{if(P&&P.mode==='rush'){RUSH=null;$('rushBar').hidden=true;show('sMenu');return}if(P&&P.mode==='chal'){show('sChal');drawChal();return}_back()};
+const _hint=useHint;useHint=function(){if(P&&P.mode==='rush'){UI.toast('No hints in Light Rush!');return}_hint()};$('bHint').onclick=()=>useHint();
+
+/* ================================================================
+   LAB NOTEBOOK: records and the Professor's story
+   ================================================================ */
+const STORY=[
+ [0,'Day 1. A new assistant has joined the lab! They figured out the mirrors in no time. I think they have a gift for light.'],
+ [10,'Day 4. We found an old toolbox full of mirrors. My assistant places them like a pro. Maybe I can finally fix the reactor…'],
+ [25,'Day 9. Splitters! One beam becomes two. My assistant laughed and said “that\'s like magic”. It is not magic. It is optics. (It is a little bit magic.)'],
+ [45,'Day 15. The Colour Works is running again. Red and green make yellow — my assistant didn\'t believe me until the target lit up.'],
+ [70,'Day 22. The Portal Vault is dangerous. Those crystals cost a fortune. My assistant hasn\'t broken one in days. Well… almost.'],
+ [100,'Day 30. We are close to the Master Core. If we can light every target, the whole city gets clean light energy for free.'],
+ [150,'Day 41. The core is glowing. My assistant has solved puzzles I couldn\'t. I think it is time I gave them my lab coat.'],
+ [185,'Day 47. Today my assistant built their own puzzle in the Level Maker and I could not solve it. I had to use a hint. Don\'t tell anyone.'],
+ [220,'Final page. Every target lit. Every crystal safe. The city is shining. Thank you, assistant — no, thank you, PROFESSOR. 🎓']
+];
+$('mStats').onclick=()=>{show('sStats');const st=starsTotal(),three=Object.values(D.best).filter(s=>s===3).length;
+  const rows=[['⭐','Stars',st+' / '+WORLDS.length*PER_WORLD*3],['🔦','Puzzles solved',Object.keys(D.best).length+' / '+WORLDS.length*PER_WORLD],['🌟','Perfect (3 stars)',three],['💡','Hints left',D.hints],['📅','Daily puzzles',Object.keys(D.daily).length],['♾️','Best Endless streak',D.endlessBest],['⏱️','Best Light Rush',D.rush||0],['🎯','Challenges beaten',Object.keys(D.chal).length+' / '+CHALLENGES.length],['🛠️','Puzzles made',D.mine.length]];
+  $('statList').innerHTML=rows.map(r=>`<div><span style="font-size:28px">${r[0]}</span><p><b>${r[2]}</b>${r[1]}</p></div>`).join('');
+  $('story').innerHTML=STORY.map(([need,txt])=>`<div style="background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px;${st>=need?'':'opacity:.35'}">${st>=need?'👩‍🔬 '+txt:'🔒 Earn '+need+' ⭐ to read this page.'}</div>`).join('')};
+const _refresh=refreshMenu;refreshMenu=function(){_refresh();$('chalInfo').textContent=`${Object.keys(D.chal).length}/${CHALLENGES.length} beaten`;$('rushInfo').textContent=D.rush?`Best: ${D.rush} puzzles`:'Solve as many as you can in 3 minutes'};
+
+/* ================================================================
+   MENU BACKGROUND: lasers bouncing around the screen
+   ================================================================ */
+const bg=$('bgCv'),bgc=bg.getContext('2d');let bgBeams=[];
+function bgInit(){bg.width=innerWidth;bg.height=innerHeight;bgBeams=[1,2,4,3].map((c,i)=>({x:Math.random()*bg.width,y:Math.random()*bg.height,a:Math.PI/4+i*Math.PI/2,c,trail:[]}))}
+addEventListener('resize',bgInit);bgInit();
+(function bgLoop(){requestAnimationFrame(bgLoop);if(!$('play').hidden){bg.style.display='none';return}bg.style.display='';bgc.fillStyle='rgba(7,5,18,.12)';bgc.fillRect(0,0,bg.width,bg.height);bgc.globalCompositeOperation='lighter';
+  for(const b of bgBeams){const sp=4;b.x+=Math.cos(b.a)*sp;b.y+=Math.sin(b.a)*sp;if(b.x<0||b.x>bg.width){b.a=Math.PI-b.a;b.x=U.clamp(b.x,0,bg.width);SFX.muted||0}if(b.y<0||b.y>bg.height){b.a=-b.a;b.y=U.clamp(b.y,0,bg.height)}
+    b.trail.push([b.x,b.y]);if(b.trail.length>60)b.trail.shift();bgc.strokeStyle=CHEX[b.c];bgc.globalAlpha=.25;bgc.lineWidth=6;bgc.beginPath();b.trail.forEach((p,i)=>i?bgc.lineTo(p[0],p[1]):bgc.moveTo(p[0],p[1]));bgc.stroke();bgc.globalAlpha=1}
+  bgc.globalCompositeOperation='source-over'})();
+
+/* ================================================================
+   MIRROR STYLES: change how your mirrors look (unlocked with stars)
+   ================================================================ */
+const MSTYLES=[
+ {id:'lab',name:'Lab Glass',need:0,a:'#e8f8ff',b:'#9ad0ff',c:'#3a5a8a'},
+ {id:'gold',name:'Gold Plate',need:30,a:'#fff6c0',b:'#ffd23f',c:'#8a6a10'},
+ {id:'ruby',name:'Ruby',need:60,a:'#ffd0d8',b:'#ff4d6a',c:'#6a1020'},
+ {id:'jade',name:'Jade',need:90,a:'#d8fff0',b:'#5cf2b4',c:'#106a4a'},
+ {id:'amethyst',name:'Amethyst',need:120,a:'#f0e0ff',b:'#b98bff',c:'#4a2a7a'},
+ {id:'wood',name:'Old Wood',need:150,a:'#e8c89a',b:'#a8784a',c:'#5a3a1a'},
+ {id:'prism',name:'Prism',need:200,rainbow:true}
+];
+D.mstyle=D.mstyle||'lab';
+const _drawPiece=drawPiece;
+drawPiece=function(c,p,s,t=0,lit=false,cb=false){
+  if(p.t!=='mirror'||D.mstyle==='lab')return _drawPiece(c,p,s,t,lit,cb);
+  const st=MSTYLES.find(m=>m.id===D.mstyle)||MSTYLES[0],S=s/2;c.save();c.rotate(p.o?Math.PI/4:-Math.PI/4);
+  const g=c.createLinearGradient(-S*.8,-S*.12,S*.8,S*.12);
+  if(st.rainbow){for(let k=0;k<=6;k++)g.addColorStop(k/6,`hsl(${(k*60+t*60)%360},100%,70%)`)}else{g.addColorStop(0,st.c);g.addColorStop(.3,st.b);g.addColorStop(.5,st.a);g.addColorStop(.7,st.b);g.addColorStop(1,st.c)}
+  c.fillStyle='#0006';c.fillRect(-S*.82,-S*.1+2,S*1.64,S*.2);c.fillStyle=g;c.fillRect(-S*.82,-S*.1,S*1.64,S*.2);c.fillStyle='#ffffffaa';c.fillRect(-S*.78,-S*.08,S*1.56,S*.04);
+  c.fillStyle=st.c||'#6a6a8a';c.beginPath();c.arc(0,0,S*.13,0,7);c.fill();c.restore();c.save();
+  if(p.mv==='fixed')lockDot(c,S);if(p.mv==='rot'){c.strokeStyle='#ffffff30';c.lineWidth=1.5;c.beginPath();c.arc(0,0,S*.86,0,7);c.stroke()}
+  if(p.mv==='loose'){c.strokeStyle='#ffd23f66';c.lineWidth=2;c.setLineDash([3,4]);c.beginPath();c.arc(0,0,S*.86,0,7);c.stroke();c.setLineDash([])}c.restore()};
+const _drawSkins=drawSkins;
+drawSkins=function(){_drawSkins();let box=$('mstyleList');if(!box){const h=document.createElement('h2');h.style.fontSize='16px';h.textContent='MIRROR STYLE';box=document.createElement('div');box.className='skins';box.id='mstyleList';$('floorList').after(h,box)}
+  const st=starsTotal();box.innerHTML=MSTYLES.map(m=>`<button class="skin ${D.mstyle===m.id?'on':''}" data-ms="${m.id}" ${st<m.need?'disabled':''}><canvas width="240" height="120"></canvas><b>${m.name}</b><small>${st<m.need?'🔒 '+m.need+' ⭐':''}</small></button>`).join('');
+  box.querySelectorAll('[data-ms]').forEach(b=>{const c=b.querySelector('canvas').getContext('2d');const old=D.mstyle;D.mstyle=b.dataset.ms;c.fillStyle='#141030';c.fillRect(0,0,240,120);c.translate(80,60);drawPiece(c,{t:'mirror',o:0,mv:'rot'},90,0);c.translate(80,0);drawPiece(c,{t:'mirror',o:1,mv:'rot'},90,0);D.mstyle=old;
+    b.onclick=()=>{if(b.disabled)return;D.mstyle=b.dataset.ms;save();ACH.unlock(GAME,'style');SFX.click();drawSkins()}})};
+
+/* ================================================================
+   MUSIC: a slow, calm arpeggio while you think (a different key per lab)
+   ================================================================ */
+const KEYS=[[0,4,7,11],[2,5,9,12],[0,3,7,10],[5,9,12,16],[-2,2,5,9],[0,4,7,14]];
+let musicT=0,musicStep=0;D.music=D.music??true;
+setInterval(()=>{if(!D.music||SFX.muted||$('play').hidden||!P||P.won)return;musicT++;const wi=P.wi??(P.mode==='daily'?3:P.mode==='chal'?(P.ci%6):2),k=KEYS[wi%KEYS.length];
+  const n=k[musicStep%4]+(musicStep%8>3?12:0);SFX.tone(220*Math.pow(2,n/12),1.4,{type:'sine',vol:.025,attack:.2});if(musicStep%4===0)SFX.tone(110*Math.pow(2,k[0]/12),2.4,{type:'triangle',vol:.03,attack:.4});musicStep++},700);
+(function(){const o=document.querySelector('.opts');if(!o)return;o.insertAdjacentHTML('beforeend','<span>Music</span><button id="oMusic">ON</button>');const b=$('oMusic');b.textContent=D.music?'ON':'OFF';b.onclick=()=>{D.music=!D.music;save();b.textContent=D.music?'ON':'OFF'}})();
+
+/* ================================================================
+   LEVEL PREVIEWS: tiny pictures of every puzzle on the level map
+   ================================================================ */
+function miniBoard(cv,lvl){const c=cv.getContext('2d'),n=Math.max(lvl.w,lvl.h),cs=cv.width/n;c.fillStyle='#0b0820';c.fillRect(0,0,cv.width,cv.height);const ox=(cv.width-lvl.w*cs)/2,oy=(cv.height-lvl.h*cs)/2;
+  const cols={emit:null,target:null,mirror:'#9ad0ff',split:'#5cf2b4',wall:'#4a4468',glass:'#bfe8ff44',filter:null,portal:'#b98bff',crystal:'#ff8ad8'};
+  lvl.cells.forEach((p,i)=>{if(!p)return;c.fillStyle=cols[p.t]||CHEX[p.c]||'#fff';const x=ox+(i%lvl.w)*cs,y=oy+Math.floor(i/lvl.w)*cs;if(p.t==='mirror'||p.t==='split'){c.strokeStyle=c.fillStyle;c.lineWidth=Math.max(1,cs*.18);c.beginPath();if(p.o){c.moveTo(x+cs*.2,y+cs*.2);c.lineTo(x+cs*.8,y+cs*.8)}else{c.moveTo(x+cs*.2,y+cs*.8);c.lineTo(x+cs*.8,y+cs*.2)}c.stroke()}
+    else if(p.t==='target'){c.beginPath();c.arc(x+cs/2,y+cs/2,cs*.35,0,7);c.fill()}else c.fillRect(x+cs*.12,y+cs*.12,cs*.76,cs*.76)})}
+const _drawLevels=drawLevels;
+drawLevels=function(){_drawLevels();document.querySelectorAll('.lv').forEach(b=>{if(b.disabled)return;const[wi,li]=b.dataset.l.split(':').map(Number);b.title=`${WORLDS[wi].name} ${li+1}`;
+  b.addEventListener('pointerenter',()=>{if(b.querySelector('canvas'))return;const cv=document.createElement('canvas');cv.width=cv.height=64;cv.style.cssText='position:absolute;width:64px;height:64px;transform:translate(0,-74px);border-radius:8px;border:2px solid #2c2468;pointer-events:none';b.style.position='relative';b.appendChild(cv);miniBoard(cv,getLevel(wi,li))});
+  b.addEventListener('pointerleave',()=>{const cv=b.querySelector('canvas');if(cv)cv.remove()})})};
+
+/* ================================================================
+   WIN SCREEN PICTURE and a pointing hand for the very first puzzle
+   ================================================================ */
+const _show=show;
+show=function(id){_show(id);if(id==='sWin'&&L){let cv=$('winCv');if(!cv){cv=document.createElement('canvas');cv.id='winCv';cv.width=cv.height=240;cv.style.cssText='width:160px;height:160px;align-self:center;border-radius:12px;border:2px solid #2c2468';$('wStars').after(cv)}
+  const c=cv.getContext('2d'),n=Math.max(L.w,L.h),cs=240/n;c.fillStyle='#0b0820';c.fillRect(0,0,240,240);const tr=trace(L);c.globalCompositeOperation='lighter';c.lineCap='round';
+  for(const s of tr.segs){c.strokeStyle=CHEX[s.col];c.lineWidth=cs*.3;c.globalAlpha=.4;c.beginPath();s.pts.forEach((p,i)=>i?c.lineTo(p[0]*cs,p[1]*cs):c.moveTo(p[0]*cs,p[1]*cs));c.stroke();c.globalAlpha=1;c.strokeStyle='#fff';c.lineWidth=2;c.stroke()}
+  c.globalCompositeOperation='source-over';L.cells.forEach((p,i)=>{if(!p)return;c.save();c.translate((i%L.w+.5)*cs,(Math.floor(i/L.w)+.5)*cs);drawPiece(c,p,cs*.9,0,p.t==='target',false);c.restore()})}};
+let handT=0;
+(function hand(){requestAnimationFrame(hand);if(!P||P.won||P.mode!=='camp'||P.wi!==0||P.li!==0||P.moves>0||$('play').hidden)return;handT+=1/60;
+  const i=L.cells.findIndex(c=>c&&c.mv==='rot');if(i<0)return;const x=(i%L.w+.7)*CS,y=(Math.floor(i/L.w)+.75)*CS+Math.sin(handT*5)*6;ctx.save();ctx.setTransform(DPR,0,0,DPR,0,0);ctx.font=`${CS*.55}px sans-serif`;ctx.fillText('👆',x,y+CS*.3);ctx.restore()})();
+
+/* ================================================================
+   BETTER PUZZLES for two challenges
+   ================================================================ */
+CHALLENGES[0].p.turns=[1,1];
+const _chalLevel=chalLevel;
+chalLevel=function(i){if(!CHALLENGES[i].p.white)return _chalLevel(i);for(let k=0;k<40;k++){const C=CHALLENGES[i],save0=generate;const lv=(()=>{const l=generate(55555+i*3331+k*101,C.p);return l})();
+    const ti=lv.cells.findIndex(c=>c&&c.t==='target'&&[3,5,6].includes(c.c));if(ti<0)continue;const w=lv.w,h=lv.h,tx=ti%w,ty=Math.floor(ti/w),miss=7^lv.cells[ti].c;
+    for(const d of[0,1,2,3]){let x=tx,y=ty,ok=true,path=[];while(true){x-=DX[d];y-=DY[d];if(x<0||y<0||x>=w||y>=h)break;const c=lv.solution[y*w+x];if(c&&c.t!=='glass'){ok=false;break}if(lv.cells[y*w+x]&&lv.cells[y*w+x].t!=='glass'){ok=false;break}path.push(y*w+x)}
+      if(!ok||path.length<2)continue;const last=path[path.length-1];lv.cells[last]={t:'emit',c:miss,o:d,mv:'fixed'};lv.solution[last]={t:'emit',c:miss,o:d};lv.cells[ti].c=7;lv.solution[ti].c=7;
+      if(trace({w,h,cells:lv.solution}).solved&&!trace(lv).solved){lv.hadTray=lv.tray.length>0;return lv}lv.cells[last]=null;lv.solution[last]=null;lv.cells[ti].c=7^miss;lv.solution[ti].c=7^miss}}
+  return _chalLevel(i)};
+
+/* ================================================================
+   KEYBOARD PLAY: arrow keys move a cursor, Space turns, Enter places
+   ================================================================ */
+let KC=null;   // keyboard cursor {x,y}
+addEventListener('keydown',e=>{if($('play').hidden||!L||P.won)return;const k=e.key;
+  const mv={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[k];
+  if(mv){e.preventDefault();if(!KC)KC={x:Math.floor(L.w/2),y:Math.floor(L.h/2)};else{KC.x=U.clamp(KC.x+mv[0],0,L.w-1);KC.y=U.clamp(KC.y+mv[1],0,L.h-1)}SFX.tick();P.hover=KC.y*L.w+KC.x;return}
+  if(!KC)return;const i=KC.y*L.w+KC.x;
+  if(k===' '||k==='Enter'){e.preventDefault();tap(i);if(P.won&&!P.mouse)ACH.unlock(GAME,'kbd')}
+  if(k==='Backspace'||k==='Delete'||k==='x'){e.preventDefault();pickUp(i)}
+  if(/^[1-9]$/.test(k)){const kinds=Object.keys(trayGroups());const kk=kinds[+k-1];if(kk){P.sel=kk;drawInv();SFX.click()}}});
+(function cursor(){requestAnimationFrame(cursor);if(!KC||!L||$('play').hidden)return;if(KC.x>=L.w||KC.y>=L.h){KC=null;return}
+  ctx.save();ctx.setTransform(DPR,0,0,DPR,0,0);const t=performance.now()/1000;ctx.strokeStyle=`rgba(255,210,63,${.6+.4*Math.sin(t*6)})`;ctx.lineWidth=3;ctx.strokeRect(KC.x*CS+3,KC.y*CS+3,CS-6,CS-6);ctx.restore()})();
+cv.addEventListener('pointerdown',()=>{KC=null;if(P)P.mouse=true},true);
+
+/* ================================================================
+   WHAT IS UNDER THE MOUSE? a little info line under the board
+   ================================================================ */
+const INFO={emit:c=>`${CNAME[c.c]} laser`,target:c=>`target — needs ${CNAME[c.c]} light`,mirror:c=>c.mv==='fixed'?'locked mirror':c.mv==='loose'?'your mirror (hold to put back)':'mirror — tap to turn',
+  split:c=>c.mv==='fixed'?'locked splitter':'splitter — tap to turn',wall:()=>'wall',glass:()=>'glass — light passes through',filter:c=>`${CNAME[c.c]} filter`,portal:()=>'portal',crystal:c=>c.broken?'BROKEN crystal!':'crystal — keep the light away!'};
+(function(){const bar=document.createElement('div');bar.id='infoLine';bar.style.cssText='font-size:13px;color:#9a94c9;min-height:18px;text-align:center';$('boardWrap').after(bar);
+  setInterval(()=>{if($('play').hidden||!L)return;const i=P.hover;let s='';if(i!=null&&L.cells[i]){const c=L.cells[i];s=(INFO[c.t]||(()=>''))(c)}else if(i!=null&&P.sel&&L.tray.length)s='tap to place a '+(P.sel==='split'?'splitter':'mirror');
+    const tr=P.lastTrace;if(tr)s=(s?s+' · ':'')+`${tr.lit}/${tr.total} targets lit`;bar.textContent=s},150)})();
+
+/* ================================================================
+   SCIENTIST RANKS and the DAILY CALENDAR
+   ================================================================ */
+const RANKS=[[0,'Lab Intern','🧑‍🎓'],[15,'Lab Assistant','🥽'],[40,'Junior Scientist','🔬'],[80,'Scientist','🧪'],[130,'Senior Scientist','⚗️'],[190,'Professor','👩‍🔬'],[260,'Nobel Laureate','🏅']];
+const rankOf=s=>RANKS.filter(r=>s>=r[0]).pop();
+const _rm2=refreshMenu;refreshMenu=function(){_rm2();const st=starsTotal(),r=rankOf(st),nx=RANKS.find(x=>x[0]>st);
+  if(st>=80)ACH.unlock(GAME,'rank');if(st>=260)ACH.unlock(GAME,'nobel');let el=$('rankLine');if(!el){el=document.createElement('p');el.id='rankLine';el.className='center';el.style.cssText='margin:-6px 0 0;color:#9a94c9;font-size:14px';$('mStars').parentNode.after(el)}
+  el.innerHTML=`${r[2]} <b style="color:#ecebff">${r[1]}</b>${nx?` · ${nx[0]-st} ⭐ to ${nx[1]}`:' · top rank!'}`};
+const _mDaily=$('mDaily').onclick;
+$('mDaily').onclick=()=>{const days=[];const now=new Date();for(let i=27;i>=0;i--){const d=new Date(now);d.setDate(now.getDate()-i);days.push(d)}
+  const key=d=>d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(),streak=(()=>{let n=0;for(let i=days.length-1;i>=0;i--){if(D.daily[key(days[i])])n++;else if(i<days.length-1)break}return n})();
+  UI.modal(`<h2>📅 Daily Puzzle</h2><p class="mute" style="margin:0">A new puzzle every day. Solving it gives you 2 💡 hints. Streak: <b>${streak}</b> day${streak===1?'':'s'}.</p>
+   <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">${days.map(d=>{const k=key(d),done=D.daily[k],today=k===dayKey();return`<div style="aspect-ratio:1;border-radius:8px;display:grid;place-items:center;font:600 12px 'Chakra Petch';background:${done?'#5cf2b433':'#0b0820'};border:2px solid ${today?'#ffd23f':'#2c2468'}">${done?'✔':d.getDate()}</div>`}).join('')}</div>
+   <div style="display:flex;gap:8px;justify-content:flex-end"><button class="kbtn2 alt" data-close>CLOSE</button><button class="kbtn2" id="dPlay">${D.daily[dayKey()]?'PLAY AGAIN':'PLAY TODAY'}</button></div>`,(m,close)=>{m.querySelector('#dPlay').onclick=()=>{close();_mDaily()}})};
+
+show('sMenu');
+if(new URLSearchParams(location.search).has('test'))window.__ll={get chalLevel(){return chalLevel},CHALLENGES,startRush,get RUSH(){return RUSH},get L(){return L},get P(){return P},D,getLevel,trace,generate,levelParams,playCampaign,useHint,tap,encodeLevel,decodeLevel,playCode,ED,WORLDS,win};
+</script>
+</body>
+</html>
