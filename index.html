@@ -68,6 +68,10 @@ h1{font-family:var(--display);font-weight:900;font-size:clamp(34px,9vw,64px);lin
       <canvas id="n4" width="160" height="90" aria-hidden="true"></canvas>
       <div class="info"><h2>Laser Labyrinth</h2><p>NEW! A light puzzle: turn mirrors, split beams and mix colours. 90 puzzles, 25 challenges, Light Rush, a daily puzzle and a level maker with share codes.</p><span class="play">PLAY</span></div>
     </a>
+    <a class="game" href="minigolf.html" style="--acc:#5cf2b4">
+      <canvas id="n5" width="160" height="90" aria-hidden="true"></canvas>
+      <div class="info"><h2>Mini Golf World</h2><p>NEW! 54 crazy holes in 6 courses: windmills, pirates, black holes, ghosts and lava jumps. Play with up to 4 friends or Robo-Caddie, dress your golfer and build your own holes.</p><span class="play">PLAY</span></div>
+    </a>
   </div>
 
   <div class="games">
@@ -268,6 +272,10 @@ NP.n4=(x,t)=>{x.fillStyle='#0b0820';x.fillRect(0,0,160,90);x.strokeStyle='#1d174
   const beam=(pts,c)=>{x.strokeStyle=c;x.globalAlpha=.35;x.lineWidth=7;x.beginPath();pts.forEach((p,i)=>i?x.lineTo(p[0],p[1]):x.moveTo(p[0],p[1]));x.stroke();x.globalAlpha=1;x.strokeStyle='#fff';x.lineWidth=1.5;x.stroke()};
   beam([[10,20],[90,20],[90,70],[150,70]],'#ff4d6a');beam([[10,70],[50,70],[50,40],[50+60*k,40]],'#5cf2b4');x.globalCompositeOperation='source-over';
   x.strokeStyle='#bfe8ff';x.lineWidth=3;x.beginPath();x.moveTo(84,26);x.lineTo(96,14);x.moveTo(84,64);x.lineTo(96,76);x.stroke();x.strokeStyle='#ff4d6a';x.lineWidth=3;x.beginPath();x.arc(150,70,7,0,7);x.stroke()};
+NP.n5=(x,t)=>{x.fillStyle='#3a7a3a';x.fillRect(0,0,160,90);x.fillStyle='#4fb04a';x.fillRect(12,14,136,62);x.strokeStyle='#c89a5a';x.lineWidth=4;x.strokeRect(12,14,136,62);
+  x.fillStyle='#062014';x.beginPath();x.arc(126,45,5,0,7);x.fill();x.strokeStyle='#ddd';x.lineWidth=1.5;x.beginPath();x.moveTo(126,45);x.lineTo(126,22);x.stroke();x.fillStyle='#ff3d3d';x.beginPath();x.moveTo(126,22);x.lineTo(138,26);x.lineTo(126,30);x.fill();
+  const a=still?0:t/600;x.save();x.translate(80,45);x.rotate(a);x.fillStyle='#f4f0e8';for(let k=0;k<4;k++){x.rotate(Math.PI/2);x.fillRect(0,-3,20,6)}x.restore();x.fillStyle='#8a5a3a';x.beginPath();x.arc(80,45,4,0,7);x.fill();
+  const k=still?.3:((t%3000)/3000);x.fillStyle='#fff';x.beginPath();x.arc(30+k*96,45+Math.sin(k*6)*14,3.5,0,7);x.fill()};
 function megaP(t){for(const id in NP){const c=document.getElementById(id);if(c)NP[id](c.getContext('2d'),t)}}
 NP.n1=(x,t)=>{x.fillStyle='#050a1e';x.fillRect(0,0,160,90);x.fillStyle='#fff';for(let i=0;i<30;i++){const y=((i*37+(still?0:t/20)*(1+i%3))%90);x.fillRect((i*53)%160,y,1+i%2,1+i%2)}
   const sx=80+Math.sin(still?0:t/600)*40;x.fillStyle='#3ef0ff';for(let i=0;i<5;i++){const y=(70-((still?0:t/4)+i*18)%70);x.fillRect(sx-3,y,2,5);x.fillRect(sx+2,y,2,5)}
