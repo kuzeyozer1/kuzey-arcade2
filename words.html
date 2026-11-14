@@ -57,6 +57,15 @@ a.back{color:var(--mute);text-decoration:none;font-family:var(--display);font-si
 .end .btn{border:0;border-radius:8px;padding:10px 18px;font-family:var(--display);font-weight:900;font-size:14px;cursor:pointer;background:var(--cyan);color:var(--night)}
 .help{font-size:12px;color:var(--mute);display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
 .help i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:4px}
+.tools{width:min(520px,100%);display:flex;gap:6px;align-items:center}
+.tools button{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:5px 9px;cursor:pointer;font-weight:700;font-size:13px}
+.tools button:hover{border-color:var(--cyan)}.det{margin-right:auto;font-weight:700;font-size:13px;color:var(--ink)}.det small{color:var(--mute);font-weight:600}
+.coin{font-weight:700;font-size:13px;color:#ffd23f}
+#rushT{font-family:var(--display);color:#ffd23f}
+.t.flip{animation:flip .45s both}
+@keyframes flip{0%{transform:rotateX(0)}50%{transform:rotateX(90deg)}100%{transform:rotateX(0)}}
+.t.hint{box-shadow:inset 0 0 0 2px #ffd23f}
+.dist{display:flex;flex-direction:column;gap:3px;width:100%}.dist div{display:flex;gap:6px;align-items:center;font-size:13px}.dist i{display:block;height:18px;background:var(--line);border-radius:4px;min-width:20px;text-align:right;padding:0 6px;font-style:normal;font-weight:700;line-height:18px}.dist i.me{background:var(--hit);color:#05200f}
 @media (prefers-reduced-motion:reduce){.row.shake,.t.pop{animation:none}}
 </style>
 </head>
@@ -64,15 +73,17 @@ a.back{color:var(--mute);text-decoration:none;font-family:var(--display);font-si
 <header>
   <h1>WORD DETECTIVE</h1>
   <div class="seg" role="group" aria-label="Language"><button data-lang="tr" aria-pressed="true">TR</button><button data-lang="en" aria-pressed="false">EN</button></div>
-  <div class="seg" role="group" aria-label="Mode"><button data-mode="daily" aria-pressed="true" id="mDaily">Daily</button><button data-mode="practice" aria-pressed="false" id="mPractice">Practice</button></div>
+  <div class="seg" role="group" aria-label="Mode"><button data-mode="daily" aria-pressed="true" id="mDaily">Daily</button><button data-mode="practice" aria-pressed="false" id="mPractice">Practice</button><button data-mode="rush" aria-pressed="false" id="mRush">⏱ Rush</button></div>
   <a class="back" href="./">ARCADE</a>
 </header>
-<div class="status"><span id="caseNo"></span><span id="streak"></span></div>
+<div class="tools"><span class="det" id="det"></span><span class="coin" id="coin">🪙 0</span><button id="tHint">💡 <span id="hintLbl">Hint</span></button><button id="tStats">📊</button><button id="tAch">🏆</button><button id="tMe">👤</button></div>
+<div class="status"><span id="caseNo"></span><span id="rushT" hidden></span><span id="streak"></span></div>
 <div class="grid" id="grid"></div>
 <div class="msg" id="msg" role="status"></div>
 <div class="end" id="end" hidden><b id="endTitle"></b><span id="endText"></span><button class="btn" id="endBtn"></button></div>
 <div class="help"><span><i style="background:var(--hit)"></i><span id="hHit"></span></span><span><i style="background:var(--near)"></i><span id="hNear"></span></span><span><i style="background:var(--miss)"></i><span id="hMiss"></span></span></div>
 <div class="kb" id="kb"></div>
+<script src="kit.js"></script>
 <script>
 (()=>{
 const $=id=>document.getElementById(id);
@@ -155,6 +166,58 @@ addEventListener('keydown',e=>{if(e.ctrlKey||e.metaKey||e.altKey)return;
 document.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{st.lang=b.dataset.lang;savePrefs();newGame()});
 document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{st.mode=b.dataset.mode;savePrefs();newGame()});
 $('endBtn').onclick=()=>{if(st.mode==='daily'){st.mode='practice';savePrefs();newGame()}else{put('wdPractice:'+st.lang,null);newGame()}};
+
+/* ================= WD2: rush mode, hints, coins, stats, ranks, awards, more words ================= */
+const {sfx:SFX,util:U,ach:ACH,profile:PROF,ui:UI}=KIT;const GAME='words';
+WORDS.tr.push('ADRES','AHŞAP','ALTIN','AYRAN','BADEM','BAKIR','BALON','BEBEK','BEYİN','BİLGİ','BOYUN','BURUN','CADDE','CEVİZ','CÜMLE','ÇADIR','ÇAMUR','ÇATAL','ÇAYIR','ÇEKİÇ','ÇELİK','ÇİZGİ','DALGA','DEMİR','DEVRE','DİKEN','DOLMA','DÜDÜK','DÜĞME','FENER','FİDAN','GAZOZ','GÜVEN','HALAT','HAMUR','HASTA','HAVLU','HELVA','HIRKA','İNCİR','İPLİK','İSTEK','KABAK','KAKAO','KALIP','KANAT','KAPAK','KAŞIK','KAYAK','KAYIK','KEMİK','KILIÇ','KİLİT','KOLYE','KONAK','KUMAŞ','KUZEY','LEVHA','MAKAS','MANAV','MARUL','MASKE','MERAK','MEYVE','MİDYE','MUMYA','NOKTA','ÖĞLEN','PAMUK','PARKE','PERDE','RADYO','SAKIZ','SALÇA','SAMAN','SAPAN','SAYGI','SEPET','SERİN','SOKAK','TABAK','TAKSİ','TAVAN','TEPSİ','TOHUM','TOPAÇ','TUĞLA','TÜNEL','VAGON','YAYLA','YEMEK','YÜZÜK','ZEMİN','ZURNA');
+WORDS.en.push(...`ACORN ALARM ANGEL ARROW BACON BADGE BAGEL BASIL BEARD BENCH BIRCH BISON BLAZE BLOOM BONUS BOOTS BRAVE BRICK BRIDE BROOM BUNNY CABIN CACTI CARGO CHART CHEEK CHIEF CHILD CIDER CLIFF COAST COBRA CORAL COUCH COMET CRAFT CRISP CROSS CUBIC DAISY DELTA DINER DONUT DRAFT DRAIN DRILL DRUMS EMBER ENJOY FABLE FAIRY FEAST FERRY FLASH FLUTE FOCUS FORGE FROST GECKO GRAIN GUARD GUIDE HATCH HIPPO HOBBY HOUND IGLOO IVORY JELLY JEWEL KAYAK KIOSK KOALA LADLE LLAMA LODGE LUNAR MARCH MERRY MOOSE MOTOR NOBLE NOVEL OASIS OLIVE OPERA PADDY PARTY PASTA PATCH PEDAL PENNY PIXEL PLAZA POLAR PRISM PUPPY QUEST QUILT RAVEN REALM RHINO ROAST ROYAL RULER SAINT SCOUT SHINY SKUNK SLOTH SNAIL SPARK SPICE SPIKE SQUID STAGE STOOL SWING SWORD THORN TIARA TOPAZ TRAIL TREAT TRICK TROUT TWIST VAPOR VIDEO VIOLA WAFER WHEAT WITCH YEAST YOUTH ZESTY`.split(' '));
+const SD=Object.assign({coins:20,stats:{tr:{p:0,w:0,d:[0,0,0,0,0,0],max:0},en:{p:0,w:0,d:[0,0,0,0,0,0],max:0}},rushBest:{tr:0,en:0},hints:0,langs:{}},U.load('words:v2',{}));const sv=()=>U.save('words:v2',SD);
+ACH.define(GAME,[
+ {id:'first',icon:'🔍',name:'Case Closed',desc:'Solve your first word'},{id:'two',icon:'🧠',name:'Sharp Mind',desc:'Solve a word in 2 guesses'},{id:'one',icon:'🎯',name:'Mind Reader',desc:'Solve a word on the first guess'},
+ {id:'w10',icon:'🕵️',name:'Detective',desc:'Solve 10 words'},{id:'w50',icon:'🎖️',name:'Inspector',desc:'Solve 50 words'},{id:'w100',icon:'👑',name:'Legend',desc:'Solve 100 words'},
+ {id:'st3',icon:'🔥',name:'On a Roll',desc:'Daily streak of 3'},{id:'st7',icon:'📅',name:'Week Warrior',desc:'Daily streak of 7'},{id:'r5',icon:'⏱️',name:'Quick Thinker',desc:'Solve 5 words in one Rush'},
+ {id:'r10',icon:'⚡',name:'Lightning Brain',desc:'Solve 10 words in one Rush'},{id:'hint',icon:'💡',name:'A Little Help',desc:'Use a hint'},{id:'bi',icon:'🌍',name:'Bilingual',desc:'Solve words in Turkish and English'},
+ {id:'phew',icon:'😅',name:'Phew!',desc:'Solve on the 6th guess'},{id:'rich',icon:'🪙',name:'Paid Detective',desc:'Have 200 coins'}]);
+const RANKS=[[0,'Rookie'],[5,'Junior Detective'],[15,'Detective'],[30,'Inspector'],[60,'Chief Inspector'],[100,'Legend']];
+const wins=()=>SD.stats.tr.w+SD.stats.en.w;const rank=()=>{let r=RANKS[0];for(const x of RANKS)if(wins()>=x[0])r=x;return r[1]};
+let R={on:false,t:180,solved:0,over:false,timer:null};
+const _newGame=newGame;newGame=function(){if(st.mode!=='rush'){stopRush();const sp=load('wdPractice:'+st.lang);if(sp&&sp.rush)put('wdPractice:'+st.lang,null);_newGame();G.hints=G.hints||[];return}
+  if(!R.on||R.over){R={on:true,t:180,solved:0,over:false,timer:setInterval(rushTick,250)}}
+  const L=list();G={answer:L[Math.random()*L.length|0],guesses:[],cur:'',done:false,won:false,rush:true,hints:[]};draw()};
+function stopRush(){if(R.timer)clearInterval(R.timer);R.on=false;$('rushT').hidden=true}
+function rushTick(){if(R.over)return;R.t-=.25;$('rushT').hidden=false;$('rushT').textContent=`⏱ ${Math.ceil(R.t)}s · ✅ ${R.solved}`;if(R.t<=0){R.over=true;clearInterval(R.timer);G.done=true;G.won=false;
+  const best=SD.rushBest[st.lang]||0;if(R.solved>best)SD.rushBest[st.lang]=R.solved;sv();SFX.lose();draw();
+  $('endTitle').textContent=st.lang==='tr'?'SÜRE BİTTİ!':'TIME UP!';$('endText').textContent=(st.lang==='tr'?`${R.solved} kelime çözdün. En iyi: `:`You solved ${R.solved} words. Best: `)+SD.rushBest[st.lang]+(st.lang==='tr'?` · Son kelime: ${G.answer}`:` · Last word: ${G.answer}`);$('endBtn').textContent=st.lang==='tr'?'Tekrar':'Play again'}}
+const _draw=draw;draw=function(){_draw();if(G&&G.rush&&!R.over)$('end').hidden=true;
+  $('mRush').textContent=st.lang==='tr'?'⏱ Hızlı':'⏱ Rush';if(st.mode==='rush')$('caseNo').textContent=st.lang==='tr'?'Hızlı tur — 3 dakika':'Rush — 3 minutes';
+  $('det').innerHTML=`🕵️${PROF.avatar} ${PROF.name} <small>· ${rank()}</small>`;$('coin').textContent='🪙 '+SD.coins;$('hintLbl').textContent=(st.lang==='tr'?'İpucu':'Hint')+' 15';
+  // faint hint letters in the row you are typing
+  if(G&&!G.done&&G.hints&&G.hints.length){const tiles=document.querySelectorAll(`.row[data-r="${G.guesses.length}"] .t`);for(const[i,c]of G.hints){const t=tiles[i];if(t&&!t.textContent){t.textContent=c;t.style.opacity=.35}t&&t.classList.add('hint')}}};
+const _endBtn=$('endBtn').onclick;$('endBtn').onclick=()=>{if(st.mode==='rush'){R.over=true;stopRush();newGame();return}_endBtn()};
+const _press=press;press=function(k){if(!G||G.done)return;const n=G.guesses.length;_press(k);if(G.guesses.length>n){
+    // flip the row that was just checked
+    document.querySelectorAll(`.row[data-r="${n}"] .t`).forEach((t,i)=>{t.style.animationDelay=(i*.09)+'s';t.classList.add('flip')});
+    score(G.guesses[n],G.answer).forEach((r,i)=>SFX.tone(r==='hit'?880:r==='near'?660:330,.06,{type:'triangle',vol:.05,delay:i*.09}));
+    if(G.done)finish()}};
+function finish(){if(G.counted)return;G.counted=true;const S=SD.stats[st.lang];const n=G.guesses.length;
+  if(G.won){S.p++;S.w++;S.d[n-1]++;const gain=10+(6-n)*5;SD.coins+=gain;setTimeout(()=>say(`+${gain} 🪙`),400);SFX.win();SD.langs[st.lang]=1;
+    ACH.unlock(GAME,'first');if(n<=2)ACH.unlock(GAME,'two');if(n===1)ACH.unlock(GAME,'one');if(n===6)ACH.unlock(GAME,'phew');const w=wins();if(w>=10)ACH.unlock(GAME,'w10');if(w>=50)ACH.unlock(GAME,'w50');if(w>=100)ACH.unlock(GAME,'w100');
+    if(SD.langs.tr&&SD.langs.en)ACH.unlock(GAME,'bi');if(SD.coins>=200)ACH.unlock(GAME,'rich');
+    if(st.mode==='daily'){const sk=load('wdStreak:'+st.lang)||{n:0};S.max=Math.max(S.max,sk.n);if(sk.n>=3)ACH.unlock(GAME,'st3');if(sk.n>=7)ACH.unlock(GAME,'st7')}
+    if(G.rush){R.solved++;R.t+=15;if(R.solved>=5)ACH.unlock(GAME,'r5');if(R.solved>=10)ACH.unlock(GAME,'r10');setTimeout(()=>{if(!R.over)newGame()},900)}}
+  else{S.p++;SFX.lose();if(G.rush){say((st.lang==='tr'?'Kelime: ':'The word was ')+G.answer+' (−15s)');R.t-=15;setTimeout(()=>{if(!R.over)newGame()},1500)}}
+  sv();draw()}
+$('tHint').onclick=()=>{if(!G||G.done)return;if(SD.coins<15){say(st.lang==='tr'?'Yeterli 🪙 yok':'Not enough 🪙');SFX.error();return}
+  const a=[...G.answer],known=new Set();for(const g of G.guesses)score(g,G.answer).forEach((r,i)=>{if(r==='hit')known.add(i)});for(const[i]of G.hints)known.add(i);
+  const free=a.map((_,i)=>i).filter(i=>!known.has(i));if(!free.length){say('🤔');return}const i=free[Math.random()*free.length|0];G.hints.push([i,a[i]]);SD.coins-=15;SD.hints++;sv();ACH.unlock(GAME,'hint');SFX.power();
+  say(st.lang==='tr'?`${i+1}. harf: ${a[i]}`:`Letter ${i+1} is ${a[i]}`);draw()};
+$('tStats').onclick=()=>{const S=SD.stats[st.lang],mx=Math.max(1,...S.d);const sk=load('wdStreak:'+st.lang)||{n:0};const tr=st.lang==='tr';
+  UI.modal(`<h2>📊 ${tr?'İstatistikler':'Statistics'} (${st.lang.toUpperCase()})</h2><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center">${[[tr?'Oynanan':'Played',S.p],[tr?'Kazanma %':'Win %',S.p?Math.round(S.w/S.p*100):0],[tr?'Seri':'Streak',sk.n||0],[tr?'Hızlı rekor':'Rush best',SD.rushBest[st.lang]||0]].map(([a,b])=>`<div><b style="font:900 22px Orbitron;color:#ffd23f;display:block">${b}</b><small>${a}</small></div>`).join('')}</div>
+    <b>${tr?'Tahmin dağılımı':'Guess distribution'}</b><div class="dist">${S.d.map((n,i)=>`<div>${i+1}<i class="${G&&G.won&&G.guesses.length===i+1?'me':''}" style="width:${8+n/mx*85}%">${n}</i></div>`).join('')}</div>
+    <p style="margin:0;color:#9a94c9">🕵️ ${PROF.avatar} ${PROF.name} — ${rank()} · ${wins()} ${tr?'vaka çözüldü':'cases solved'} · 💡 ${SD.hints}</p><div style="display:flex;justify-content:flex-end"><button class="kbtn2" data-close>OK</button></div>`)};
+$('tAch').onclick=()=>UI.achievements(GAME,'Word Detective');$('tMe').onclick=()=>UI.profileEditor(draw);
+if(new URLSearchParams(location.search).has('test'))window.__wd={get G(){return G},press:k=>press(k),SD,st,newGame:()=>newGame()};
+
 newGame();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 })();
