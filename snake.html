@@ -61,6 +61,15 @@ canvas{display:block;border-radius:6px;box-shadow:0 0 0 2px var(--line),0 0 40px
 .pad .u{grid-column:2}.pad .l{grid-column:1;grid-row:2}.pad .d{grid-column:2;grid-row:2}.pad .r{grid-column:3;grid-row:2}
 @media (pointer:coarse){.pad{display:grid}.keys{display:none}}
 .keys{font-size:12px;color:var(--mute)}
+.screen{overflow:auto;justify-content:safe center}
+.who{display:flex;align-items:center;gap:8px;color:var(--ink)}.who b{font-size:26px}
+.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;width:100%;max-width:420px}
+.mbtn{background:var(--panel);border:2px solid var(--line);border-radius:8px;padding:8px 4px;cursor:pointer;font:900 11px var(--display);letter-spacing:.04em;color:var(--ink)}
+.mbtn small{display:block;font:400 11px var(--body);color:var(--mute);letter-spacing:0;margin-top:2px}.mbtn:hover{border-color:var(--snake)}
+.lvgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:6px;width:100%;max-width:440px}
+.lv{background:var(--panel);border:2px solid var(--line);border-radius:8px;padding:6px 2px;cursor:pointer;font:900 16px var(--display);color:var(--ink)}
+.lv small{display:block;font:400 10px var(--body);color:var(--gold);letter-spacing:1px}.lv[disabled]{opacity:.35;cursor:default}.lv.on{border-color:var(--gold)}
+.hudx{position:absolute;left:8px;bottom:8px;font:900 12px var(--display);color:var(--ink);background:rgba(11,8,32,.7);border-radius:6px;padding:3px 8px;pointer-events:none}
 .mute{background:var(--panel);border:1px solid var(--line);border-radius:4px;font-size:11px;padding:3px 8px;cursor:pointer;color:var(--mute);letter-spacing:.08em}
 </style>
 
@@ -75,18 +84,27 @@ canvas{display:block;border-radius:6px;box-shadow:0 0 0 2px var(--line),0 0 40px
 
 <div class="board" id="board">
   <canvas id="cv" aria-label="Snake playfield"></canvas>
+  <div class="hudx" id="hudx" hidden></div>
   <div class="screen" id="start">
     <h2>NEON SNAKE RUSH</h2>
     <p>Eat fast to build your combo. Grab power-ups. Use the portals. Don't hit the wall or yourself.</p>
-    <button class="play" id="go">PLAY</button>
+    <div class="who" id="who"></div>
+    <button class="play" id="go">CLASSIC</button>
+    <div class="modes"><button class="mbtn" id="goMaze">🧱 MAZES<small id="mzInfo">20 levels</small></button><button class="mbtn" id="goTime">⏱️ TIME TRIAL<small>90 seconds</small></button><button class="mbtn" id="goDaily">📅 DAILY<small id="dyInfo">New maze daily</small></button>
+    <button class="mbtn" id="goSkins">🎨 SKINS<small id="skInfo">8 snakes</small></button><button class="mbtn" id="goAch">🏆 AWARDS<small id="achInfo">0/0</small></button><button class="mbtn" id="goMe">👤 PLAYER<small>Avatar head</small></button></div>
     <button class="mute" id="snd">SOUND ON</button>
     <a class="mute" href="./" style="text-decoration:none">BACK TO ARCADE</a>
   </div>
+  <div class="screen" id="lvls" hidden><h2 style="font-size:24px">🧱 MAZES</h2><div class="lvgrid" id="lvGrid"></div><button class="mute" data-back>← BACK</button></div>
+  <div class="screen" id="skins" hidden><h2 style="font-size:24px">🎨 SNAKE SKINS</h2><p>Unlock skins by eating food in any mode. 🍎 <b id="skFood">0</b></p><div class="lvgrid" id="skGrid"></div><label class="mute" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="headOpt"> Show my avatar on the head</label><button class="mute" data-back>← BACK</button></div>
   <div class="screen" id="over" hidden>
     <h2 id="ovTitle">CRASHED</h2>
     <div class="big" id="ovScore">0</div>
     <p id="ovSub"></p>
+    <div style="color:var(--gold);font-size:24px;letter-spacing:3px" id="ovStars"></div>
     <button class="play" id="again">PLAY AGAIN</button>
+    <button class="mute" id="ovNext" hidden>NEXT LEVEL ▶</button>
+    <button class="mute" id="ovMenu">MENU</button>
     <a class="mute" href="./" style="text-decoration:none">BACK TO ARCADE</a>
   </div>
 </div>
@@ -107,6 +125,7 @@ canvas{display:block;border-radius:6px;box-shadow:0 0 0 2px var(--line),0 0 40px
   <button class="r" data-d="1,0" aria-label="Right">▶</button>
 </div>
 
+<script src="kit.js"></script>
 <script>
 (()=>{
 const N=22,cv=document.getElementById('cv'),ctx=cv.getContext('2d'),$=id=>document.getElementById(id);
@@ -142,6 +161,7 @@ function freeCell(){
   if(S.food)used.add(key(S.food.x,S.food.y));
   for(const it of S.items)used.add(key(it.x,it.y));
   for(const p of S.portals)used.add(key(p.x,p.y));
+  if(S.walls)for(const w of S.walls)used.add(w);
   for(let i=0;i<500;i++){const x=Math.random()*N|0,y=Math.random()*N|0;if(!used.has(key(x,y))&&Math.abs(x-S.snake[0].x)+Math.abs(y-S.snake[0].y)>2)return{x,y}}
   return null;
 }
@@ -176,6 +196,7 @@ function step(){
   if(pi>=0){const o=S.portals[1-pi];burst(nx,ny,COL.portal,10,3);nx=o.x+S.dir.x;ny=o.y+S.dir.y;
     if(nx<0||ny<0||nx>=N||ny>=N){if(ghost){nx=(nx+N)%N;ny=(ny+N)%N}else return die('Portal into a wall')}
     beep(300,.15,'sine',500,.04);burst(o.x,o.y,COL.portal,10,3)}
+  if(S.walls&&S.walls.has(key(nx,ny))&&!ghost)return die('Hit a maze wall');
   const tailMoves=S.grow===0;
   const body=S.snake.slice(0,tailMoves?-1:undefined);
   if(!ghost&&body.some(p=>p.x===nx&&p.y===ny))return die('Bit your own tail');
@@ -298,6 +319,91 @@ let sw=null;
 cv.addEventListener('pointerdown',e=>{sw={x:e.clientX,y:e.clientY};if(S&&S.paused)S.paused=false});
 cv.addEventListener('pointermove',e=>{if(!sw)return;const dx=e.clientX-sw.x,dy=e.clientY-sw.y;if(Math.hypot(dx,dy)>24){Math.abs(dx)>Math.abs(dy)?turn(Math.sign(dx),0):turn(0,Math.sign(dy));sw={x:e.clientX,y:e.clientY}}});
 addEventListener('pointerup',()=>sw=null);
+
+
+/* ================= SNAKE2: modes, mazes, skins, avatar head, awards ================= */
+const {sfx:SFX,util:U,ach:ACH,profile:PROF,ui:UI}=KIT;const GAME='snake';
+const SD=Object.assign({lv:{},food:0,games:0,skin:'neon',head:true,bestTime:0,bestDaily:{},bestMaze:0},U.load('snake:v2',{}));const sv=()=>U.save('snake:v2',SD);
+ACH.define(GAME,[
+ {id:'s100',icon:'🍎',name:'Snack Time',desc:'Score 100 points'},{id:'s500',icon:'🍱',name:'Big Appetite',desc:'Score 500 points'},{id:'s1500',icon:'🐉',name:'Dragon',desc:'Score 1500 points'},
+ {id:'len30',icon:'📏',name:'Long Boi',desc:'Grow to length 30'},{id:'combo',icon:'🔥',name:'Combo King',desc:'Reach a ×5 combo'},{id:'gold',icon:'🌟',name:'Gold Digger',desc:'Eat 3 golden foods in one game'},
+ {id:'portal',icon:'🌀',name:'Portal Hopper',desc:'Use 5 portals in one game'},{id:'lv5',icon:'🧱',name:'Maze Runner',desc:'Clear 5 mazes'},{id:'lv20',icon:'🏆',name:'Maze Master',desc:'Clear all 20 mazes'},
+ {id:'star3',icon:'⭐',name:'Speedy Snake',desc:'Get 3 stars on a maze'},{id:'time',icon:'⏱️',name:'Clock Racer',desc:'Score 400 in Time Trial'},{id:'daily',icon:'📅',name:'Daily Slither',desc:'Play the daily maze'},
+ {id:'skin',icon:'🎨',name:'Fresh Scales',desc:'Use a new snake skin'},{id:'f500',icon:'🍽️',name:'Buffet',desc:'Eat 500 food in total'},{id:'ghostwall',icon:'👻',name:'Phase Shift',desc:'Go through a maze wall as a ghost'}]);
+const SKINS=[{id:'neon',name:'Neon',c:'#3ef0ff',need:0},{id:'lime',name:'Lime',c:'#b6ff3e',need:20},{id:'fire',name:'Fire',c:'#ff8a3d',need:50},{id:'pink',name:'Bubblegum',c:'#ff6ad5',need:90},
+ {id:'ice',name:'Ice',c:'#d8f4ff',need:140},{id:'gold',name:'Gold',c:'#ffd23f',need:220},{id:'rainbow',name:'Rainbow',c:'rainbow',need:320},{id:'shadow',name:'Shadow',c:'#7a5cff',need:450}];
+let mode='classic',lvI=0,portalsUsed=0,goldsEaten=0;
+/* ---- maze builder ---- */
+function seg(set,x0,y0,x1,y1){const dx=Math.sign(x1-x0),dy=Math.sign(y1-y0);let x=x0,y=y0;for(;;){if(x>=0&&y>=0&&x<N&&y<N)set.add(key(x,y));if(x===x1&&y===y1)break;x+=dx;y+=dy}}
+const PATTERNS=[
+ w=>{},
+ w=>seg(w,6,11,15,11),
+ w=>{seg(w,7,4,7,17);seg(w,14,4,14,17)},
+ w=>{seg(w,11,4,11,17);seg(w,4,11,17,11)},
+ w=>{for(const[a,b]of[[3,3],[18,3],[3,18],[18,18]]){seg(w,a,b,a+(a<11?4:-4),b);seg(w,a,b,a,b+(b<11?4:-4))}},
+ w=>{seg(w,5,5,16,5);seg(w,5,16,16,16);seg(w,5,5,5,8);seg(w,5,13,5,16);seg(w,16,5,16,8);seg(w,16,13,16,16)},
+ w=>{for(let y=4;y<N-2;y+=5){seg(w,y%2?2:6,y,y%2?15:19,y)}},
+ w=>{for(let k=0;k<6;k++){seg(w,3+k*3,3+k*3,5+k*3,3+k*3)}},
+ w=>{for(const x of[7,14])for(let y=0;y<N;y++)if(y%7!==3)w.add(key(x,y))},
+ w=>{let x=3,y=3,len=16,d=0;const D=[[1,0],[0,1],[-1,0],[0,-1]];for(let k=0;k<7&&len>2;k++){const[ddx,ddy]=D[d];seg(w,x,y,x+ddx*len,y+ddy*len);x+=ddx*len;y+=ddy*len;d=(d+1)%4;if(k%2)len-=3}},
+ w=>{for(let y=2;y<N;y+=4)for(let x=2;x<N;x+=4)w.add(key(x,y))},
+ w=>{seg(w,0,7,8,7);seg(w,13,7,21,7);seg(w,0,14,8,14);seg(w,13,14,21,14)}];
+function mazeWalls(i,rnd){const w=new Set();if(i<PATTERNS.length)PATTERNS[i](w);else{const a=1+Math.floor(rnd()*(PATTERNS.length-1)),b=1+Math.floor(rnd()*(PATTERNS.length-1));PATTERNS[a](w);if(b!==a)PATTERNS[b](w);
+  for(let k=0;k<4+i;k++){const x=Math.floor(rnd()*N),y=Math.floor(rnd()*N);w.add(key(x,y))}}
+  // keep the start lane clear
+  const m=N>>1;for(let x=0;x<N;x++)for(let y=m-1;y<=m+1;y++)if(x>=m-5&&x<=m+5)w.delete(key(x,y));return w}
+const LV=Array.from({length:20},(_,i)=>({n:i+1,goal:8+Math.floor(i*1.2),par:30+i*4}));
+function hashStr(s){let h=2166136261;for(const ch of s){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()};
+/* ---- game start / end ---- */
+const _newGame=newGame;newGame=function(){_newGame();S.mode=mode;portalsUsed=0;goldsEaten=0;S.time=90;
+  if(mode==='maze'){const r=U.rng(lvI*7919+3);S.walls=mazeWalls(lvI<PATTERNS.length?lvI:lvI,r);S.goal=LV[lvI].goal}
+  if(mode==='daily'){S.walls=mazeWalls(PATTERNS.length+3,U.rng(hashStr(today())))}
+  if(S.walls){S.food=freeCell();placePortals()}applySkin();$('hudx').hidden=mode==='classic'};
+start=function(){$('start').hidden=true;$('over').hidden=true;['lvls','skins'].forEach(i=>$(i).hidden=true);newGame();hud();beep(440,.1,'square',440)};
+function go(m,i){mode=m;lvI=i||0;start()}
+$('go').onclick=()=>go('classic');$('again').onclick=()=>go(mode,lvI);$('goTime').onclick=()=>go('time');$('goDaily').onclick=()=>go('daily');
+$('goMaze').onclick=()=>{drawLevels();$('start').hidden=true;$('lvls').hidden=false};$('goSkins').onclick=()=>{drawSkins();$('start').hidden=true;$('skins').hidden=false};
+$('goAch').onclick=()=>UI.achievements(GAME,'Snake awards');$('goMe').onclick=()=>UI.profileEditor(menu);
+document.querySelectorAll('[data-back]').forEach(b=>b.onclick=()=>{b.closest('.screen').hidden=true;$('start').hidden=false;menu()});
+$('ovMenu').onclick=()=>{$('over').hidden=true;S=null;if(mode==='maze'){drawLevels();$('lvls').hidden=false}else{$('start').hidden=false;menu()}};
+$('ovNext').onclick=()=>go('maze',lvI+1);
+function menu(){$('who').innerHTML=`<b>${PROF.avatar}</b><span>${PROF.name}</span>`;const c=ACH.count(GAME);$('achInfo').textContent=c.got+'/'+c.total;const n=Object.keys(SD.lv).length;$('mzInfo').textContent=n+'/20 cleared';
+  $('dyInfo').textContent=SD.bestDaily[today()]!=null?'Today: '+SD.bestDaily[today()]:'New maze daily';$('skInfo').textContent=SKINS.filter(k=>SD.food>=k.need).length+'/8 unlocked'}
+function drawLevels(){$('lvGrid').innerHTML=LV.map((L,i)=>{const open=i===0||SD.lv[i];const st=SD.lv[L.n]||0;return`<button class="lv" data-l="${i}" ${open?'':'disabled'}>${L.n}<small>${'★'.repeat(st)}${'☆'.repeat(3-st)}</small></button>`}).join('');
+  $('lvGrid').querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>{if(!b.disabled)go('maze',+b.dataset.l)})}
+function drawSkins(){$('skFood').textContent=SD.food;$('headOpt').checked=SD.head;$('skGrid').innerHTML=SKINS.map(k=>{const ok=SD.food>=k.need;return`<button class="lv ${SD.skin===k.id?'on':''}" data-k="${k.id}" ${ok?'':'disabled'} style="font-size:12px"><span style="display:block;height:12px;border-radius:6px;margin:0 6px 4px;background:${k.c==='rainbow'?'linear-gradient(90deg,#ff3d9a,#ffd23f,#5cf2b4,#3ef0ff,#b98bff)':k.c}"></span>${k.name}<small>${ok?(SD.skin===k.id?'✓':''):'🍎'+k.need}</small></button>`}).join('');
+  $('skGrid').querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{if(b.disabled)return;if(SD.skin!==b.dataset.k)ACH.unlock(GAME,'skin');SD.skin=b.dataset.k;sv();drawSkins()})}
+$('headOpt').onchange=e=>{SD.head=e.target.checked;sv()};
+function applySkin(){const k=SKINS.find(x=>x.id===SD.skin)||SKINS[0];if(k.c!=='rainbow')COL.snake=k.c}
+/* ---- watch every step for eating, portals, goals ---- */
+const _step=step;step=function(){const e=S.eaten,len=S.snake.length,h0=S.snake[0],nextPortal=S.portals.some(p=>p.x===h0.x+S.dir.x&&p.y===h0.y+S.dir.y),gold=S.food&&S.food.gold&&S.food.x===h0.x+(S.queue[0]||S.dir).x&&S.food.y===h0.y+(S.queue[0]||S.dir).y;
+  _step();if(!S||S.dead)return;const h=S.snake[0];if(S.walls&&S.walls.has(key(h.x,h.y)))ACH.unlock(GAME,'ghostwall');
+  if(nextPortal){portalsUsed++;if(portalsUsed>=5)ACH.unlock(GAME,'portal')}
+  if(S.eaten>e){SD.food++;if(gold){goldsEaten++;if(goldsEaten>=3)ACH.unlock(GAME,'gold')}if(SD.food>=500)ACH.unlock(GAME,'f500');if(S.combo>=5)ACH.unlock(GAME,'combo');
+    if(S.snake.length>=30)ACH.unlock(GAME,'len30');if(S.score>=100)ACH.unlock(GAME,'s100');if(S.score>=500)ACH.unlock(GAME,'s500');if(S.score>=1500)ACH.unlock(GAME,'s1500');
+    if(mode==='maze'&&S.eaten>=S.goal)win()}};
+function win(){S.dead=true;const L=LV[lvI],t=S.t,stars=1+(t<=L.par*1.5?1:0)+(t<=L.par?1:0);SD.lv[L.n]=Math.max(SD.lv[L.n]||0,stars);SD.games++;sv();if(stars===3)ACH.unlock(GAME,'star3');
+  const n=Object.keys(SD.lv).length;if(n>=5)ACH.unlock(GAME,'lv5');if(n>=20)ACH.unlock(GAME,'lv20');SFX.win();for(const p of S.snake)burst(p.x,p.y,'#5cf2b4',4,4);
+  setTimeout(()=>{$('ovTitle').textContent='MAZE CLEAR!';$('ovScore').textContent=S.score;$('ovSub').textContent=`Level ${L.n} in ${Math.round(t)}s (⭐⭐⭐ under ${L.par}s)`;$('ovStars').textContent='★'.repeat(stars)+'☆'.repeat(3-stars);$('ovNext').hidden=lvI>=19;$('over').hidden=false},700)}
+die=function(why){S.dead=true;S.shake=14;S.flash=.4;for(const p of S.snake.slice(0,12))burst(p.x,p.y,COL.snake,6,5);beep(220,.5,'sawtooth',-180,.06);SD.games++;
+  let isBest=false,label=best;
+  if(mode==='classic'){isBest=S.score>best;if(isBest){best=S.score;try{localStorage.setItem('neonSnakeBest',best)}catch(e){}}$('best').textContent=best;label=best}
+  if(mode==='time'){isBest=S.score>SD.bestTime;if(isBest)SD.bestTime=S.score;label=SD.bestTime;if(S.score>=400)ACH.unlock(GAME,'time')}
+  if(mode==='daily'){const k=today();isBest=S.score>(SD.bestDaily[k]||0);if(isBest)SD.bestDaily[k]=S.score;label=SD.bestDaily[k];ACH.unlock(GAME,'daily')}
+  sv();const title=mode==='maze'?'TRY AGAIN':isBest&&S.score>0?'NEW BEST':why==='Time up'?'TIME UP':'CRASHED';
+  setTimeout(()=>{$('ovTitle').textContent=title;$('ovScore').textContent=S.score;$('ovStars').textContent='';$('ovNext').hidden=true;
+    $('ovSub').textContent=mode==='maze'?`${why}. Eat ${S.goal-S.eaten} more to clear the maze.`:why+'. Length '+S.snake.length+', '+S.eaten+' eaten.'+(isBest?'':' Best: '+label+'.');$('over').hidden=false;$('again').focus()},700)};
+const _update=update;update=function(dt){_update(dt);if(!S||S.dead||S.paused)return;
+  if(mode==='time'){S.time-=dt;if(S.time<=0){S.time=0;die('Time up')}}
+  const k=SKINS.find(x=>x.id===SD.skin);if(k&&k.c==='rainbow')COL.snake=`hsl(${(performance.now()/8)%360},90%,60%)`;
+  $('hudx').textContent=mode==='maze'?`🧱 LEVEL ${lvI+1} · 🍎 ${S.eaten}/${S.goal} · ⏱ ${Math.floor(S.t)}s`:mode==='time'?`⏱ ${Math.ceil(S.time)}s`:mode==='daily'?'📅 DAILY MAZE':''};
+const _render=render;render=function(){_render();if(!S)return;const t=performance.now()/1000;
+  if(S.walls){for(const w of S.walls){const[x,y]=w.split(',').map(Number);ctx.fillStyle='#2c2468';ctx.fillRect(x*cell+1,y*cell+1,cell-2,cell-2);ctx.strokeStyle='#7a5cff';ctx.lineWidth=1.5;ctx.strokeRect(x*cell+2,y*cell+2,cell-4,cell-4);ctx.fillStyle='#7a5cff44';ctx.fillRect(x*cell+4,y*cell+4,cell-8,3)}}
+  if(SD.head&&S.snake.length){const h=S.snake[0];ctx.globalAlpha=S.dead?.4:1;ctx.font=`${cell*.8}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(PROF.avatar,(h.x+.5)*cell,(h.y+.5)*cell+1);ctx.globalAlpha=1}};
+// redraw the eyes only when the avatar is off — the avatar covers them
+menu();applySkin();
+if(new URLSearchParams(location.search).has('test'))window.__sn={get S(){return S},SD,go,step:()=>step(),LV};
 
 fit();requestAnimationFrame(loop);
 })();
