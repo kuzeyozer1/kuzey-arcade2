@@ -261,6 +261,7 @@ a.back:hover, a.back:focus-visible { color: var(--gold); outline: none; }
 	</footer>
 </div>
 
+<script src="kit.js"></script>
 <script>
 (() => {
 	"use strict";
@@ -1282,7 +1283,7 @@ a.back:hover, a.back:focus-visible { color: var(--gold); outline: none; }
 
 		const names = shuffle([...BOT_NAMES]);
 		const teams = settings.mode === "teams";
-		player = makeEnt("You", PLAYER_COLOR, spawns[0], true, 0);
+		player = makeEnt(KPROF.avatar + " You", PLAYER_COLOR, spawns[0], true, 0);
 		ents.push(player);
 		for (let i = 0; i < settings.bots; i++) {
 			const team = teams ? Math.floor((i + 1) / 2) : i + 1;
@@ -1795,6 +1796,60 @@ a.back:hover, a.back:focus-visible { color: var(--gold); outline: none; }
 		requestAnimationFrame(frame);
 	}
 
+	// ------------------------------------------------------------------ arcade awards and your avatar
+	const KACH = window.KIT.ach, KUI = window.KIT.ui, KPROF = window.KIT.profile, AG = "voidbridge";
+	const VX = Object.assign({ wins: 0, maps: {}, modes: {}, used: {} }, store.get("vb:awards", {}));
+	KACH.define(AG, [
+		{ id: "win", icon: "🏆", name: "Last One Standing", desc: "Win a round" },
+		{ id: "hard", icon: "💪", name: "Bot Buster", desc: "Win against hard bots" },
+		{ id: "seven", icon: "👑", name: "Sky King", desc: "Win against 7 hard bots" },
+		{ id: "k3", icon: "⚔️", name: "Triple Knockout", desc: "Get 3 kills in one round" },
+		{ id: "k5", icon: "💥", name: "Rampage", desc: "Get 5 kills in one round" },
+		{ id: "teams", icon: "🤝", name: "Team Player", desc: "Win a Teams round" },
+		{ id: "lucky", icon: "🍀", name: "Feeling Lucky", desc: "Win a Lucky Blocks round" },
+		{ id: "maps", icon: "🗺️", name: "World Tour", desc: "Win on every map" },
+		{ id: "w10", icon: "🎖️", name: "Veteran", desc: "Win 10 rounds" },
+		{ id: "pearl", icon: "🟣", name: "Blink", desc: "Throw an ender pearl" },
+		{ id: "tnt", icon: "🧨", name: "Demolition", desc: "Place TNT" },
+		{ id: "fire", icon: "🔥", name: "Fire Starter", desc: "Shoot a fireball" },
+		{ id: "nohurt", icon: "✨", name: "Flawless", desc: "Win without losing a heart" },
+		{ id: "fast", icon: "⏱️", name: "Speed Bridger", desc: "Win in under 1:15, before the sky collapses" },
+	]);
+	const vsave = () => store.set("vb:awards", VX);
+	const _showEnd = showEnd;
+	showEnd = function (won) {
+		_showEnd(won);
+		const k = player.kills;
+		if (k >= 3) KACH.unlock(AG, "k3");
+		if (k >= 5) KACH.unlock(AG, "k5");
+		if (!won) return;
+		VX.wins++; VX.maps[game.map.id] = 1; VX.modes[settings.mode] = 1; vsave();
+		KACH.unlock(AG, "win");
+		if (settings.difficulty === "hard") KACH.unlock(AG, "hard");
+		if (settings.difficulty === "hard" && settings.bots >= 7) KACH.unlock(AG, "seven");
+		if (settings.mode === "teams") KACH.unlock(AG, "teams");
+		if (settings.mode === "lucky") KACH.unlock(AG, "lucky");
+		if (MAPS.every((m) => VX.maps[m.id])) KACH.unlock(AG, "maps");
+		if (VX.wins >= 10) KACH.unlock(AG, "w10");
+		if (!game.hurt) KACH.unlock(AG, "nohurt");
+		if (game.endedAt - game.startedAt < COLLAPSE_AT) KACH.unlock(AG, "fast");
+	};
+	const _hurt = hurt;
+	hurt = function (target, dmg, by, now, color, prefix) {
+		if (target === player && game) game.hurt = true;
+		return _hurt(target, dmg, by, now, color, prefix);
+	};
+	const _usePearl = usePearl;
+	usePearl = function (e) { const r = _usePearl(e); if (e === player) KACH.unlock(AG, "pearl"); return r; };
+	const _placeTnt = placeTnt;
+	placeTnt = function (e, now) { const r = _placeTnt(e, now); if (e === player) KACH.unlock(AG, "tnt"); return r; };
+	const _shoot = shoot;
+	shoot = function (e, kind, now) { const r = _shoot(e, kind, now); if (e === player && kind === "fireball") KACH.unlock(AG, "fire"); return r; };
+	$("record").insertAdjacentHTML("afterend", '<button class="ghost" id="awardsBtn" type="button">🏆 Awards</button> <button class="ghost" id="meBtn" type="button">👤 Avatar</button>');
+	const syncAw = () => { const c = KACH.count(AG); $("awardsBtn").textContent = `🏆 Awards ${c.got}/${c.total}`; };
+	$("awardsBtn").onclick = () => KUI.achievements(AG, "Void Bridge awards");
+	$("meBtn").onclick = () => KUI.profileEditor(() => {});
+	syncAw(); setInterval(syncAw, 3000);
 	// Idle backdrop behind the start screen: the chosen map (or the first one).
 	buildWorld(MAPS.find((m) => m.id === settings.map) || MAPS[0]);
 	ents = [];
