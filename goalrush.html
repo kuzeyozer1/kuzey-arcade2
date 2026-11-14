@@ -832,6 +832,22 @@ ACH.define(GAME,ACH.list(GAME).map(a=>({id:a.id,icon:a.icon,name:a.name,desc:a.d
 const _goal3=goal;goal=function(s){const f=M.ball.fire>0&&s===0;_goal3(s);if(f)ACH.unlock(GAME,'super')};
 (function(){const h=document.querySelector('#sHelp .box');const p=document.createElement('p');p.innerHTML='<b>Super Shot:</b> passing, tackling and dribbling fill the SUPER bar. When it is full, your next shot is a 🔥 fireball that is almost impossible to save!';h.appendChild(p);
   const p2=document.createElement('p');p2.innerHTML='<b>2 players:</b> choose 2 PLAYERS on the opponent screen. Player 1 uses WASD + F (pass), G (shoot), R (switch). Player 2 uses the arrows + K (pass), L (shoot), J (switch).';h.appendChild(p2)})();
+/* ================================================================
+   MATCH BALLS and the TROPHY CABINET
+   ================================================================ */
+const BALLS=[['classic','Classic',0,'#ffffff','#222222'],['gold','Golden',3,'#ffd23f','#b8860b'],['neon','Neon',6,'#3ef0ff','#ff3d9a'],['fire','Fire',10,'#ff8a3d','#ff3d3d'],['galaxy','Galaxy',15,'#2a1a5a','#b98bff'],['candy','Candy',20,'#ff8ad8','#ffffff'],['rainbow','Rainbow',30,'rainbow','#ffffff']];
+D.ballStyle=D.ballStyle||'classic';
+function ballCols(){const b=BALLS.find(x=>x[0]===D.ballStyle)||BALLS[0];return b[3]==='rainbow'?[`hsl(${performance.now()/6%360},90%,60%)`,'#fff']:[b[3],b[4]]}
+const _render4=render;
+render=function(){_render4();if(!M||PK||D.ballStyle==='classic')return;const b=M.ball,[c1,c2]=ballCols();const fit=Math.min(VW/(PW+90),(VH-60)/(PH+90)),z=Math.max(fit,Math.min(VW,VH)/520);
+  ctx.setTransform(DPR,0,0,DPR,0,0);ctx.translate(VW/2,VH/2+15);ctx.scale(z,z);ctx.translate(-camX,-camY);const br=BALL_R*(1+b.z/90);
+  ctx.fillStyle=c1;ctx.beginPath();ctx.arc(b.x,b.y-b.z,br,0,7);ctx.fill();ctx.fillStyle=c2;ctx.save();ctx.translate(b.x,b.y-b.z);ctx.rotate(b.spin);ctx.beginPath();ctx.arc(0,0,br*.42,0,7);ctx.fill();for(let k=0;k<5;k++){const a=k/5*Math.PI*2;ctx.fillRect(Math.cos(a)*br*.8-1,Math.sin(a)*br*.8-1,2.5,2.5)}ctx.restore()};
+const _drawStats=drawStats;
+drawStats=function(){_drawStats();const box=$('statList');const cab=document.createElement('div');cab.style.cssText='grid-column:1/-1;text-align:left';
+  const wins=D.won;cab.innerHTML=`<h3 style="margin-bottom:8px">🏆 TROPHY CABINET</h3><div style="display:flex;gap:10px;flex-wrap:wrap;font-size:40px">${'🏆'.repeat(Math.min(12,D.trophies-D.leagues))}${'🥇'.repeat(Math.min(12,D.leagues))}${D.pkWins?'🥅':''}${D.trophies?'':'<span style="font-size:15px;color:var(--mute)">Win the Cup or the League to fill your cabinet!</span>'}</div>
+    <h3 style="margin:12px 0 8px">⚽ MATCH BALL</h3><p class="mute" style="margin:0 0 8px">Unlock new balls by winning matches (you have ${wins} wins).</p><div class="chips">${BALLS.map(([id,n,need])=>`<button data-ball="${id}" class="${D.ballStyle===id?'on':''}" ${wins<need?'disabled style="opacity:.4"':''}>${wins<need?'🔒 ':''}${n}${wins<need?' ('+need+')':''}</button>`).join('')}</div>`;
+  box.appendChild(cab);cab.querySelectorAll('[data-ball]').forEach(b=>b.onclick=()=>{if(b.disabled)return;D.ballStyle=b.dataset.ball;save();SFX.click();drawStats()})};
+LINES.shot.push('Takes aim…','Pow!','Can he find the net?');LINES.tackle.push('Stopped him in his tracks!','What timing!');LINES.save.push('Safe hands!','Tipped away!');
 
 requestAnimationFrame(frame);show('sMenu');
 if(new URLSearchParams(location.search).has('test'))window.__gr={get M(){return M},get PK(){return PK},D,play,startPK,step,shoot,pass,endMatch,TEAMS,newCup,cupAdvance,startKeepy,startCones,get MG(){return MG}};
