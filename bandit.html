@@ -82,6 +82,7 @@ a.back{color:var(--mute);text-decoration:none;font-family:var(--display);font-si
 
 <div class="panel" id="panel" hidden><div class="card" id="card"></div></div>
 
+<script src="kit.js"></script>
 <script>
 (()=>{
 const $=id=>document.getElementById(id);
@@ -874,6 +875,28 @@ function begin(s){S=s;S.fr=S.fr||{};S.troph=S.troph||{};if(!S.wx){S.wx=dayWeathe
 const saved=load();if(saved){$('cont').hidden=false;$('cont').onclick=()=>begin(saved);$('newg').classList.add('alt')}
 $('newg').onclick=()=>{if(saved&&!confirm('Start over? Your saved raccoon will be lost.'))return;begin(fresh())};
 addEventListener('visibilitychange',()=>{if(document.hidden&&playing)save()});
+/* ================= awards for Pine Lake (shared arcade kit) ================= */
+const {ach:ACH,profile:PROF,ui:UI}=KIT;const GAME='bandit';
+ACH.define(GAME,[
+ {id:'raid',icon:'🧺',name:'Picnic Pirate',desc:'Raid your first picnic basket'},{id:'sell',icon:'🏪',name:'Small Business',desc:'Sell food at Otto\'s Market'},
+ {id:'fish',icon:'🎣',name:'Gone Fishing',desc:'Catch a fish'},{id:'gold',icon:'🌟',name:'Golden Catch',desc:'Catch the golden carp'},{id:'sea',icon:'🦀',name:'Salty Paws',desc:'Catch a sea creature'},
+ {id:'c100',icon:'🪙',name:'Coin Collector',desc:'Have 100 coins'},{id:'c500',icon:'💰',name:'Raccoon Tycoon',desc:'Have 500 coins'},
+ {id:'d7',icon:'📅',name:'One Week Wild',desc:'Reach day 7'},{id:'d30',icon:'🗓️',name:'Old Bandit',desc:'Reach day 30'},
+ {id:'outfit',icon:'🎩',name:'Dressed Up',desc:'Wear a new fur or accessory'},{id:'t3',icon:'🏆',name:'Shelf Starter',desc:'Collect 3 trophies'},{id:'tall',icon:'👑',name:'Treasure Hunter',desc:'Collect every trophy'},
+ {id:'friend',icon:'🤝',name:'Good Neighbour',desc:'Finish every request from one animal friend'},{id:'friends',icon:'💞',name:'Everyone\'s Friend',desc:'Finish every request from all friends'},
+ {id:'explore',icon:'🗺️',name:'Explorer',desc:'Discover every place on the map'},{id:'upg',icon:'🏡',name:'Dream Den',desc:'Buy every den upgrade'},
+ {id:'caught',icon:'🚨',name:'Busted!',desc:'Get caught by a human'},{id:'pantry',icon:'🥫',name:'Stocked Up',desc:'Store 30 food in your pantry'}]);
+function checkAwards(){if(!playing||!S)return;const e=S.ev||{},U=(id,c)=>{if(c)ACH.unlock(GAME,id)};
+  U('raid',e.raid);U('sell',e.sell);U('fish',e.fish);U('gold',e.gold);U('sea',e.seafish);U('c100',S.coins>=100);U('c500',S.coins>=500);U('d7',S.day>=7);U('d30',S.day>=30);U('outfit',e.outfit);
+  const tn=Object.keys(S.troph||{}).filter(k=>S.troph[k]).length;U('t3',tn>=3);U('tall',TROPHIES.every(t=>S.troph[t]));
+  const done=FRIENDS.filter(f=>(S.fr[f.id]||0)>=f.asks.length).length;U('friend',done>=1);U('friends',done===FRIENDS.length);
+  U('explore',PLACES.every(p=>S.found[p.id]));U('upg',UPGRADES.every(u=>S.own[u.id]));U('pantry',S.pantry>=30)}
+setInterval(checkAwards,1500);
+const _caught=caught;caught=function(h){ACH.unlock(GAME,'caught');return _caught(h)};
+$('newg').insertAdjacentHTML('afterend','<button class="btn alt" id="awards">🏆 AWARDS</button>');
+$('awards').onclick=()=>UI.achievements(GAME,'Pine Lake awards');
+const _award=()=>{const c=ACH.count(GAME);$('awards').textContent=`🏆 AWARDS ${c.got}/${c.total}`};_award();setInterval(_award,4000);
+addEventListener('keydown',e=>{if(e.key.toLowerCase()==='y'&&playing&&!document.querySelector('.kmodal'))UI.achievements(GAME,'Pine Lake awards')});
 if(location.search.includes('test'))window.__b={get S(){return S},humans,loots,blocked,FRIENDS,RECIPES,newDay,canCook,findNear,PLACES,trees,bushes};
 requestAnimationFrame(frame);
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
