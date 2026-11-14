@@ -173,6 +173,7 @@ canvas{display:block;image-rendering:pixelated;border:3px solid var(--edge);back
   </div>
 </div>
 
+<script src="kit.js"></script>
 <script>
 (()=>{
 const W=960,H=600,M=30,BOSS_ARMOR=0.6;
@@ -682,7 +683,7 @@ function hud(){
   ctx.fillStyle='rgba(255,255,255,.3)';ctx.fillRect(bx,by+10,bw*b.hp/b.max,3);
   ctx.fillStyle='#14101c';for(let i=1;i<20;i++)ctx.fillRect(bx+i*bw/20-1,by+10,2,10);
   ctx.font='12px Silkscreen, monospace';ctx.textAlign='left';
-  ctx.fillStyle='#14101c';ctx.fillText(Math.ceil(b.hp)+' / 300',bx+bw+12,by+21);ctx.fillStyle='#efe6d6';ctx.fillText(Math.ceil(b.hp)+' / 300',bx+bw+10,by+19);
+  ctx.fillStyle='#14101c';ctx.fillText(Math.ceil(b.hp)+' / '+b.max,bx+bw+12,by+21);ctx.fillStyle='#efe6d6';ctx.fillText(Math.ceil(b.hp)+' / '+b.max,bx+bw+10,by+19);
   ctx.textAlign='right';
   if(b.enraged){ctx.fillStyle='#e2483c';ctx.fillText('ENRAGED',bx-10,by+19)}
   else if(b.healing){ctx.fillStyle='#9ff59a';ctx.fillText('HEALING',bx-10,by+19)}
@@ -835,6 +836,52 @@ function frame(now){
   render();updateBar();
   requestAnimationFrame(frame);
 }
+/* ================= T2: difficulty, boss rush, avatar, awards ================= */
+const {sfx:KSFX,util:KU,ach:ACH,profile:PROF,ui:UI}=KIT;const GAME='temples';
+store.x=Object.assign({diff:0,beat:{},wins:{},rushBest:0,nohit:0},store.x||{});
+const DIFF=[{n:'Normal',hp:300,sp:1,dmg:1,col:'#7fb04a'},{n:'Hard',hp:450,sp:1.2,dmg:1.25,col:'#ffd23f'},{n:'Nightmare',hp:600,sp:1.35,dmg:1.5,col:'#e2483c'}];
+ACH.define(GAME,[
+ ...BOSSES.map(b=>({id:'b_'+b.id,icon:{earth:'🪨',water:'🌊',fire:'🔥',wind:'🌪️',lightning:'⚡'}[b.id],name:b.name+' Down',desc:'Defeat '+b.name})),
+ {id:'all5',icon:'🏛️',name:'Five Blocks',desc:'Clear all five temples'},{id:'hard',icon:'💪',name:'Hardened',desc:'Win a fight on Hard'},{id:'night',icon:'💀',name:'Nightmare Slayer',desc:'Win a fight on Nightmare'},
+ {id:'allnight',icon:'👑',name:'Temple Legend',desc:'Clear all five temples on Nightmare'},{id:'nohit',icon:'✨',name:'Untouchable',desc:'Win without taking a hit'},{id:'fast',icon:'⏱️',name:'Speed Runner',desc:'Win in under 60 seconds'},
+ {id:'allel',icon:'🧪',name:'Master of Elements',desc:'Win with all five elements'},{id:'rush',icon:'🏃',name:'Boss Rush',desc:'Beat all five bosses in a row'},{id:'rushnight',icon:'🌋',name:'Rush of Doom',desc:'Finish Boss Rush on Nightmare'},
+ {id:'potion',icon:'🍾',name:'Potion Master',desc:'Use a potion (R) in a winning fight'}]);
+let RUSH=null;
+// menu extras
+$('go').insertAdjacentHTML('beforebegin',`<div><p class="eyebrow">Difficulty</p><div class="row" id="diffRow" style="flex-wrap:wrap"></div></div>`);
+$('go').insertAdjacentHTML('afterend',`<div class="row" style="flex-wrap:wrap"><button class="go alt" id="rushBtn">🏃 Boss Rush — all five in a row</button><button class="go alt" id="achBtn">🏆 Awards</button><button class="go alt" id="meBtn">👤 Hero</button></div>`);
+function drawDiff(){$('diffRow').innerHTML=DIFF.map((d,i)=>`<button class="go ${store.x.diff===i?'':'alt'}" data-d="${i}" style="${store.x.diff===i?'background:'+d.col:''}">${['🙂','😤','💀'][i]} ${d.n}</button>`).join('');
+  $('diffRow').querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{store.x.diff=+b.dataset.d;save();drawDiff();renderMenu()});const c=ACH.count(GAME);$('achBtn').textContent=`🏆 Awards ${c.got}/${c.total}`;
+  $('rushBtn').textContent=`🏃 Boss Rush — all five in a row${store.x.rushBest?' · best '+fmt(store.x.rushBest):''}`}
+const _renderMenu=renderMenu;renderMenu=function(){_renderMenu();if(!$('diffRow'))return;drawDiff();
+  document.querySelectorAll('#temples .tp').forEach((btn,i)=>{const b=BOSSES[i],w=store.x.beat[b.id]||{};btn.insertAdjacentHTML('beforeend',`<span class="st">${[0,1,2].map(d=>w[d]?['🙂','😤','💀'][d]:'·').join(' ')}</span>`)})};
+$('achBtn').onclick=()=>UI.achievements(GAME,'Five Temples awards');$('meBtn').onclick=()=>UI.profileEditor(()=>{});
+$('rushBtn').onclick=()=>{RUSH={i:0,t:0,hp:null};store.temple=BOSSES[0].id;save();start()};
+const _go=$('go').onclick;$('go').onclick=()=>{RUSH=null;_go()};
+// apply difficulty when a fight starts
+const _newGame=newGame;newGame=function(){_newGame();const d=DIFF[store.x.diff];G.diff=store.x.diff;G.boss.hp=G.boss.max=d.hp;G.B=Object.assign({},G.B,{speed:G.B.speed*d.sp});G.usedPotion=false;
+  if(RUSH){if(RUSH.hp!=null)G.p.hp=Math.min(G.p.max,RUSH.hp+4);G.banner={text:G.B.name.toUpperCase(),sub:`Boss Rush ${RUSH.i+1}/5 · ${d.n}`,t:2.4}}
+  else if(store.x.diff)G.banner.sub+=' · '+d.n};
+const _hurt=hurtPlayer;hurtPlayer=function(n){_hurt(n*(G?DIFF[G.diff||0].dmg:1))};
+const _useAb=useAbility;useAbility=function(i){const before=G&&G.cd[i];_useAb(i);if(G&&i===2&&before<=0&&G.cd[2]>0)G.usedPotion=true};
+const _endGame=endGame;endGame=function(r){if(G.over)return;_endGame(r);if(r!=='win')return;const id=G.B.id,d=G.diff;
+  store.x.beat[id]=store.x.beat[id]||{};store.x.beat[id][d]=true;store.x.wins[G.elId]=1;save();
+  ACH.unlock(GAME,'b_'+id);if(BOSSES.every(b=>store.cleared[b.id]))ACH.unlock(GAME,'all5');if(d>=1)ACH.unlock(GAME,'hard');if(d>=2)ACH.unlock(GAME,'night');
+  if(BOSSES.every(b=>(store.x.beat[b.id]||{})[2]))ACH.unlock(GAME,'allnight');if(G.hits===0)ACH.unlock(GAME,'nohit');if(G.t<60)ACH.unlock(GAME,'fast');
+  if(EL_ORDER.every(e=>store.x.wins[e]))ACH.unlock(GAME,'allel');if(G.usedPotion)ACH.unlock(GAME,'potion')};
+const _showResult=showResult;showResult=function(){_showResult();const win=G.result==='win';$('again').textContent='Fight again';$('again').onclick=start;
+  if(!RUSH)return;RUSH.t+=G.t;
+  if(win&&RUSH.i<4){const nx=BOSSES[RUSH.i+1];$('rEyebrow').textContent=`Boss Rush · ${RUSH.i+1}/5 cleared`;$('rSub').textContent=`Next: ${nx.name} in the ${nx.temple}. Your hearts carry over (+2 hearts of rest). Total time ${fmt(RUSH.t)}.`;
+    $('again').textContent='Next: '+nx.name+' ▶';$('again').onclick=()=>{RUSH.hp=G.p.hp;RUSH.i++;store.temple=nx.id;save();start()}}
+  else if(win){$('rEyebrow').textContent='Boss Rush complete!';$('rTitle').textContent='All five temples, one run';$('rSub').textContent=`Total time ${fmt(RUSH.t)} on ${DIFF[G.diff].n}.`+(!store.x.rushBest||RUSH.t<store.x.rushBest?' New best!':'');
+    if(!store.x.rushBest||RUSH.t<store.x.rushBest)store.x.rushBest=RUSH.t;save();ACH.unlock(GAME,'rush');if(G.diff===2)ACH.unlock(GAME,'rushnight');KSFX.win();$('again').textContent='Rush again';$('again').onclick=()=>$('rushBtn').click();RUSH=null}
+  else{$('rEyebrow').textContent=`Boss Rush ended at ${RUSH.i+1}/5`;$('again').textContent='Try the rush again';$('again').onclick=()=>$('rushBtn').click();RUSH=null}};
+const _back=$('back').onclick;$('back').onclick=()=>{RUSH=null;_back()};
+// your avatar rides on the hero's head
+const _render=render;render=function(){_render();if(!G||!G.p)return;const p=G.p;if(G.result==='lose'&&G.over)return;ctx.save();ctx.font='18px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.globalAlpha=p.inv>0&&Math.floor(G.t*20)%2?.4:1;ctx.fillText(PROF.avatar,p.x,p.y-30-(p.air>0?20:0));ctx.restore()};
+renderMenu();
+if(new URLSearchParams(location.search).has('test'))window.__tp={get G(){return G},endGame:r=>endGame(r),store,BOSSES};
+
 renderBlocks();renderMenu();buildBar();fit();
 // a quiet demo arena behind the menu
 G=null;requestAnimationFrame(frame);
