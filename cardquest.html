@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#140e08">
+<title>Card Quest</title>
+<link rel="icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Chakra+Petch:wght@400;600&display=swap">
+<style>
+:root{--night:#120c08;--panel:#2a1e12;--line:#5a4428;--ink:#fff6e6;--mute:#c8b48a;--cyan:#7ad8ff;--pink:#ff6a4a;--gold:#ffd23f;--green:#7ad05a;--display:'Orbitron',ui-monospace,monospace;--body:'Chakra Petch',system-ui,sans-serif;color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%;background:var(--night);color:var(--ink);font-family:var(--body);overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
+#stage{position:fixed;inset:0;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 0%,#1a3a7a,#0a1430 70%)}
+#cv{display:block;background:#000;box-shadow:0 0 40px rgba(92,216,255,.15);border-left:1px solid #26407a;border-right:1px solid #26407a}
+.screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;z-index:10;background:rgba(8,14,36,.85);overflow:auto}
+.screen[hidden]{display:none}
+.box{width:min(560px,100%);display:flex;flex-direction:column;gap:14px;margin:auto}
+h1{font-family:var(--display);font-weight:900;font-size:clamp(36px,10vw,62px);margin:0;line-height:1;text-align:center;letter-spacing:.06em;
+  background:linear-gradient(180deg,#fff,var(--cyan) 45%,var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 18px rgba(92,216,255,.4))}
+h2{font-family:var(--display);font-size:22px;margin:0;color:var(--gold);letter-spacing:.05em}
+.tag{text-align:center;color:var(--mute);margin:-4px 0 4px}
+.btn{font:900 15px var(--display);letter-spacing:.08em;border:2px solid var(--line);background:var(--panel);color:var(--ink);border-radius:12px;padding:14px 16px;cursor:pointer;text-align:left;display:flex;align-items:center;gap:12px;width:100%}
+.btn:hover,.btn:focus-visible{border-color:var(--cyan);outline:none}
+.btn.main{background:linear-gradient(90deg,var(--cyan),#ffd23f);color:#0a1430;border:0;justify-content:center;font-size:18px}
+.btn small{display:block;font:400 13px var(--body);color:var(--mute);letter-spacing:0}
+.btn.main small{color:#132}
+.btn .ic{font-size:24px}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1 1 140px}
+.who{display:flex;align-items:center;gap:10px;justify-content:center;color:var(--mute);font-size:15px}
+.who b{color:var(--ink)}
+.who button{background:none;border:1px solid var(--line);color:var(--mute);border-radius:8px;padding:4px 10px;cursor:pointer;font:inherit}
+.credits{font:900 18px var(--display);color:var(--gold);text-align:center}
+.sectors{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+.sec{border:2px solid var(--line);border-radius:14px;padding:10px;background:var(--panel);color:var(--ink);cursor:pointer;text-align:left;font:600 14px var(--body);display:flex;flex-direction:column;gap:4px;min-height:118px;position:relative;overflow:hidden}
+.sec b{font:900 13px var(--display);color:var(--c)}
+.sec .pl{width:38px;height:38px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff8,var(--c) 40%,#000 100%);box-shadow:0 0 16px var(--c)}
+.sec small{color:var(--mute)}
+.sec[disabled]{opacity:.35;cursor:default}
+.sec .st{position:absolute;right:8px;top:8px;font-size:14px}
+.ships{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.ship{border:2px solid var(--line);border-radius:14px;background:var(--panel);color:var(--ink);padding:8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;font:600 13px var(--body)}
+.ship.on{border-color:var(--gold);box-shadow:0 0 0 2px #ffd23f55}
+.shipwrap{display:flex;flex-direction:column;gap:4px}.shipwrap .ship{flex:1}
+.sell{border:1px solid var(--line);border-radius:10px;background:#3a2430;color:#ffb3c0;font:900 11px var(--display);padding:7px 4px;cursor:pointer}.sell:hover{border-color:#ff8a9a}
+.ship canvas{width:110px;height:110px}
+.ship b{font:900 13px var(--display)}
+.ship .bars{width:100%;display:grid;grid-template-columns:auto 1fr;gap:2px 6px;font-size:11px;color:var(--mute);align-items:center}
+.ship .bars i{display:block;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--cyan),var(--green))}
+.ship .price{color:var(--gold);font-family:var(--display);font-size:12px}
+.ship[disabled]{opacity:.45}
+.paint{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.paint button{width:34px;height:34px;border-radius:50%;border:3px solid transparent;cursor:pointer}
+.paint button.on{border-color:#fff}
+.ups{display:flex;flex-direction:column;gap:8px}
+.up{display:grid;grid-template-columns:40px 1fr auto;gap:10px;align-items:center;border:2px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--panel)}
+.up .ic{font-size:26px;text-align:center}
+.up b{font-family:var(--display);font-size:13px}
+.up small{display:block;color:var(--mute)}
+.up .pips{display:flex;gap:3px;margin-top:4px}.up .pips i{width:18px;height:6px;border-radius:3px;background:#26407a}.up .pips i.on{background:var(--gold)}
+.up button{font:900 13px var(--display);border:0;border-radius:10px;padding:10px 12px;background:var(--gold);color:#0a1430;cursor:pointer;min-width:84px}
+.up button[disabled]{background:#26407a;color:var(--mute);cursor:default}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stats div{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}
+.stats b{display:block;font:900 22px var(--display);color:var(--cyan)}
+.stats small{color:var(--mute)}
+.big{font:900 clamp(26px,7vw,40px) var(--display);text-align:center;margin:0}
+.center{text-align:center}
+.mute{color:var(--mute)}
+#hudBtns{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));right:calc(8px + env(safe-area-inset-right,0px));z-index:5;display:flex;gap:8px}
+#hudBtns[hidden]{display:none}
+#hudBtns button{width:44px;height:44px;border-radius:12px;border:2px solid #26407a;background:rgba(19,32,74,.85);color:#fff;font-size:20px;cursor:pointer}
+.help{font-size:14px;color:var(--mute);line-height:1.5}
+.help b{color:var(--ink)}
+.back{align-self:flex-start;background:none;border:0;color:var(--cyan);font:900 13px var(--display);cursor:pointer;padding:6px 0;letter-spacing:.08em}
+.daily{font-size:13px;color:var(--mute)}
+.stars{color:var(--gold);letter-spacing:2px}
+.codex{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.cx{background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:8px;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;font-size:13px}
+.cx canvas{width:80px;height:80px}.cx b{font:900 12px var(--display)}.cx small{color:var(--mute)}
+.cx.no{opacity:.4}
+.brief{background:var(--panel);border:2px solid var(--line);border-left:6px solid var(--c);border-radius:14px;padding:14px 16px;font-size:16px;line-height:1.55}
+.brief b{color:var(--c)}
+@media (max-height:620px){.btn{padding:10px 12px}}
+#cv{border:1px solid #26407a;border-left:1px solid #26407a}
+.region{border:2px solid var(--line);border-radius:14px;padding:10px;background:linear-gradient(160deg,var(--c1),var(--c2));color:var(--ink);cursor:pointer;text-align:left;font:600 14px var(--body);display:flex;flex-direction:column;gap:4px;min-height:118px;position:relative;overflow:hidden;text-shadow:0 1px 2px #0008}
+.region b{font:900 13px var(--display)}
+.region small{color:#e8f0ffcc}
+.region[disabled]{opacity:.35;cursor:default}
+.region .st{position:absolute;right:8px;top:8px;font-size:14px}
+.region .em{font-size:30px}
+#tBtns{position:fixed;right:calc(14px + env(safe-area-inset-right,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:5;display:flex;gap:12px}
+#tBtns button{width:76px;height:76px;border-radius:50%;border:2px solid #ffffff55;background:#ffffff1a;color:#fff;font:900 11px var(--display);touch-action:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+#tBtns button span{font-size:26px}
+#tBtns button.off{opacity:.35}
+
+#stage{background:radial-gradient(ellipse at 50% 20%,#3a2a18,#120c08 70%)}
+#cv{display:none}
+.btn.main{background:linear-gradient(90deg,#ffd23f,#ff9a3d);color:#2a1400}
+h1{background:linear-gradient(180deg,#fff,#ffd23f 50%,#c8742a);-webkit-background-clip:text;background-clip:text}
+#battle{position:fixed;inset:0;display:flex;flex-direction:column;padding:calc(10px + env(safe-area-inset-top,0px)) 10px calc(8px + env(safe-area-inset-bottom,0px));gap:6px;z-index:2;overflow:hidden;background:radial-gradient(ellipse at 50% 30%,#4a3420,#120c08 75%)}
+#battle[hidden]{display:none}
+.topbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font:900 14px var(--display)}.topbar .grow{flex:1}
+.topbar span{background:#0008;border:1px solid var(--line);border-radius:10px;padding:4px 10px}
+.topbar button{background:#0008;border:1px solid var(--line);color:#fff;border-radius:10px;padding:6px 10px;cursor:pointer;font:900 12px var(--display)}
+.arena{flex:1;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:0;padding:0 2vw}
+.fighter{display:flex;flex-direction:column;align-items:center;gap:4px;position:relative;transition:transform .15s}
+.fighter .art{font-size:clamp(54px,11vw,110px);line-height:1;filter:drop-shadow(0 6px 0 #0006)}
+.fighter.hit{animation:shake .3s}.fighter.lunge{transform:translateX(-30px)}.fighter.me.lunge{transform:translateX(30px)}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.fighter.target{cursor:pointer}.fighter.target .art{filter:drop-shadow(0 0 12px #ff6a4a)}
+.hp{width:clamp(90px,16vw,150px);height:14px;background:#0009;border:1px solid #000;border-radius:7px;overflow:hidden;position:relative}
+.hp i{display:block;height:100%;background:linear-gradient(90deg,#e83a3a,#ff7a5a)}.hp b{position:absolute;inset:0;text-align:center;font:900 10px var(--display);line-height:14px;color:#fff}
+.blk{position:absolute;left:-26px;top:-3px;background:#5a8ab0;border-radius:6px;padding:0 5px;font:900 12px var(--display)}
+.intent{font:900 14px var(--display);background:#0009;border-radius:8px;padding:2px 8px;min-height:22px}
+.status{display:flex;gap:3px;flex-wrap:wrap;justify-content:center;max-width:160px;font-size:12px}.status span{background:#0009;border-radius:6px;padding:0 4px}
+.foes{display:flex;gap:clamp(8px,3vw,40px);align-items:flex-end;flex-wrap:wrap;justify-content:flex-end}
+.bottom{display:flex;align-items:flex-end;gap:10px}
+.energy{width:64px;height:64px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe08a,#c86a1a);display:grid;place-items:center;font:900 22px var(--display);color:#2a1400;border:3px solid #fff6;flex:none}
+.piles{display:flex;flex-direction:column;gap:4px;font:900 11px var(--display);color:var(--mute);flex:none}
+.hand{flex:1;display:flex;justify-content:center;gap:clamp(2px,1vw,8px);min-height:150px;align-items:flex-end;flex-wrap:nowrap;overflow-x:auto;padding-top:14px}
+.card{width:clamp(86px,13vw,118px);min-height:clamp(128px,19vw,168px);flex:none;border-radius:12px;border:3px solid #000;background:#f2e2c0;color:#2a1a0a;padding:5px;display:flex;flex-direction:column;gap:2px;cursor:pointer;position:relative;transition:transform .12s;font:600 clamp(10px,1.4vw,12px)/1.25 var(--body);text-align:center;box-shadow:0 4px 0 #0006}
+.card:hover,.card.sel{transform:translateY(-14px)}.card.sel{box-shadow:0 0 0 3px #ffd23f,0 6px 0 #0006}.card.no{opacity:.5;filter:grayscale(.6)}
+.card .cost{position:absolute;top:-10px;left:-10px;width:28px;height:28px;border-radius:50%;background:#ffb43a;border:2px solid #000;display:grid;place-items:center;font:900 14px var(--display)}
+.card .nm{font:900 clamp(10px,1.4vw,12px) var(--display);margin-top:4px}.card .ar{font-size:clamp(26px,4vw,36px)}.card .tp{font-size:9px;color:#6a5a3a;letter-spacing:.08em}
+.card.atk{background:linear-gradient(#f8d0c0,#f2e2c0)}.card.skl{background:linear-gradient(#c8e0f8,#f2e2c0)}.card.pow{background:linear-gradient(#e0c8f8,#f2e2c0)}.card.up .nm{color:#2a8a2a}
+.endt{background:linear-gradient(#ffd23f,#ff9a3d);border:2px solid #000;border-radius:14px;padding:12px 14px;font:900 13px var(--display);cursor:pointer;flex:none}
+.pop{position:fixed;font:900 26px var(--display);pointer-events:none;animation:up 0.9s forwards;z-index:9;text-shadow:0 2px 0 #000}
+@keyframes up{to{transform:translateY(-60px);opacity:0}}
+.mapgrid{display:flex;flex-direction:column-reverse;gap:10px;align-items:center}
+.mrow{display:flex;gap:14px;justify-content:center}
+.node{width:52px;height:52px;border-radius:50%;border:2px solid var(--line);background:var(--panel);font-size:24px;cursor:default;opacity:.45}
+.node.can{opacity:1;cursor:pointer;border-color:var(--gold);box-shadow:0 0 12px #ffd23f88;animation:pulse 1s infinite alternate}.node.done{opacity:.8;background:#4a3a20}
+@keyframes pulse{to{transform:scale(1.08)}}
+.cardpick{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.relics{display:flex;gap:6px;flex-wrap:wrap}.relics span{font-size:22px;cursor:help}
+.topbar .grow{background:none;border:0}#bRelics:empty{display:none}#bRelics{display:flex;gap:4px}
+
+</style>
+</head>
+<body>
+<div id="battle" hidden>
+  <div class="topbar"><span id="bHero">🦊 Knight</span><span id="bHp">❤️ 80/80</span><span id="bGold">🪙 0</span><span id="bFloor">Act 1 · Floor 1</span><span class="relics" id="bRelics"></span><span class="grow"></span><button id="bDeck">🃏 DECK</button><button id="bHelp">❔</button></div>
+  <div class="arena"><div class="fighter me" id="meF"><div class="status" id="meSt"></div><div class="art" id="meArt">🦊</div><div style="position:relative"><span class="blk" id="meBlk" hidden></span><div class="hp"><i id="meHpBar"></i><b id="meHpT"></b></div></div></div><div class="foes" id="foes"></div></div>
+  <div class="bottom"><div><div class="energy" id="energy">3</div><div class="piles"><span id="drawN">🂠 5</span><span id="discN">♻️ 0</span></div></div><div class="hand" id="hand"></div><button class="endt" id="endTurn">END<br>TURN</button></div>
+</div>
+<div class="screen" id="sMenu"><div class="box">
+  <a href="index.html" class="back">← ARCADE</a>
+  <h1>CARD QUEST</h1>
+  <p class="tag">Build a deck. Climb the tower. Beat the bosses!</p>
+  <div class="who"><span id="whoAv" style="font-size:26px">🦊</span><span><b id="whoName">Player</b></span><button id="whoEdit">edit</button></div>
+  <div class="credits">💎 <span id="mGems">0</span> gems</div>
+  <button class="btn main" id="mNew">▶ NEW QUEST<small id="mInfo">3 acts, 3 bosses</small></button>
+  <button class="btn" id="mCont" hidden><span class="ic">⏯️</span><span>CONTINUE<small id="contInfo"></small></span></button>
+  <div class="row"><button class="btn" id="mDaily"><span class="ic">📅</span><span>DAILY QUEST<small id="dailyInfo">Same map and hero for all</small></span></button>
+    <button class="btn" id="mHeroes"><span class="ic">🦸</span><span>HEROES<small>Buy, choose and sell</small></span></button></div>
+  <div class="row"><button class="btn" id="mBook"><span class="ic">📖</span><span>CARD BOOK<small id="bookInfo">Cards you've found</small></span></button>
+    <button class="btn" id="mAch"><span class="ic">🏆</span><span>AWARDS<small id="achInfo">0/0</small></span></button></div>
+  <div class="row"><button class="btn" id="mHelp"><span class="ic">❔</span><span>HOW TO PLAY<small>Cards and fights</small></span></button>
+    <button class="btn" id="mSound"><span class="ic" id="sndIc">🔊</span><span>SOUND<small>On or off</small></span></button></div>
+</div></div>
+<div class="screen" id="sHeroes" hidden><div class="box"><button class="back" data-go="sMenu">← BACK</button><h2>🦸 HEROES</h2><div class="credits">💎 <span class="gems">0</span></div><p class="mute" style="margin:0">Each hero has their own cards. Sell any hero except the Knight for half price.</p><div class="ships" id="heroList"></div></div></div>
+<div class="screen" id="sMap" hidden><div class="box"><h2 id="mapTitle">ACT 1</h2><div class="topbar" style="justify-content:center"><span id="mapHp"></span><span id="mapGold"></span><button id="mapDeck">🃏 DECK</button><button id="mapQuit">🏠 SAVE &amp; QUIT</button></div><div class="relics" id="mapRelics" style="justify-content:center"></div>
+  <p class="mute center" style="margin:0">Pick the next room: ⚔️ fight · 💀 elite · 🛒 shop · 🔥 campfire · ❓ mystery · 💰 treasure · 👑 boss</p><div class="mapgrid" id="mapGrid"></div></div></div>
+<div class="screen" id="sReward" hidden><div class="box"><p class="big" id="rwTitle">VICTORY!</p><p class="center" id="rwGold" style="margin:0;font:900 18px var(--display);color:var(--gold)"></p><p class="center" id="rwRelic" style="margin:0"></p><p class="center mute" style="margin:0">Take a card for your deck:</p><div class="cardpick" id="rwCards"></div><button class="btn" id="rwSkip"><span class="ic">⏭️</span><span>SKIP<small>+10 gold instead</small></span></button></div></div>
+<div class="screen" id="sShop" hidden><div class="box"><h2>🛒 SHOP</h2><div class="credits">🪙 <span id="shGold">0</span></div><div class="cardpick" id="shCards"></div><div class="ups" id="shRelics"></div><button class="btn" id="shRemove"><span class="ic">🗑️</span><span>REMOVE A CARD<small id="shRemC">🪙 50</small></span></button><button class="btn main" id="shLeave">▶ LEAVE</button></div></div>
+<div class="screen" id="sRest" hidden><div class="box"><h2>🔥 CAMPFIRE</h2><p class="mute" style="margin:0">Have a rest, or sharpen one of your cards.</p><button class="btn main" id="rsHeal">❤️ REST<small id="rsHealN">Heal 30%</small></button><button class="btn" id="rsUp"><span class="ic">⬆️</span><span>UPGRADE A CARD<small>Make one card stronger forever</small></span></button></div></div>
+<div class="screen" id="sPick" hidden><div class="box" style="width:min(860px,100%)"><h2 id="pkTitle">CHOOSE A CARD</h2><div class="cardpick" id="pkCards"></div><button class="btn" id="pkCancel"><span class="ic">↩️</span><span>BACK</span></button></div></div>
+<div class="screen" id="sEvent" hidden><div class="box"><h2 id="evTitle">❓</h2><div class="brief" id="evText" style="--c:var(--gold)"></div><div style="display:flex;flex-direction:column;gap:8px" id="evOpts"></div></div></div>
+<div class="screen" id="sBook" hidden><div class="box" style="width:min(860px,100%)"><button class="back" data-go="sMenu">← BACK</button><h2>📖 CARD BOOK</h2><div class="cardpick" id="bookCards"></div></div></div>
+<div class="screen" id="sHelp" hidden><div class="box help"><button class="back" id="helpBack">← BACK</button><h2>❔ HOW TO PLAY</h2>
+  <p>Each turn you draw <b>5 cards</b> and get <b>3 ⚡ energy</b>. Play cards by tapping them (then tap an enemy if it's an attack). The number in the corner is the energy it costs.</p>
+  <p><b>⚔️ Attacks</b> hurt enemies. <b>🛡️ Block</b> stops damage until your next turn. <b>✨ Powers</b> last the whole fight. Watch the icon above each enemy — it shows what they'll do next!</p>
+  <p><b>Statuses</b>: 💪 strength (more damage), 🫥 weak (less damage), 💔 vulnerable (takes 50% more), ☠️ poison (hurts every turn), 🔥 burn.</p>
+  <p>Pick your path on the map, win cards and relics, and beat the boss of each act. If your hero falls, the quest ends — but you keep the 💎 gems.</p></div></div>
+<div class="screen" id="sEnd" hidden><div class="box"><p class="big" id="eTitle">QUEST OVER</p><div class="stats" id="eStats"></div><p class="center mute" id="eNote" style="margin:0"></p><button class="btn main" id="eMenu">🏠 MENU</button></div></div>
+<canvas id="cv" width="10" height="10" hidden></canvas>
+
+<script src="kit.js"></script>
+<script>
+(()=>{
+'use strict';
+/* ---------- shared helpers (same in every game of this batch) ---------- */
+const {sfx:SFX,FX,util:U,scores:SC,ach:ACH,profile:PROF,ui:UI}=KIT;
+const $=id=>document.getElementById(id);
+const TAU=Math.PI*2,rnd=(a,b)=>a+Math.random()*(b-a),clamp=U.clamp,pick=a=>a[Math.floor(Math.random()*a.length)];
+function hashStr(s){let h=2166136261;for(const ch of s){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
+const todayKey=()=>{const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()};
+const fmtN=n=>Math.floor(n).toLocaleString();
+// scale a fixed-size canvas (W x H game units) to fit the window; reserve `below` pixels under it
+function makeFit(cv,W,H,below=()=>0){const st={dpr:1,s:1};function fit(){st.dpr=Math.min(2,devicePixelRatio||1);const s=Math.min(innerWidth/W,(innerHeight-below())/H);st.s=s;cv.style.width=W*s+'px';cv.style.height=H*s+'px';cv.width=Math.round(W*st.dpr);cv.height=Math.round(H*st.dpr)}
+  addEventListener('resize',fit);fit();st.fit=fit;st.toGame=(cx,cy)=>{const r=cv.getBoundingClientRect();return[(cx-r.left)/r.width*W,(cy-r.top)/r.height*H]};return st}
+const ONSHOW={};
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.hidden=s.id!==id);if(ONSHOW['*'])ONSHOW['*'](id);if(ONSHOW[id])ONSHOW[id]()}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b){SFX.click();show(b.dataset.go)}});
+function statGrid(el,rows){el.innerHTML=rows.map(([a,b])=>`<div><b>${b}</b><small>${a}</small></div>`).join('')}
+/* hangar: cards you can buy, choose and sell (the first item can never be sold) */
+function hangar(el,o){// o:{game,items:[{id,name,cost,desc,needs?,extra?}],save,coinKey,icon,draw(ctx,item,w,h),onChange,lockText}
+  const S=o.save,cur=()=>{const id=PROF.vehicle(o.game,o.items[0].id);return o.items.find(x=>x.id===id&&S.owned[id])||o.items[0]},icon=o.icon||'🪙';
+  const sellP=it=>Math.floor(it.cost/2);
+  function draw(){const c=cur();el.innerHTML=o.items.map((it,i)=>{const own=!!S.owned[it.id]||i===0,locked=it.needs&&!ACH.has(o.game,it.needs);
+      return`<div class="shipwrap"><button class="ship ${c.id===it.id?'on':''}" data-hid="${it.id}" ${!own&&(locked||S[o.coinKey]<it.cost)?'disabled':''}><canvas width="220" height="160"></canvas><b>${it.name}</b><small class="mute">${it.desc}</small>${it.extra||''}<span class="price">${own?(c.id===it.id?'✔ CHOSEN':'TAP TO CHOOSE'):locked?'🔒 '+(o.lockText||'Locked'):icon+' '+it.cost}</span></button>${own&&i>0?`<button class="sell" data-hsell="${it.id}">💰 SELL for ${icon}${sellP(it)}</button>`:''}</div>`}).join('');
+    el.querySelectorAll('[data-hid]').forEach(b=>{const it=o.items.find(x=>x.id===b.dataset.hid),g=b.querySelector('canvas').getContext('2d');g.scale(2,2);try{o.draw(g,it,110,80)}catch(e){}
+      b.onclick=()=>{if(!S.owned[it.id]&&it!==o.items[0]){if(S[o.coinKey]<it.cost)return;S[o.coinKey]-=it.cost;S.owned[it.id]=1;SFX.coin();o.onBuy&&o.onBuy(it)}PROF.setVehicle(o.game,it.id);SFX.click();o.onChange&&o.onChange();draw()}});
+    el.querySelectorAll('[data-hsell]').forEach(b=>b.onclick=()=>{const it=o.items.find(x=>x.id===b.dataset.hsell);
+      UI.modal(`<h2>💰 Sell ${it.name}?</h2><p style="margin:0">You get <b>${icon} ${sellP(it)}</b> back (half the price). You can buy it again later for ${icon} ${it.cost}.</p><div style="display:flex;gap:8px;justify-content:flex-end"><button class="kbtn2 alt" data-close>KEEP IT</button><button class="kbtn2" id="hsellYes">SELL</button></div>`,(m,close)=>{
+        m.querySelector('#hsellYes').onclick=()=>{delete S.owned[it.id];S[o.coinKey]+=sellP(it);if(PROF.vehicle(o.game,o.items[0].id)===it.id)PROF.setVehicle(o.game,o.items[0].id);SFX.coin();close();o.onChange&&o.onChange();draw()}})})}
+  draw();return{cur,draw}}
+/* upgrade list: o:{list:[{id,ic,name,desc,max,cost(l)}],save,key,coinKey,icon,onChange} */
+function upgradeList(el,o){const S=o.save,lv=id=>S[o.key][id]||0,icon=o.icon||'🪙';
+  el.innerHTML=o.list.map(u=>{const l=lv(u.id),full=l>=u.max,c=u.cost(l);return`<div class="up"><span class="ic">${u.ic}</span><div><b>${u.name}</b><small>${u.desc}</small><div class="pips">${Array.from({length:u.max},(_,i)=>`<i class="${i<l?'on':''}"></i>`).join('')}</div></div><button data-uid="${u.id}" ${full||S[o.coinKey]<c?'disabled':''}>${full?'MAX':icon+' '+c}</button></div>`}).join('');
+  el.querySelectorAll('[data-uid]').forEach(b=>b.onclick=()=>{const u=o.list.find(x=>x.id===b.dataset.uid),c=u.cost(lv(u.id));if(S[o.coinKey]<c||lv(u.id)>=u.max)return;S[o.coinKey]-=c;S[o.key][u.id]=lv(u.id)+1;SFX.coin();o.onChange&&o.onChange();upgradeList(el,o)})}
+// a simple two-stick touch controller: left half moves, right half aims (used by the arena games)
+function twinSticks(cv,toGame){const st={move:null,aim:null,mx:0,my:0,ax:0,ay:0,aiming:false};const R=60;
+  const upd=(s,e)=>{const dx=e.clientX-s.ox,dy=e.clientY-s.oy,d=Math.hypot(dx,dy),k=d>R?R/d:1;s.x=dx*k/R;s.y=dy*k/R};
+  cv.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse')return;e.preventDefault();const r=cv.getBoundingClientRect();const left=e.clientX<r.left+r.width/2;const s={id:e.pointerId,ox:e.clientX,oy:e.clientY,x:0,y:0};if(left&&!st.move)st.move=s;else if(!st.aim)st.aim=s});
+  cv.addEventListener('pointermove',e=>{for(const k of['move','aim']){const s=st[k];if(s&&s.id===e.pointerId)upd(s,e)}});
+  const end=e=>{for(const k of['move','aim'])if(st[k]&&st[k].id===e.pointerId)st[k]=null};cv.addEventListener('pointerup',end);cv.addEventListener('pointercancel',end);
+  st.draw=(ctx,scale)=>{for(const k of['move','aim']){const s=st[k];if(!s)continue;const r=cv.getBoundingClientRect();const[ox,oy]=toGame(s.ox,s.oy);ctx.strokeStyle='#ffffff44';ctx.lineWidth=3;ctx.beginPath();ctx.arc(ox,oy,R/scale,0,TAU);ctx.stroke();ctx.fillStyle='#ffffff55';ctx.beginPath();ctx.arc(ox+s.x*R/scale,oy+s.y*R/scale,22/scale,0,TAU);ctx.fill()}};
+  return st}
+
+/* ================================================================
+   CARD QUEST — data
+   ================================================================ */
+const GAME='cardquest';
+// card effects: dmg, hits, aoe, blk, vuln, weak, poison, burn, draw, energy, str, heal, lose (hp), exhaust, powers
+const C=(id,name,ar,type,cost,cls,rar,e,up)=>({id,name,ar,type,cost,cls,rar,e,up});
+const CARDS=[
+ // knight
+ C('strike','Strike','🗡️','atk',1,'knight',0,{dmg:6},{dmg:9}),C('defend','Defend','🛡️','skl',1,'knight',0,{blk:5},{blk:8}),C('bash','Bash','🔨','atk',2,'knight',0,{dmg:8,vuln:2},{dmg:10,vuln:3}),
+ C('cleave','Cleave','🪓','atk',1,'knight',1,{dmg:8,aoe:1},{dmg:11,aoe:1}),C('ironwave','Iron Wave','🌊','atk',1,'knight',1,{dmg:5,blk:5},{dmg:7,blk:7}),C('twin','Twin Slash','⚔️','atk',1,'knight',1,{dmg:5,hits:2},{dmg:7,hits:2}),
+ C('heavy','Heavy Blow','💥','atk',2,'knight',1,{dmg:14},{dmg:19}),C('shrug','Shrug It Off','🙆','skl',1,'knight',1,{blk:8,draw:1},{blk:11,draw:1}),C('rage','Battle Rage','😤','pow',1,'knight',2,{str:2},{str:3}),
+ C('fortify','Fortify','🏰','pow',1,'knight',2,{metal:3},{metal:5}),C('warcry','War Cry','📣','skl',0,'knight',1,{draw:2,exhaust:1},{draw:3,exhaust:1}),C('whirl','Whirlwind','🌪️','atk',2,'knight',2,{dmg:5,hits:3,aoe:1},{dmg:7,hits:3,aoe:1}),
+ C('blood','Bloodlust','🩸','skl',0,'knight',2,{lose:3,energy:2},{lose:2,energy:2}),C('titan','Titan Slam','🌋','atk',3,'knight',2,{dmg:28},{dmg:38}),
+ // mage
+ C('zap','Zap','⚡','atk',1,'mage',0,{dmg:6},{dmg:9}),C('ward','Shield Spell','🔮','skl',1,'mage',0,{blk:5},{blk:8}),C('fireball','Fireball','🔥','atk',2,'mage',0,{dmg:10,burn:3},{dmg:13,burn:4}),
+ C('frost','Frost Bolt','❄️','atk',1,'mage',1,{dmg:6,weak:2},{dmg:8,weak:3}),C('chain','Chain Lightning','🌩️','atk',2,'mage',1,{dmg:8,aoe:1},{dmg:11,aoe:1}),C('missiles','Arcane Missiles','✨','atk',1,'mage',1,{dmg:3,hits:3},{dmg:4,hits:3}),
+ C('surge','Mana Surge','💧','skl',0,'mage',1,{energy:1,draw:1,exhaust:1},{energy:2,draw:1,exhaust:1}),C('icewall','Ice Wall','🧊','skl',2,'mage',1,{blk:14},{blk:19}),C('meteor','Meteor','☄️','atk',3,'mage',2,{dmg:22,aoe:1},{dmg:30,aoe:1}),
+ C('study','Study','📚','pow',1,'mage',2,{drawUp:1},{drawUp:1,cost0:1}),C('ignite','Ignite','🕯️','skl',1,'mage',1,{burn:6},{burn:9}),C('mirror','Mirror Image','🪞','skl',1,'mage',2,{blk:7,weak:1,aoe:1},{blk:10,weak:2,aoe:1}),
+ // rogue
+ C('stab','Stab','🔪','atk',1,'rogue',0,{dmg:6},{dmg:9}),C('dodge','Dodge','💨','skl',1,'rogue',0,{blk:5},{blk:8}),C('dart','Poison Dart','🎯','atk',1,'rogue',0,{dmg:2,poison:4},{dmg:3,poison:6}),
+ C('quick','Quick Slash','🌀','atk',0,'rogue',1,{dmg:4,draw:1},{dmg:6,draw:1}),C('cloud','Toxic Cloud','☁️','skl',2,'rogue',1,{poison:5,aoe:1},{poison:7,aoe:1}),C('flurry','Flurry','🤺','atk',1,'rogue',1,{dmg:2,hits:4},{dmg:3,hits:4}),
+ C('shadow','Shadow Step','👤','skl',1,'rogue',1,{blk:8,draw:1},{blk:11,draw:1}),C('cripple','Cripple','🦵','skl',1,'rogue',1,{weak:2,vuln:2},{weak:3,vuln:3}),C('venom','Venom Blades','🐍','pow',1,'rogue',2,{venom:1},{venom:2}),
+ C('assassin','Assassinate','🗡️','atk',2,'rogue',2,{dmg:18},{dmg:25}),C('noxious','Noxious Fumes','🧪','pow',1,'rogue',2,{fumes:2},{fumes:3}),C('backstab','Backstab','🥷','atk',0,'rogue',2,{dmg:11,exhaust:1},{dmg:15,exhaust:1}),
+ // druid
+ C('whip','Thorn Whip','🌿','atk',1,'druid',0,{dmg:6},{dmg:9}),C('bark','Bark Skin','🪵','skl',1,'druid',0,{blk:6},{blk:9}),C('grow','Grow','🌱','pow',1,'druid',0,{str:1,metal:2},{str:2,metal:3}),
+ C('vine','Vine Lash','🍃','atk',1,'druid',1,{dmg:5,weak:1},{dmg:8,weak:2}),C('herbs','Healing Herbs','🌼','skl',1,'druid',1,{heal:5,exhaust:1},{heal:8,exhaust:1}),C('thorns','Thorny Hide','🌵','pow',1,'druid',1,{thorns:3},{thorns:5}),
+ C('bear','Bear Form','🐻','atk',2,'druid',1,{dmg:12,blk:6},{dmg:16,blk:8}),C('swarm','Bee Swarm','🐝','atk',1,'druid',1,{dmg:3,hits:2,aoe:1},{dmg:4,hits:2,aoe:1}),C('moon','Moonfire','🌙','atk',2,'druid',2,{dmg:8,burn:6},{dmg:11,burn:8}),
+ C('regrow','Regrowth','🌳','pow',2,'druid',2,{regen:2},{regen:3}),C('stampede','Stampede','🦬','atk',3,'druid',2,{dmg:9,hits:2,aoe:1},{dmg:12,hits:2,aoe:1}),C('oak','Oak Shield','🌰','skl',2,'druid',1,{blk:16},{blk:21})];
+const CBY=Object.fromEntries(CARDS.map(c=>[c.id,c]));
+const HEROES=[{id:'knight',name:'Knight',cost:0,hp:80,art:'🛡️',col:'#c84a3a',desc:'Tough fighter with strong attacks and armour.',start:['strike','strike','strike','strike','strike','defend','defend','defend','defend','bash']},
+ {id:'mage',name:'Mage',cost:300,hp:68,art:'🔮',col:'#5a8ae0',desc:'Burns and freezes. Big spells, less health.',start:['zap','zap','zap','zap','zap','ward','ward','ward','ward','fireball']},
+ {id:'rogue',name:'Rogue',cost:450,hp:70,art:'🗡️',col:'#5ab05a',desc:'Poison and lots of quick little cards.',start:['stab','stab','stab','stab','stab','dodge','dodge','dodge','dodge','dart']},
+ {id:'druid',name:'Druid',cost:600,hp:76,art:'🌿',col:'#c8a040',desc:'Thorns, healing and nature magic.',start:['whip','whip','whip','whip','whip','bark','bark','bark','bark','grow']}];
+// enemies: hp and a list of moves they cycle through (with some randomness)
+const ENEMIES={
+ slime:{name:'Slime',art:'🟢',hp:[26,32],moves:[{atk:6},{atk:4,weak:1},{atk:8}]},
+ goblin:{name:'Goblin',art:'👺',hp:[20,26],moves:[{atk:7},{blk:6,atk:3},{atk:9}]},
+ bats:{name:'Bat',art:'🦇',hp:[12,16],moves:[{atk:3,hits:2},{atk:5}]},
+ cultist:{name:'Cultist',art:'🧙',hp:[38,44],moves:[{str:3},{atk:6},{atk:6}],first:0},
+ ogre:{name:'Ogre',art:'👹',hp:[70,80],moves:[{atk:14},{atk:6,hits:2},{str:2,blk:10}],elite:1},
+ slimeking:{name:'Slime King',art:'👑',hp:[110,110],moves:[{atk:12},{atk:4,hits:3},{blk:15,str:2},{atk:6,weak:2}],boss:1},
+ skeleton:{name:'Skeleton',art:'💀',hp:[36,42],moves:[{atk:9},{blk:8,atk:4},{atk:12}]},
+ wolf:{name:'Wolf',art:'🐺',hp:[30,36],moves:[{atk:6,hits:2},{atk:9,vuln:1}]},
+ shaman:{name:'Goblin Shaman',art:'🧌',hp:[30,34],moves:[{weak:2,vuln:2},{atk:10},{heal:8}]},
+ ghost:{name:'Ghost Knight',art:'👻',hp:[95,105],moves:[{atk:16},{blk:14,str:2},{atk:7,hits:2,weak:1}],elite:1},
+ dragon:{name:'Red Dragon',art:'🐉',hp:[210,210],moves:[{atk:6,hits:3,burn:3},{atk:18},{blk:20,str:2},{atk:10,vuln:2}],boss:1},
+ golem:{name:'Stone Golem',art:'🗿',hp:[60,68],moves:[{atk:14},{blk:12},{atk:8,hits:2}]},
+ wraith:{name:'Shadow',art:'🌑',hp:[44,50],moves:[{atk:8,hits:2},{vuln:2,atk:6}]},
+ witch:{name:'Witch',art:'🧹',hp:[48,54],moves:[{poison:4,atk:5},{atk:11},{weak:2,blk:8}]},
+ imps:{name:'Fire Imp',art:'😈',hp:[42,48],moves:[{atk:5,hits:3},{burn:4,atk:6},{str:2}],elite:1},
+ lich:{name:'Lich King',art:'☠️',hp:[290,290],moves:[{atk:20},{atk:5,hits:4},{blk:20,str:3},{poison:5,weak:2},{atk:14,vuln:2}],boss:1}};
+const ACTS=[{name:'The Green Woods',bg:'#2a4a1a',norm:[['slime'],['goblin'],['bats','bats'],['cultist'],['slime','goblin']],elite:[['ogre']],boss:'slimeking'},
+ {name:'The Bone Caves',bg:'#2a2a3a',norm:[['skeleton'],['wolf','wolf'],['shaman','skeleton'],['wolf','shaman'],['skeleton','bats','bats']],elite:[['ghost']],boss:'dragon'},
+ {name:'The Shadow Tower',bg:'#2a1a3a',norm:[['golem'],['wraith','wraith'],['witch','golem'],['wraith','witch'],['golem','wraith']],elite:[['imps','imps']],boss:'lich'}];
+const RELICS=[{id:'ring',e:'💍',name:'Iron Ring',desc:'Start every fight with 6 block.'},{id:'gem',e:'🔴',name:'Red Gem',desc:'Start every fight with 1 strength.'},{id:'coin',e:'🪙',name:'Lucky Coin',desc:'+50% gold from fights.'},
+ {id:'fang',e:'🦷',name:'Vampire Fang',desc:'Heal 3 when an enemy is defeated.'},{id:'glass',e:'⏳',name:'Hourglass',desc:'Draw 2 extra cards on the first turn.'},{id:'vial',e:'🧪',name:'Poison Vial',desc:'Start fights with 3 poison on every enemy.'},
+ {id:'crown',e:'🌵',name:'Thorn Crown',desc:'Enemies that hit you take 2 damage.'},{id:'feather',e:'🪶',name:'Phoenix Feather',desc:'+10 max health.'},{id:'candle',e:'🕯️',name:'Warm Candle',desc:'Campfires heal 50% instead of 30%.'},
+ {id:'boots',e:'👢',name:'Swift Boots',desc:'Draw 1 extra card every turn.'},{id:'crystal',e:'💠',name:'Energy Crystal',desc:'+1 energy every turn.',boss:1},{id:'heart',e:'❤️‍🔥',name:'Dragon Heart',desc:'+3 strength at the start of fights.',boss:1}];
+ACH.define(GAME,[{id:'win1',icon:'🌳',name:'Through the Woods',desc:'Beat the Slime King'},{id:'win2',icon:'🐉',name:'Dragon Slayer',desc:'Beat the Red Dragon'},{id:'win3',icon:'☠️',name:'Tower Conqueror',desc:'Beat the Lich King and win a quest'},
+ {id:'mage',icon:'🔮',name:'Spellbinder',desc:'Win a quest as the Mage'},{id:'rogue',icon:'🗡️',name:'Shadow Hero',desc:'Win a quest as the Rogue'},{id:'druid',icon:'🌿',name:'Nature\'s Champion',desc:'Win a quest as the Druid'},
+ {id:'big',icon:'💥',name:'Huge Hit',desc:'Deal 50 damage in one hit'},{id:'combo',icon:'🃏',name:'Card Storm',desc:'Play 10 cards in one turn'},{id:'poison',icon:'☠️',name:'Toxic',desc:'Have 30 poison on one enemy'},{id:'block',icon:'🧱',name:'Fortress',desc:'Have 50 block at once'},
+ {id:'relics',icon:'💍',name:'Collector',desc:'Have 6 relics in one quest'},{id:'hero',icon:'🦸',name:'New Hero',desc:'Buy a hero'},{id:'daily',icon:'📅',name:'Daily Champion',desc:'Beat the first boss in a Daily Quest'},{id:'flawless',icon:'✨',name:'Flawless',desc:'Win a fight without losing health'}]);
+const SAVE_KEY='cardquest:v1';
+const D=Object.assign({gems:0,owned:{knight:1},seen:{},wins:0,runs:0,best:0,daily:{},run:null},U.load(SAVE_KEY,{}));const save=()=>U.save(SAVE_KEY,D);
+const curHero=()=>{const id=PROF.vehicle(GAME,'knight');return HEROES.find(h=>h.id===id&&D.owned[id])||HEROES[0]};
+
+/* ================================================================
+   CARDS: text + html
+   ================================================================ */
+const eff=(c,up)=>up&&c.up?c.up:c.e;
+const costOf=(c,up)=>up&&c.up&&c.up.cost0?0:c.cost;
+function desc(c,up){const e=eff(c,up),p=[];const all=e.aoe?' to ALL enemies':'';
+  if(e.dmg)p.push(`Deal <b>${e.dmg}</b> damage${e.hits>1?' <b>×'+e.hits+'</b>':''}${all}.`);if(e.blk)p.push(`Gain <b>${e.blk}</b> block.`);
+  if(e.vuln)p.push(`<b>${e.vuln}</b> 💔 vulnerable${e.dmg?'':all}.`);if(e.weak)p.push(`<b>${e.weak}</b> 🫥 weak${e.dmg?'':all}.`);if(e.poison)p.push(`<b>${e.poison}</b> ☠️ poison${e.dmg?'':all}.`);if(e.burn)p.push(`<b>${e.burn}</b> 🔥 burn.`);
+  if(e.draw)p.push(`Draw <b>${e.draw}</b>.`);if(e.energy)p.push(`Gain <b>${e.energy}</b> ⚡.`);if(e.lose)p.push(`Lose ${e.lose} health.`);if(e.heal)p.push(`Heal <b>${e.heal}</b>.`);
+  if(e.str)p.push(`Gain <b>${e.str}</b> 💪 strength.`);if(e.metal)p.push(`End of each turn: gain <b>${e.metal}</b> block.`);if(e.thorns)p.push(`Enemies that hit you take <b>${e.thorns}</b>.`);if(e.regen)p.push(`Heal <b>${e.regen}</b> each turn.`);
+  if(e.drawUp)p.push(`Draw <b>1</b> more card each turn.`);if(e.venom)p.push(`Your attacks also add <b>${e.venom}</b> ☠️ poison.`);if(e.fumes)p.push(`Each turn: <b>${e.fumes}</b> ☠️ poison to ALL enemies.`);if(e.exhaust)p.push('<i>Used up after playing.</i>');return p.join(' ')}
+function cardHTML(c,up,o={}){return`<div class="card ${c.type} ${up?'up':''} ${o.cls||''}" ${o.attr||''}><span class="cost">${costOf(c,up)}</span><span class="nm">${c.name}${up?'+':''}</span><span class="ar">${c.ar}</span><span class="tp">${{atk:'ATTACK',skl:'SKILL',pow:'POWER'}[c.type]}</span><span>${desc(c,up)}</span></div>`}
+
+/* ================================================================
+   RUN + MAP
+   ================================================================ */
+let R=null,B=null,FAST=false;const T=ms=>FAST?0:ms;
+const rng=()=>R.rngf();
+function newRun(daily){const h=daily?HEROES[hashStr('cqh'+todayKey())%4]:curHero();const seed=daily?hashStr('cq'+todayKey()):Math.floor(Math.random()*1e9);
+  R={hero:h.id,hp:h.hp,max:h.hp,gold:99,deck:h.start.map(id=>({id,up:false})),relics:[],act:0,row:-1,col:-1,daily,seed,floors:0,bosses:0,kills:0,rs:seed};attachRng();R.map=makeMap();saveRun()}
+function attachRng(){let s=R.rs>>>0||1;R.rngf=()=>{s=(s*1664525+1013904223)>>>0;R.rs=s;return s/4294967296}}
+function saveRun(){const c=Object.assign({},R);delete c.rngf;D.run=c;save()}
+function makeMap(){const rows=[];for(let r=0;r<12;r++){const n=r===11?1:2+Math.floor(rng()*3);const row=[];for(let i=0;i<n;i++){let t;
+    if(r===0)t='fight';else if(r===5)t='treasure';else if(r===10)t='rest';else if(r===11)t='boss';else{const x=rng();t=x<.45?'fight':x<.57&&r>=3?'elite':x<.69?'shop':x<.8&&r>=3?'rest':'event'}
+    row.push({t,x:n===1?.5:i/(n-1),done:false})}rows.push(row)}return rows}
+const ICON={fight:'⚔️',elite:'💀',shop:'🛒',rest:'🔥',event:'❓',treasure:'💰',boss:'👑'};
+function canGo(r,i){if(r!==R.row+1)return false;if(R.row<0)return true;const from=R.map[R.row][R.col];const row=R.map[r];const near=row.map((n,k)=>[Math.abs(n.x-from.x),k]).sort((a,b)=>a[0]-b[0]);return Math.abs(row[i].x-from.x)<=.5||near[0][1]===i}
+function drawMap(){const A=ACTS[R.act];$('mapTitle').textContent=`ACT ${R.act+1}: ${A.name.toUpperCase()}`;$('mapHp').textContent=`${heroOf().art} ❤️ ${R.hp}/${R.max}`;$('mapGold').textContent='🪙 '+R.gold;
+  $('mapRelics').innerHTML=R.relics.map(id=>{const r=RELICS.find(x=>x.id===id);return`<span title="${r.name}: ${r.desc}">${r.e}</span>`}).join('');
+  $('mapGrid').innerHTML=R.map.map((row,r)=>`<div class="mrow">${row.map((n,i)=>`<button class="node ${canGo(r,i)?'can':''} ${n.done?'done':''}" data-r="${r}" data-i="${i}" title="${n.t}">${n.done?'✔️':ICON[n.t]}</button>`).join('')}</div>`).join('');
+  document.querySelectorAll('.node').forEach(b=>b.onclick=()=>{const r=+b.dataset.r,i=+b.dataset.i;if(!canGo(r,i))return;SFX.click();R.row=r;R.col=i;R.floors++;enter(R.map[r][i])});show('sMap')}
+const heroOf=()=>HEROES.find(h=>h.id===R.hero);
+const has=id=>R.relics.includes(id);
+function enter(n){n.done=true;saveRun();const A=ACTS[R.act];
+  if(n.t==='fight'){const pool=R.row<3?A.norm.slice(0,3):A.norm;startBattle(pool[Math.floor(rng()*pool.length)],'fight')}
+  else if(n.t==='elite')startBattle(A.elite[Math.floor(rng()*A.elite.length)],'elite');else if(n.t==='boss')startBattle([A.boss],'boss');
+  else if(n.t==='shop')openShop();else if(n.t==='rest')openRest();else if(n.t==='treasure'){gainRelic(false);$('evTitle').textContent='💰 TREASURE CHEST';$('evText').innerHTML=`You found <b>${RELICS.find(r=>r.id===R.relics[R.relics.length-1]).e} ${RELICS.find(r=>r.id===R.relics[R.relics.length-1]).name}</b>!<br>${RELICS.find(r=>r.id===R.relics[R.relics.length-1]).desc}`;evOpts([['Continue',()=>drawMap()]]);show('sEvent')}
+  else openEvent()}
+function gainRelic(boss){const pool=RELICS.filter(r=>!has(r.id)&&!!r.boss===boss);if(!pool.length){R.gold+=50;return null}const r=pool[Math.floor(rng()*pool.length)];R.relics.push(r.id);if(r.id==='feather'){R.max+=10;R.hp+=10}if(R.relics.length>=6)ACH.unlock(GAME,'relics');SFX.power();return r}
+function cardChoices(n,rare){const pool=CARDS.filter(c=>c.cls===R.hero&&c.rar>0);const out=[];while(out.length<n){const w=pool.map(c=>c.rar===2?(rare?.6:.25):1);let x=rng()*w.reduce((a,b)=>a+b,0),i=0;while(x>w[i]){x-=w[i];i++}const c=pool[i];if(!out.includes(c))out.push(c)}return out}
+
+/* ================================================================
+   BATTLE
+   ================================================================ */
+function startBattle(keys,kind){const sc=1+R.act*.12+(R.daily?.1:0);
+  B={kind,foes:keys.map((k,i)=>{const E=ENEMIES[k],hp=Math.round((E.hp[0]+rng()*(E.hp[1]-E.hp[0]))*sc);return{k,E,hp,max:hp,blk:0,st:{},mi:E.first!=null?E.first:Math.floor(rng()*E.moves.length),i,id:k+i}}),
+    me:{blk:0,st:{},energy:3},draw:shuffle(R.deck.map(c=>({...c}))),hand:[],disc:[],exhausted:[],turn:0,played:0,sel:null,startHp:R.hp,busy:false};
+  if(has('ring'))B.me.blk=6;if(has('gem'))B.me.st.str=1;if(has('heart'))B.me.st.str=(B.me.st.str||0)+3;if(has('vial'))B.foes.forEach(f=>f.st.poison=3);if(has('crown'))B.me.st.thorns=2;
+  B.foes.forEach(planIntent);$('battle').hidden=false;show(null);SFX.levelup();startTurn()}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function planIntent(f){const M=f.E.moves;if(f.E.boss||f.E.first!=null&&B.turn===0){f.intent=M[f.mi%M.length];f.mi++}else{let k;do{k=Math.floor(rng()*M.length)}while(M.length>1&&k===f.last);f.last=k;f.intent=M[k]}}
+function drawCards(n){for(let i=0;i<n;i++){if(!B.draw.length){if(!B.disc.length)break;B.draw=shuffle(B.disc);B.disc=[]}if(B.hand.length>=10)break;B.hand.push(B.draw.pop())}}
+function startTurn(){if(!B||!R)return;B.turn++;B.played=0;const m=B.me;m.blk=B.turn===1&&has('ring')?6:0;m.energy=3+(has('crystal')?1:0);
+  if(m.st.poison){hurtMe(m.st.poison,true);m.st.poison--;if(R.hp<=0)return}if(m.st.regen){R.hp=Math.min(R.max,R.hp+m.st.regen)}
+  if(m.st.fumes)B.foes.forEach(f=>{if(f.hp>0)f.st.poison=(f.st.poison||0)+m.st.fumes});
+  drawCards(5+(m.st.drawUp||0)+(has('boots')?1:0)+(B.turn===1&&has('glass')?2:0));B.busy=false;render()}
+function dmgCalc(base,from,to){let d=base+(from.st.str||0);if(from.st.weak)d*=.75;if(to.st.vuln)d*=1.5;return Math.max(0,Math.floor(d))}
+function hurtFoe(f,d){if(f.hp<=0)return;const b=Math.min(f.blk,d);f.blk-=b;d-=b;f.hp-=d;popAt('foe'+f.i,d>0?'-'+d:'🛡️',d>0?'#ff7a5a':'#9ac8ff');if(d>=50)ACH.unlock(GAME,'big');shakeEl('foe'+f.i);
+  if(f.hp<=0){f.hp=0;R.kills++;if(has('fang'))R.hp=Math.min(R.max,R.hp+3);SFX.explode()}else SFX.hit()}
+function hurtMe(d,ignoreBlk){const m=B.me;if(!ignoreBlk){const b=Math.min(m.blk,d);m.blk-=b;d-=b}R.hp-=d;if(d>0){popAt('meF','-'+d,'#ff5d5d');shakeEl('meF');SFX.hurt()}else popAt('meF','🛡️','#9ac8ff');if(R.hp<=0){R.hp=0;setTimeout(()=>loseRun(),T(700))}}
+function playCard(idx,target){if(B.busy)return;const card=B.hand[idx],c=CBY[card.id],e=eff(c,card.up),cost=costOf(c,card.up),m=B.me;if(m.energy<cost){toast('Not enough ⚡ energy');SFX.error();return}
+  const alive=B.foes.filter(f=>f.hp>0);const needT=(e.dmg||e.vuln||e.weak||e.poison||e.burn)&&!e.aoe;if(needT&&target==null){if(alive.length===1)target=alive[0];else{B.sel=idx;render();return}}
+  m.energy-=cost;B.hand.splice(idx,1);B.sel=null;B.played++;if(B.played>=10)ACH.unlock(GAME,'combo');SFX.place();
+  const targets=e.aoe?alive:target?[target]:[];
+  if(e.dmg){const hits=e.hits||1;for(let h=0;h<hits;h++)for(const f of(e.aoe?B.foes.filter(f=>f.hp>0):targets)){const d=dmgCalc(e.dmg,m,f);hurtFoe(f,d);if(m.st.venom&&f.hp>0)f.st.poison=(f.st.poison||0)+m.st.venom}lunge('meF')}
+  if(e.blk){m.blk+=e.blk;if(m.blk>=50)ACH.unlock(GAME,'block')}
+  for(const f of targets){if(f.hp<=0)continue;if(e.vuln)f.st.vuln=(f.st.vuln||0)+e.vuln;if(e.weak)f.st.weak=(f.st.weak||0)+e.weak;if(e.poison){f.st.poison=(f.st.poison||0)+e.poison;if(f.st.poison>=30)ACH.unlock(GAME,'poison')}if(e.burn)f.st.burn=(f.st.burn||0)+e.burn}
+  if(e.burn&&e.aoe)for(const f of alive)f.st.burn=(f.st.burn||0)+e.burn;
+  if(e.lose){R.hp-=e.lose;popAt('meF','-'+e.lose,'#ff5d5d')}if(e.heal)R.hp=Math.min(R.max,R.hp+e.heal);if(e.energy)m.energy+=e.energy;if(e.draw)drawCards(e.draw);
+  for(const k of['str','metal','thorns','regen','drawUp','venom','fumes'])if(e[k])m.st[k]=(m.st[k]||0)+e[k];
+  if(c.type==='pow'||e.exhaust)B.exhausted.push(card);else B.disc.push(card);
+  if(B.foes.every(f=>f.hp<=0)){setTimeout(winBattle,T(500))}render()}
+function endTurn(){if(B.busy)return;B.busy=true;B.sel=null;const m=B.me;if(m.st.metal)m.blk+=m.st.metal;B.disc.push(...B.hand);B.hand=[];
+  for(const f of B.foes){if(f.hp>0&&f.st.burn){hurtFoe(f,f.st.burn);f.st.burn=Math.max(0,f.st.burn-1)}}
+  for(const k of['weak','vuln'])if(m.st[k])m.st[k]--;render();
+  if(B.foes.every(f=>f.hp<=0)){setTimeout(winBattle,T(500));return}
+  const order=B.foes.filter(f=>f.hp>0);let i=0;const next=()=>{if(!R||!B||R.hp<=0)return;if(i>=order.length){B.foes.forEach(f=>{if(f.hp>0)planIntent(f)});startTurn();return}const f=order[i++];foeAct(f);render();if(B.foes.every(q=>q.hp<=0)){setTimeout(winBattle,T(500));return}setTimeout(next,T(520))};setTimeout(next,T(350))}
+function foeAct(f){if(f.st.poison){hurtFoe(f,f.st.poison);f.st.poison--;if(f.hp<=0)return}f.blk=0;const it=f.intent,m=B.me;lunge('foe'+f.i);
+  if(it.atk){for(let h=0;h<(it.hits||1);h++){hurtMe(dmgCalc(it.atk,f,m));if(m.st.thorns)hurtFoe(f,m.st.thorns)}}
+  if(it.blk)f.blk+=it.blk;if(it.str)f.st.str=(f.st.str||0)+it.str;if(it.heal)f.hp=Math.min(f.max,f.hp+it.heal);
+  if(it.weak)m.st.weak=(m.st.weak||0)+it.weak;if(it.vuln)m.st.vuln=(m.st.vuln||0)+it.vuln;if(it.poison)m.st.poison=(m.st.poison||0)+it.poison;if(it.burn){m.st.poison=(m.st.poison||0)+it.burn}
+  for(const k of['weak','vuln'])if(f.st[k])f.st[k]--}
+function winBattle(){if(!B||B.won||!R)return;B.won=true;$('battle').hidden=true;if(R.hp>=B.startHp)ACH.unlock(GAME,'flawless');const kind=B.kind;
+  let gold=kind==='boss'?90:kind==='elite'?30+Math.floor(rng()*10):12+Math.floor(rng()*10);if(has('coin'))gold=Math.round(gold*1.5);R.gold+=gold;
+  let relic=null;if(kind==='elite')relic=gainRelic(false);if(kind==='boss'){relic=gainRelic(true);R.bosses++;ACH.unlock(GAME,'win'+(R.act+1));if(R.daily&&R.act===0)ACH.unlock(GAME,'daily')}
+  SFX.win();$('rwTitle').textContent=kind==='boss'?'BOSS DEFEATED!':'VICTORY!';$('rwGold').textContent='+'+gold+' 🪙';$('rwRelic').innerHTML=relic?`New relic: <b>${relic.e} ${relic.name}</b> — ${relic.desc}`:'';
+  const ch=cardChoices(3,kind!=='fight');$('rwCards').innerHTML=ch.map((c,i)=>cardHTML(c,false,{attr:`data-rw="${i}"`})).join('');
+  document.querySelectorAll('[data-rw]').forEach(el=>el.onclick=()=>{const c=ch[+el.dataset.rw];R.deck.push({id:c.id,up:false});D.seen[c.id]=1;SFX.coin();afterReward()});
+  $('rwSkip').onclick=()=>{R.gold+=10;afterReward()};B=null;saveRun();show('sReward')}
+function afterReward(){if(R.map[R.row][R.col].t==='boss'){if(R.act>=2){winRun();return}R.act++;R.row=-1;R.col=-1;R.hp=R.max;R.map=makeMap();saveRun();toastBig('ACT '+(R.act+1)+': '+ACTS[R.act].name)}saveRun();drawMap()}
+function loseRun(){if(!R||R.lost)return;R.lost=true;$('battle').hidden=true;const gems=R.floors*2+R.bosses*25;D.gems+=gems;D.runs++;D.best=Math.max(D.best,R.floors+R.act*0);D.run=null;save();SFX.lose();
+  $('eTitle').textContent='QUEST OVER';statGrid($('eStats'),[['Act reached',R.act+1],['Rooms',R.floors],['Enemies beaten',R.kills],['Cards in deck',R.deck.length],['Relics',R.relics.length],['Gems','+'+gems]]);$('eNote').textContent='Spend gems on new heroes and try again!';R=null;B=null;show('sEnd')}
+function winRun(){const gems=R.floors*2+R.bosses*25+100;D.gems+=gems;D.runs++;D.wins++;if(R.hero!=='knight')ACH.unlock(GAME,R.hero);if(R.daily)D.daily[todayKey()]='win';D.run=null;save();SFX.win();
+  $('eTitle').textContent='🏆 QUEST COMPLETE!';statGrid($('eStats'),[['Hero',heroOf().name],['Rooms',R.floors],['Enemies beaten',R.kills],['Cards in deck',R.deck.length],['Relics',R.relics.length],['Gems','+'+gems]]);$('eNote').textContent='You climbed the whole tower. Amazing!';R=null;show('sEnd')}
+
+/* ---------- shop, rest, events ---------- */
+function openShop(){const cards=cardChoices(5,true),price=c=>[45,70,120][c.rar]+Math.floor(rng()*10);const items=cards.map(c=>({c,p:price(c)}));const rel=RELICS.filter(r=>!has(r.id)&&!r.boss);const relics=[];for(let i=0;i<2&&rel.length;i++)relics.push(rel.splice(Math.floor(rng()*rel.length),1)[0]);let removed=false;
+  const draw=()=>{$('shGold').textContent=R.gold;$('shCards').innerHTML=items.map((it,i)=>it.sold?'':`<div style="display:flex;flex-direction:column;align-items:center;gap:4px">${cardHTML(it.c,false,{attr:`data-sh="${i}"`,cls:R.gold<it.p?'no':''})}<b style="color:var(--gold);font-family:var(--display)">🪙 ${it.p}</b></div>`).join('');
+    document.querySelectorAll('[data-sh]').forEach(el=>el.onclick=()=>{const it=items[+el.dataset.sh];if(R.gold<it.p){SFX.error();return}R.gold-=it.p;it.sold=true;R.deck.push({id:it.c.id,up:false});D.seen[it.c.id]=1;SFX.coin();draw()});
+    $('shRelics').innerHTML=relics.map((r,i)=>r.sold?'':`<div class="up"><span class="ic">${r.e}</span><div><b>${r.name}</b><small>${r.desc}</small></div><button data-rl="${i}" ${R.gold<150?'disabled':''}>🪙 150</button></div>`).join('');
+    document.querySelectorAll('[data-rl]').forEach(b=>b.onclick=()=>{const r=relics[+b.dataset.rl];if(R.gold<150)return;R.gold-=150;r.sold=true;R.relics.push(r.id);if(r.id==='feather'){R.max+=10;R.hp+=10}if(R.relics.length>=6)ACH.unlock(GAME,'relics');SFX.coin();draw()});
+    $('shRemove').disabled=removed||R.gold<75;$('shRemC').textContent=removed?'Sold out':'🪙 75'};
+  $('shRemove').onclick=()=>pickCard('REMOVE WHICH CARD?',()=>true,i=>{R.gold-=75;R.deck.splice(i,1);removed=true;SFX.coin();show('sShop');draw()},()=>show('sShop'));
+  $('shLeave').onclick=()=>{saveRun();drawMap()};draw();show('sShop')}
+function openRest(){$('rsHealN').textContent='Heal '+(has('candle')?50:30)+'% ('+Math.round(R.max*(has('candle')?.5:.3))+' health)';
+  $('rsHeal').onclick=()=>{R.hp=Math.min(R.max,R.hp+Math.round(R.max*(has('candle')?.5:.3)));SFX.power();saveRun();drawMap()};
+  $('rsUp').onclick=()=>pickCard('UPGRADE WHICH CARD?',c=>!c.up,i=>{R.deck[i].up=true;SFX.power();saveRun();drawMap()},()=>show('sRest'));show('sRest')}
+function pickCard(title,filter,done,cancel){$('pkTitle').textContent=title;$('pkCards').innerHTML=R.deck.map((d,i)=>filter(d)?cardHTML(CBY[d.id],d.up,{attr:`data-pk="${i}"`}):'').join('');
+  document.querySelectorAll('[data-pk]').forEach(el=>el.onclick=()=>done(+el.dataset.pk));$('pkCancel').onclick=cancel;show('sPick')}
+function evOpts(opts){$('evOpts').innerHTML=opts.map(([t],i)=>`<button class="btn" data-ev="${i}"><span>${t}</span></button>`).join('');document.querySelectorAll('[data-ev]').forEach(b=>b.onclick=()=>{opts[+b.dataset.ev][1]();saveRun()})}
+function openEvent(){const evs=[
+  ['⛲ MAGIC FOUNTAIN','A sparkling fountain glows in the dark.',[['Drink: heal 20',()=>{R.hp=Math.min(R.max,R.hp+20);drawMap()}],['Bathe: +6 max health',()=>{R.max+=6;R.hp+=6;drawMap()}]]],
+  ['📦 MYSTERY MERCHANT','"A box for 40 gold. Something good is inside… probably!"',[['Pay 40 gold',()=>{if(R.gold<40){toast('Not enough gold');return}R.gold-=40;const r=gainRelic(false);$('evText').innerHTML=r?`Inside: <b>${r.e} ${r.name}</b>! ${r.desc}`:'It was full of gold! +50';evOpts([['Continue',()=>drawMap()]])}],['Walk away',()=>drawMap()]]],
+  ['🗿 GOLDEN IDOL','A golden idol sits on a trapped pedestal.',[['Grab it: +100 gold, −8 max health',()=>{R.gold+=100;R.max-=8;R.hp=Math.min(R.hp,R.max);drawMap()}],['Leave it',()=>drawMap()]]],
+  ['📚 OLD LIBRARY','Dusty books full of battle tricks.',[['Read: choose a card',()=>{const ch=cardChoices(3,true);$('evText').innerHTML='Pick one:<div class="cardpick" style="margin-top:8px">'+ch.map((c,i)=>cardHTML(c,false,{attr:`data-lb="${i}"`})).join('')+'</div>';$('evOpts').innerHTML='';document.querySelectorAll('[data-lb]').forEach(el=>el.onclick=()=>{R.deck.push({id:ch[+el.dataset.lb].id,up:false});saveRun();drawMap()})}],['Sleep: heal 12',()=>{R.hp=Math.min(R.max,R.hp+12);drawMap()}]]],
+  ['⛩️ SHRINE','A quiet shrine hums with power.',[['Pray: upgrade 2 random cards',()=>{const c=R.deck.filter(d=>!d.up);for(let i=0;i<2&&c.length;i++)c.splice(Math.floor(rng()*c.length),1)[0].up=true;SFX.power();drawMap()}],['Offer 6 health: a rare card',()=>{R.hp=Math.max(1,R.hp-6);const pool=CARDS.filter(c=>c.cls===R.hero&&c.rar===2);const c=pool[Math.floor(rng()*pool.length)];R.deck.push({id:c.id,up:false});$('evText').innerHTML='You got '+c.ar+' <b>'+c.name+'</b>!';evOpts([['Continue',()=>drawMap()]])}]]],
+  ['🧌 GOBLIN THIEF','A goblin runs off with a sack of gold!',[['Chase it! (fight)',()=>{R.gold+=25;startBattle(['goblin','goblin'],'fight')}],['Let it go',()=>drawMap()]]]];
+  const ev=evs[Math.floor(rng()*evs.length)];$('evTitle').textContent=ev[0];$('evText').innerHTML=ev[1];evOpts(ev[2]);show('sEvent')}
+
+/* ================================================================
+   BATTLE SCREEN
+   ================================================================ */
+const ST_ICON={str:'💪',weak:'🫥',vuln:'💔',poison:'☠️',burn:'🔥',metal:'🛡️+',thorns:'🌵',regen:'💚',drawUp:'📚',venom:'🐍',fumes:'🧪'};
+const stHTML=st=>Object.entries(st).filter(([k,v])=>v>0).map(([k,v])=>`<span title="${k}">${ST_ICON[k]||k}${v}</span>`).join('');
+function intentHTML(f){const it=f.intent,p=[];if(it.atk){const d=dmgCalc(it.atk,f,B.me);p.push(`⚔️${d}${it.hits>1?'×'+it.hits:''}`)}if(it.blk)p.push('🛡️');if(it.str)p.push('💪');if(it.weak||it.vuln)p.push('🌀');if(it.poison||it.burn)p.push('☠️');if(it.heal)p.push('💚');return p.join(' ')}
+function render(){if(!B||!R)return;const H=heroOf(),m=B.me;$('bHero').textContent=PROF.avatar+' '+H.name;$('bHp').textContent=`❤️ ${R.hp}/${R.max}`;$('bGold').textContent='🪙 '+R.gold;$('bFloor').textContent=`Act ${R.act+1} · Room ${R.row+1}/12`;
+  $('bRelics').innerHTML=R.relics.map(id=>{const r=RELICS.find(x=>x.id===id);return`<span title="${r.name}: ${r.desc}">${r.e}</span>`}).join('');
+  $('meArt').innerHTML=`<span style="position:relative">${H.art}<span style="position:absolute;left:50%;top:-30%;transform:translateX(-50%);font-size:.45em">${PROF.avatar}</span></span>`;$('meSt').innerHTML=stHTML(m.st);
+  $('meHpBar').style.width=(R.hp/R.max*100)+'%';$('meHpT').textContent=R.hp+'/'+R.max;$('meBlk').hidden=!m.blk;$('meBlk').textContent='🛡️'+m.blk;
+  $('foes').innerHTML=B.foes.map(f=>`<div class="fighter ${B.sel!=null&&f.hp>0?'target':''}" id="foe${f.i}" data-f="${f.i}" style="${f.hp<=0?'opacity:.15;pointer-events:none':''}"><div class="intent">${f.hp>0?intentHTML(f):'💤'}</div><div class="status">${stHTML(f.st)}</div><div class="art" style="font-size:${f.E.boss?'clamp(80px,15vw,150px)':''}">${f.E.art}</div>
+    <div style="position:relative">${f.blk?`<span class="blk">🛡️${f.blk}</span>`:''}<div class="hp"><i style="width:${f.hp/f.max*100}%"></i><b>${f.hp}/${f.max}</b></div></div><small>${f.E.name}</small></div>`).join('');
+  document.querySelectorAll('[data-f]').forEach(el=>el.onclick=()=>{if(B.sel!=null){const f=B.foes[+el.dataset.f];playCard(B.sel,f)}});
+  $('energy').textContent=m.energy;$('drawN').textContent='🂠 '+B.draw.length;$('discN').textContent='♻️ '+B.disc.length;
+  $('hand').innerHTML=B.hand.map((card,i)=>{const c=CBY[card.id];return cardHTML(c,card.up,{attr:`data-h="${i}"`,cls:(B.sel===i?'sel ':'')+(m.energy<costOf(c,card.up)?'no':'')})}).join('');
+  document.querySelectorAll('[data-h]').forEach(el=>el.onclick=()=>{const i=+el.dataset.h;if(B.sel===i){B.sel=null;render();return}playCard(i)});$('endTurn').disabled=B.busy}
+function popAt(id,txt,col){const el=$(id);if(!el)return;const r=el.getBoundingClientRect();const p=document.createElement('div');p.className='pop';p.textContent=txt;p.style.color=col;p.style.left=(r.left+r.width/2-20+Math.random()*30)+'px';p.style.top=(r.top+r.height*.3)+'px';document.body.appendChild(p);setTimeout(()=>p.remove(),900)}
+function shakeEl(id){const el=$(id);if(!el)return;el.classList.remove('hit');void el.offsetWidth;el.classList.add('hit')}
+function lunge(id){const el=$(id);if(!el)return;el.classList.add('lunge');setTimeout(()=>el.classList.remove('lunge'),160)}
+function toast(s){UI.toast(s,'')}function toastBig(s){UI.toast(s,'⚔️ A new act begins')}
+$('endTurn').onclick=()=>endTurn();
+$('bDeck').onclick=()=>showDeck();$('mapDeck').onclick=()=>showDeck();$('bHelp').onclick=()=>{helpFrom='battle';$('battle').hidden=true;show('sHelp')};
+let helpFrom='sMenu';$('helpBack').onclick=()=>{if(helpFrom==='battle'){$('battle').hidden=false;show(null)}else show('sMenu')};
+function showDeck(){const list=R.deck.slice().sort((a,b)=>a.id<b.id?-1:1);UI.modal(`<h2>🃏 Your deck (${list.length})</h2><div class="cardpick">${list.map(d=>cardHTML(CBY[d.id],d.up)).join('')}</div><div style="display:flex;justify-content:flex-end"><button class="kbtn2" data-close>CLOSE</button></div>`)}
+addEventListener('keydown',e=>{if(!B||$('battle').hidden)return;const k=e.key.toLowerCase();if(k==='e'||k==='enter'){endTurn()}const n=parseInt(k);if(n>=1&&n<=9&&B.hand[n-1])playCard(n-1);if(k==='escape'){B.sel=null;render()}});
+
+/* ================================================================
+   MENUS
+   ================================================================ */
+ONSHOW['*']=id=>{document.querySelectorAll('.gems').forEach(e=>e.textContent=fmtN(D.gems))};
+ONSHOW.sMenu=()=>{$('whoAv').textContent=PROF.avatar;$('whoName').textContent=PROF.name;$('mGems').textContent=fmtN(D.gems);const c=ACH.count(GAME);$('achInfo').textContent=c.got+'/'+c.total+' unlocked';$('sndIc').textContent=SFX.muted?'🔇':'🔊';
+  $('mInfo').textContent=D.wins?D.wins+' quests won':'3 acts, 3 bosses';$('mCont').hidden=!D.run;if(D.run)$('contInfo').textContent=HEROES.find(h=>h.id===D.run.hero).name+' · Act '+(D.run.act+1)+' · ❤️ '+D.run.hp;
+  $('bookInfo').textContent=Object.keys(D.seen).length+' cards found';$('dailyInfo').textContent=D.daily[todayKey()]?'Won today! 🏆':'Same map and hero for all'};
+ONSHOW.sHeroes=()=>hangar($('heroList'),{game:GAME,items:HEROES.map(h=>Object.assign({},h,{extra:`<small style="color:var(--gold)">❤️ ${h.hp}</small>`})),save:D,coinKey:'gems',icon:'💎',
+  draw:(g,it,w,h)=>{g.fillStyle=it.col;g.fillRect(0,0,w,h);g.font='42px sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(it.art,w/2,h/2+8);g.font='24px sans-serif';g.fillText(PROF.avatar,w/2,h/2-24)},onBuy:()=>{ACH.unlock(GAME,'hero');save()},onChange:()=>{save();document.querySelectorAll('.gems').forEach(e=>e.textContent=fmtN(D.gems))}});
+ONSHOW.sBook=()=>{$('bookCards').innerHTML=CARDS.map(c=>D.seen[c.id]||c.rar===0?cardHTML(c,false):`<div class="card" style="display:grid;place-items:center;font-size:30px;opacity:.4">❔</div>`).join('')};
+$('whoEdit').onclick=()=>UI.profileEditor(ONSHOW.sMenu);
+$('mNew').onclick=()=>{if(D.run&&!confirm('Start a new quest? Your saved quest will be lost.'))return;newRun(false);drawMap()};
+$('mCont').onclick=()=>{R=Object.assign({},D.run);attachRng();drawMap()};
+$('mDaily').onclick=()=>{if(D.run&&!confirm('Start the Daily Quest? Your saved quest will be lost.'))return;newRun(true);drawMap()};
+$('mHeroes').onclick=()=>show('sHeroes');$('mBook').onclick=()=>show('sBook');$('mHelp').onclick=()=>{helpFrom='sMenu';show('sHelp')};$('mAch').onclick=()=>UI.achievements(GAME,'Card Quest awards');$('mSound').onclick=()=>{SFX.toggle();ONSHOW.sMenu()};
+$('mapQuit').onclick=()=>{saveRun();R=null;show('sMenu')};$('eMenu').onclick=()=>show('sMenu');
+show('sMenu');
+if(new URLSearchParams(location.search).has('test'))window.__cq={fast(){FAST=true},get R(){return R},get B(){return B},D,newRun,drawMap,startBattle,playCard,endTurn,enter};
+
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>
