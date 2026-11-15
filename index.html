@@ -96,6 +96,10 @@ h1{font-family:var(--display);font-weight:900;font-size:clamp(34px,9vw,64px);lin
       <canvas id="n11" width="160" height="90" aria-hidden="true"></canvas>
       <div class="info"><h2>Sky Raiders</h2><p>NEW! A side-scrolling plane shooter: 6 lands, 6 giant bosses, bombs and barrel rolls, 7 planes to buy, paint and sell, a Workshop, Endless and a Daily Raid.</p><span class="play">PLAY</span></div>
     </a>
+    <a class="game" href="roborampart.html" style="--acc:#5cf2b4">
+      <canvas id="n12" width="160" height="90" aria-hidden="true"></canvas>
+      <div class="info"><h2>Robo Rampart</h2><p>NEW! Tower defense where YOU build the maze: 9 towers with 3 levels, 12 battlefields, giant mech bosses, commander powers, 7 robot commanders, a Tech Lab, Endless and a Daily Siege.</p><span class="play">PLAY</span></div>
+    </a>
   </div>
 
   <div class="games">
@@ -319,6 +323,11 @@ NP.n11=(x,t)=>{const g=x.createLinearGradient(0,0,0,90);g.addColorStop(0,'#5cb8f
   x.fillStyle='#fff';for(let k=0;k<3;k++){const cx=((k*70-t/30)%220+220)%220-30;x.beginPath();x.arc(cx,20+k*10,8,0,7);x.arc(cx+10,18+k*10,10,0,7);x.fill()}
   const y=42+Math.sin(t/400)*8;x.fillStyle='#5cd8ff';x.fillRect(36,y-12,8,24);x.fillStyle='#e8eef8';x.fillRect(24,y-3,30,6);x.fillStyle='#ffd23f';for(let k=0;k<3;k++)x.fillRect(60+((t/4+k*30)%90),y-1,8,2);
   x.fillStyle='#c84a4a';const ex=130+Math.sin(t/300)*6;x.beginPath();x.moveTo(ex-10,40);x.lineTo(ex+10,35);x.lineTo(ex+10,45);x.fill();x.fillStyle='#5a6a3a';x.fillRect(110,68,20,8)};
+NP.n12=(x,t)=>{for(let r=0;r<5;r++)for(let c=0;c<9;c++){x.fillStyle=(r+c)%2?'#2f5a34':'#34623a';x.fillRect(c*18,r*18,18,18)}
+  x.fillStyle='#6a6a7a';for(const[c,r]of[[3,0],[3,1],[3,2],[3,3],[6,1],[6,2],[6,3],[6,4]])x.fillRect(c*18+1,r*18+1,16,16);
+  x.fillStyle='#3ef0ff';x.beginPath();x.arc(4.5*18,4.5*18-9,6,0,7);x.fill();x.fillStyle='#ff3d9a';x.beginPath();x.arc(7.5*18,0.5*18+9,6,0,7);x.fill();
+  const path=[[0,2],[2,2],[2,4],[5,4],[5,0],[8,0],[8,2]];const p=(t/1600)%1,seg=p*(path.length-1),k=Math.floor(seg),f=seg-k,a=path[k],b=path[k+1]||a;
+  x.fillStyle='#7ac04a';x.fillRect((a[0]+(b[0]-a[0])*f)*18+4,(a[1]+(b[1]-a[1])*f)*18+4,10,10);x.strokeStyle='#3ef0ff';x.lineWidth=4;x.beginPath();x.arc(8.5*18,2.5*18,7,0,7);x.stroke()};
 function megaP(t){for(const id in NP){const c=document.getElementById(id);if(c)NP[id](c.getContext('2d'),t)}}
 NP.n1=(x,t)=>{x.fillStyle='#050a1e';x.fillRect(0,0,160,90);x.fillStyle='#fff';for(let i=0;i<30;i++){const y=((i*37+(still?0:t/20)*(1+i%3))%90);x.fillRect((i*53)%160,y,1+i%2,1+i%2)}
   const sx=80+Math.sin(still?0:t/600)*40;x.fillStyle='#3ef0ff';for(let i=0;i<5;i++){const y=(70-((still?0:t/4)+i*18)%70);x.fillRect(sx-3,y,2,5);x.fillRect(sx+2,y,2,5)}
