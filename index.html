@@ -132,6 +132,10 @@ h1{font-family:var(--display);font-weight:900;font-size:clamp(34px,9vw,64px);lin
       <canvas id="n20" width="160" height="90" aria-hidden="true"></canvas>
       <div class="info"><h2>Beat Blaster</h2><p>NEW! Rhythm game: hit the notes on the beat in 12 songs the game composes itself, on Easy, Normal or Hard. Long notes, fever mode, grades up to S, a Daily Jam and 6 stages to buy and sell.</p><span class="play">PLAY</span></div>
     </a>
+    <a class="game" href="pinballplanet.html" style="--acc:#3ef0ff">
+      <canvas id="n21" width="160" height="90" aria-hidden="true"></canvas>
+      <div class="info"><h2>Pinball Planet</h2><p>NEW! Real pinball physics: flippers, bumpers, slingshots, drop targets, skill shots, multiball and nudging. 3 tables with missions, 7 balls to buy and sell, and a one-ball Daily Table.</p><span class="play">PLAY</span></div>
+    </a>
   </div>
 
   <div class="games">
@@ -376,6 +380,8 @@ NP.n19=(x,t)=>{const g=x.createLinearGradient(0,0,0,90);g.addColorStop(0,'#8ad8a
   const E=['🥷', '⭐', '🏮', '🪙'];E.forEach((e,i)=>{x.font=(i?22:34)+'px sans-serif';const a=t/700+i*2.1,r=i?34:0;x.fillText(e,80+Math.cos(a)*r*1.4,46+Math.sin(a)*r*.7+(i?0:Math.sin(t/300)*4))})};
 NP.n20=(x,t)=>{const g=x.createLinearGradient(0,0,0,90);g.addColorStop(0,'#1a0a3a');g.addColorStop(1,'#0a0618');x.fillStyle=g;x.fillRect(0,0,160,90);x.textAlign='center';x.textBaseline='middle';
   const E=['🎵', '🎧', '⚡', '🎹'];E.forEach((e,i)=>{x.font=(i?22:34)+'px sans-serif';const a=t/700+i*2.1,r=i?34:0;x.fillText(e,80+Math.cos(a)*r*1.4,46+Math.sin(a)*r*.7+(i?0:Math.sin(t/300)*4))})};
+NP.n21=(x,t)=>{const g=x.createLinearGradient(0,0,0,90);g.addColorStop(0,'#14184a');g.addColorStop(1,'#05061a');x.fillStyle=g;x.fillRect(0,0,160,90);x.textAlign='center';x.textBaseline='middle';
+  const E=['🪐', '⚪', '💥', '🎰'];E.forEach((e,i)=>{x.font=(i?22:34)+'px sans-serif';const a=t/700+i*2.1,r=i?34:0;x.fillText(e,80+Math.cos(a)*r*1.4,46+Math.sin(a)*r*.7+(i?0:Math.sin(t/300)*4))})};
 function megaP(t){for(const id in NP){const c=document.getElementById(id);if(c)NP[id](c.getContext('2d'),t)}}
 NP.n1=(x,t)=>{x.fillStyle='#050a1e';x.fillRect(0,0,160,90);x.fillStyle='#fff';for(let i=0;i<30;i++){const y=((i*37+(still?0:t/20)*(1+i%3))%90);x.fillRect((i*53)%160,y,1+i%2,1+i%2)}
   const sx=80+Math.sin(still?0:t/600)*40;x.fillStyle='#3ef0ff';for(let i=0;i<5;i++){const y=(70-((still?0:t/4)+i*18)%70);x.fillRect(sx-3,y,2,5);x.fillRect(sx+2,y,2,5)}
