@@ -59,7 +59,7 @@ function login(p){const ex=A.accounts.find(a=>a.id===p.acct.id);
 // ================= ONLINE ACCOUNTS (Supabase) =================
 // Put your Supabase Project URL and its anon / publishable key here (Project Settings -> API). That key is meant to be
 // public: the database only lets it call the kz_* functions from supabase-setup.sql. NEVER put the service_role / secret key here.
-const CLOUD_URL='',CLOUD_KEY='';
+const CLOUD_URL='https://ahdidgzraaisooduipkt.supabase.co',CLOUD_KEY='sb_publishable_PMvvVoPQYgi9Awd4kmtz-Q_is5vBUfn';
 function cloudCfg(){const t=get(P+'cloudtest',null);return t||{url:CLOUD_URL,key:CLOUD_KEY}}
 const cloudOn=()=>!!cloudCfg().url&&!!cloudCfg().key;
 const ERR={kz_taken:'That username is already taken. Try another one.',kz_bad_name:'Usernames are 3 to 20 letters, numbers or _ (no spaces).',kz_short_pass:'The password must be at least 6 characters.',
