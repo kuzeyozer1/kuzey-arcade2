@@ -186,7 +186,7 @@ const MPG=[['starsiege','Star Siege','🚀'],['skyraiders','Sky Raiders','✈️
  ['words','Word Detective','🔎'],['beatblaster','Beat Blaster','🎵'],['bonjourparis','Bonjour Paris','🗼'],['snake','Neon Snake Rush','🐍'],['farm','Little Farmstead','🌾'],['gearworks','Gear Works','⚙️'],['craft','Kuzey Craft','⛏️']];
 const MODES={coop:['🤝','Fight together'],race:['🏁','Race']};
 const gameInfo=id=>MPG.find(g=>g[0]===id)||[id,id,'🎮'];
-const READY={};// games that can really be played together: id -> {start(room)}
+const READY={starsiege:'starsiege.html'};// games that can really be played together: id -> page
 let invSeen={},inbox=[],lobby=null;
 // ---- check for invites every few seconds (friend invites + game invites) ----
 async function poll(){const a=linked();if(!a||document.hidden)return;try{const r=await rpc('kz_inbox',{p_token:a.cloud.token});
@@ -234,11 +234,11 @@ async function openLobby(o){const a=linked();if(!a)return;if(lobby)lobby.leave()
     R.disabled=!other;R.textContent=ready?'✅ READY! (tap to wait)':'✋ I\'M READY';
     if(other&&ready&&other.ready&&!started){started=true;countdown()}};
   async function countdown(){for(const n of[3,2,1]){if(done)return;S.innerHTML=`<span class="mpcd">${n}</span>`;SFXping();await new Promise(r=>setTimeout(r,800))}if(done)return;
-    const G=READY[o.game];if(G){L.leave();G.start({room:o.room,mode:o.mode,host,me,channel:null})}
+    const G=READY[o.game];if(G){const other=Object.values(people).find(p=>p.u!==me)||{};L.leave();location.href=`${G}?mp=${encodeURIComponent(o.room)}&mm=${o.mode}&h=${host?1:0}&fn=${encodeURIComponent(other.name||'')}`;return}
     else if(location.pathname.endsWith('/'+o.game+'.html')||!READY[o.game]){N.innerHTML=`🛠️ <b>${esc(g[1])}</b> multiplayer is being built right now. You are connected, so it will work here as soon as the game part is ready!`;N.hidden=false;started=false;ready=false;track();draw()}}
   const track=()=>ch&&ch.track({u:me,name:a.name,avatar:a.avatar,color:a.color,ready});
   R.onclick=()=>{ready=!ready;track();draw()};draw();
-  try{await loadSB();if(!SB){const c=cloudCfg();SB=supabase.createClient(c.rtUrl||c.url,c.rtKey||c.key,{auth:{persistSession:false,autoRefreshToken:false}})}}catch(e){S.textContent=e.message;return}
+  try{await loadSB();if(!SB){const c=cloudCfg();SB=supabase.createClient(c.rtUrl||c.url,c.rtKey||c.key,{auth:{persistSession:false,autoRefreshToken:false},realtime:{params:{eventsPerSecond:40}}})}}catch(e){S.textContent=e.message;return}
   ch=SB.channel('kz:'+o.room,{config:{broadcast:{self:false},presence:{key:me}}});
   ch.on('presence',{event:'sync'},()=>{people={};const st=ch.presenceState();for(const k in st){const p=st[k][st[k].length-1];if(p)people[k]=p}
       const other=Object.values(people).find(p=>p.u!==me);if(other)had=true;S.textContent=other?`${other.name} is here! Tap READY when you are.`:had?'Your friend left the room.':(host?`Waiting for ${o.friend?o.friend.name:'your friend'} to join…`:'Joining…');draw()})
@@ -247,6 +247,19 @@ async function openLobby(o){const a=linked();if(!a)return;if(lobby)lobby.leave()
   if(host&&o.inviteId)iv=setInterval(async()=>{if(Object.values(people).some(p=>p.u!==me)){clearInterval(iv);return}try{const st=await rpc('kz_invite_status',{p_token:a.cloud.token,p_id:o.inviteId});
       if(st==='declined'){clearInterval(iv);S.textContent=`${o.friend.name} said no this time.`}else if(st==='expired'){clearInterval(iv);S.textContent=`${o.friend.name} didn't answer. Try again later!`}}catch(e){}},2500)}
 ERR.kz_not_friends='You can only invite friends.';ERR.kz_invite_gone='That invite is over.';
+
+// ---- live connection inside a game: KuzeyAccount.net(room) -> {me,send(type,data),on(type,fn),onPeer(fn),onLeave(fn),peer(),leave()} ----
+async function net(room){const a=linked();if(!a)throw new Error('Log in to your online account first.');await loadSB();
+  if(!SB){const c=cloudCfg();SB=supabase.createClient(c.rtUrl||c.url,c.rtKey||c.key,{auth:{persistSession:false,autoRefreshToken:false},realtime:{params:{eventsPerSecond:40}}})}
+  const me=a.cloud.user,H={},cb={peer:[],leave:[]};let peer=null,ok=false;
+  const ch=SB.channel('kz:'+room+':play',{config:{broadcast:{self:false},presence:{key:me}}});
+  ch.on('broadcast',{event:'m'},({payload})=>{const f=H[payload.e];if(f)try{f(payload.d)}catch(e){console.error(e)}})
+    .on('presence',{event:'sync'},()=>{const st=ch.presenceState();let o=null;for(const k in st)if(k!==me&&st[k].length)o=st[k][st[k].length-1];
+      if(o&&!peer){peer=o;cb.peer.forEach(f=>f(o))}else if(!o&&peer){peer=null;cb.leave.forEach(f=>f())}});
+  await new Promise((res,rej)=>{const t=setTimeout(()=>rej(new Error('Could not connect. Check the internet.')),15000);
+    ch.subscribe(s=>{if(s==='SUBSCRIBED'&&!ok){ok=true;clearTimeout(t);ch.track({u:me,name:a.name,avatar:a.avatar,color:a.color});res()}else if((s==='CHANNEL_ERROR'||s==='TIMED_OUT')&&!ok){clearTimeout(t);rej(new Error('Could not connect. Check the internet.'))}})});
+  return{me,name:a.name,avatar:a.avatar,color:a.color,send(e,d){ch.send({type:'broadcast',event:'m',payload:{e,d}}).catch(()=>{})},on(e,f){H[e]=f},
+    onPeer(f){cb.peer.push(f);if(peer)f(peer)},onLeave(f){cb.leave.push(f)},peer:()=>peer,leave(){try{SB.removeChannel(ch)}catch(e){}}}}
 
 // ---------- stats ----------
 function trophies(){let n=0,g=0;for(const k of liveKeys())if(k.startsWith('kuzey:ach:')){const c=Object.keys(get(k,{})).length;n+=c;if(c)g++}return{n,g}}
@@ -370,7 +383,7 @@ function loginUI(){modal(`<h2>📥 Log in from another device</h2><p>On your oth
 
 function toast(html){const t=document.createElement('div');t.className='acm';t.style.cssText='inset:auto 0 auto 0;top:calc(16px + env(safe-area-inset-top,0px));background:none;pointer-events:none';
   t.innerHTML=`<div class="bx" style="width:auto;max-width:90%;border-color:#ffd23f;padding:12px 16px;font-weight:600">${html}</div>`;document.body.appendChild(t);setTimeout(()=>t.remove(),3200)}
-window.KuzeyAccount={current:cur,menu,send,login:loginUI,switcher,cloud:cloudUI,sync,friends:friendsUI,multiplayer:mpUI,registerGame:(id,o)=>{READY[id]=o}};
+window.KuzeyAccount={current:cur,menu,send,login:loginUI,switcher,cloud:cloudUI,sync,friends:friendsUI,multiplayer:mpUI,net};
 const hub=()=>!!document.getElementById('acct');
 function start(){bar();poll();setInterval(poll,hub()?6000:8000);if(hub()){sync(false)}setInterval(()=>sync(!hub()),hub()?60000:90000)}
 document.addEventListener('visibilitychange',()=>{if(document.hidden)sync(true);else if(hub())sync(false)});
