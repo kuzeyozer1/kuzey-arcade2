@@ -161,8 +161,12 @@ a.btn{text-decoration:none}
 <div class="screen" id="sMC" hidden><div class="box"><button class="back" data-go="sMenu">← BACK</button><h2>⛏️ PARIS PACK</h2>
   <p class="mute" style="margin:0">A Minecraft Bedrock add-on made for your trip.</p>
   <div class="mc"><b>What's inside</b><br>🥖 <b>Baguette</b>: eat it, or hit mobs with it (7 damage!)<br>🥐 <b>Croissant</b> · 🍬 <b>Macaron</b> · 🫓 <b>Chocolate Crepe</b><br>🗼 A command that builds a <b>giant Eiffel Tower</b> (75 blocks high!)<br>🏛️ The <b>Arc de Triomphe</b> and a 🎆 fireworks show</div>
-  <a class="btn main" id="mcDl" href="paris-pack.mcaddon" download="paris-pack.mcaddon">⬇ DOWNLOAD PARIS PACK</a>
-  <div class="mc"><b>How to install (iPhone / iPad)</b><ol><li>Tap <b>Download</b> (do it <b>before</b> the flight, it needs internet).</li><li>Open the <b>Files</b> app → Downloads → tap <b>paris-pack.mcaddon</b> and choose <b>Minecraft</b> (or tap Share → Minecraft).</li><li>Minecraft says "Import started" then "Successfully imported".</li><li>Create a world → <b>Behavior Packs</b> → activate <b>Paris Pack</b> (the textures turn on by themselves).</li><li>Turn <b>Cheats</b> on so the commands work.</li></ol></div>
+  <button class="btn main" id="mcShare">📲 SEND TO MINECRAFT</button>
+  <p class="mute center" id="mcShareNote" style="margin:0;font-size:13px">Opens the share menu: pick <b>Minecraft</b> (scroll the apps or tap <b>More</b>).</p>
+  <a class="btn" id="mcDl" href="paris-pack.mcaddon" download="paris-pack.mcaddon"><span class="ic">⬇</span><span>DOWNLOAD THE FILE<small>Then in Files: hold it → Share → Minecraft</small></span></a>
+  <div class="row"><a class="btn" href="paris-pack-bp.mcpack" download="paris-pack-bp.mcpack"><span class="ic">1️⃣</span><span>BEHAVIOR PACK<small>.mcpack, if the one above won't import</small></span></a>
+    <a class="btn" href="paris-pack-rp.mcpack" download="paris-pack-rp.mcpack"><span class="ic">2️⃣</span><span>TEXTURE PACK<small>.mcpack, import this one too</small></span></a></div>
+  <div class="mc"><b>How to install (iPhone / iPad)</b><ol><li>Tap <b>📲 SEND TO MINECRAFT</b> and choose <b>Minecraft</b> in the share menu (it needs internet the first time).</li><li>If your iPad shows strange letters instead, that means it opened the file as text. Close it, open the <b>Files</b> app → Downloads, <b>hold</b> paris-pack.mcaddon → <b>Share</b> → <b>Minecraft</b>.</li><li>Minecraft says "Import started" then "Successfully imported".</li><li>Create a world → <b>Behavior Packs</b> → activate <b>Paris Pack</b> (the textures turn on by themselves).</li><li>Turn <b>Cheats</b> on so the commands work.</li></ol></div>
   <div class="mc"><b>Commands</b> (type them in chat)<br><code>/function paris/help</code> list of everything<br><code>/function paris/eiffel</code> builds the tower in front of you<br><code>/function paris/arc</code> Arc de Triomphe<br><code>/function paris/kit</code> free Paris snacks<br><code>/function paris/fireworks</code> night show 🎆<br><br><b>Recipes</b> (crafting table)<br>🥖 3 wheat in a diagonal line<br>🥐 2 wheat + 1 egg<br>🍬 sugar + egg + pink dye → 4 macarons<br>🫓 wheat + egg + sugar + cocoa beans<br><br>💡 Tip: build the tower in a <b>flat</b> or <b>creative</b> world. Stand where you want it, look forward, then type the command. It appears 24 blocks ahead.</div>
 </div></div>
 <div class="screen" id="sHelp" hidden><div class="box help"><button class="back" data-go="sMenu">← BACK</button><h2>✈️ PLANE TIPS</h2>
@@ -437,7 +441,12 @@ ONSHOW.sStick=()=>{$('stList').innerHTML=STICKERS.map(s=>{const got=D.stick[s.id
 $('whoEdit').onclick=()=>UI.profileEditor(ONSHOW.sMenu);
 $('mCatch').onclick=()=>{SFX.click();startCatch()};$('mDash').onclick=()=>{SFX.click();startDash()};
 $('mWords').onclick=()=>{SFX.click();startWords()};$('mQuiz').onclick=()=>{SFX.click();startQuiz()};
-$('mPhrase').onclick=()=>{SFX.click();show('sPhrase')};$('mStick').onclick=()=>{SFX.click();show('sStick')};$('mMC').onclick=()=>{SFX.click();show('sMC')};$('mHelp').onclick=()=>{SFX.click();show('sHelp')};
+$('mPhrase').onclick=()=>{SFX.click();show('sPhrase')};$('mStick').onclick=()=>{SFX.click();show('sStick')};$('mcShare').onclick=async()=>{const note=$('mcShareNote');try{const r=await fetch('paris-pack.mcaddon');const blob=await r.blob();
+  const f=new File([blob],'paris-pack.mcaddon',{type:'application/octet-stream'});
+  if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});note.innerHTML='Did you pick <b>Minecraft</b>? It should say <b>Import started</b>.'}
+  else{$('mcDl').click();note.innerHTML='Downloaded! Now open <b>Files</b> → Downloads, hold the file → <b>Share</b> → <b>Minecraft</b>.'}}
+  catch(e){if(e&&e.name==='AbortError')return;note.textContent='Could not open the share menu. Use DOWNLOAD THE FILE below instead.'}};
+$('mMC').onclick=()=>{SFX.click();show('sMC')};$('mHelp').onclick=()=>{SFX.click();show('sHelp')};
 $('mAch').onclick=()=>UI.achievements(GAME,'Bonjour Paris awards');$('mSound').onclick=()=>{SFX.toggle();ONSHOW.sMenu()};
 $('eMenu').onclick=()=>{G=null;show('sMenu')};
 show('sMenu');
