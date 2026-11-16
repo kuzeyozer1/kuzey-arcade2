@@ -222,3 +222,70 @@ revoke all on function public.kz_people(text,text), public.kz_friend_invite(text
   public.kz_friend_remove(text,text), public.kz_friend_count(text) from public;
 grant execute on function public.kz_people(text,text), public.kz_friend_invite(text,text), public.kz_friend_answer(text,text,boolean),
   public.kz_friend_remove(text,text), public.kz_friend_count(text) to anon, authenticated;
+
+-- ================= GAME INVITES =================
+-- An invite to play a game together. room = the secret name of the live game room both players join.
+create table if not exists public.kz_invites(
+  id         uuid primary key default gen_random_uuid(),
+  sender     text not null references public.kz_accounts(username) on delete cascade,
+  receiver   text not null references public.kz_accounts(username) on delete cascade,
+  game       text not null check (game ~ '^[a-z0-9-]{2,30}$'),
+  mode       text not null check (mode in ('coop','race')),
+  room       text not null,
+  status     text not null default 'waiting' check (status in ('waiting','accepted','declined','cancelled')),
+  created_at timestamptz not null default now());
+create index if not exists kz_invites_to on public.kz_invites(receiver, status, created_at);
+alter table public.kz_invites enable row level security;
+revoke all on public.kz_invites from anon, authenticated;
+
+-- invite a friend (only friends can be invited). Invites last 2 minutes.
+create or replace function public.kz_game_invite(p_token text, p_to text, p_game text, p_mode text)
+returns json language plpgsql security definer set search_path = public, extensions as $$
+declare me text := kz_user_for(p_token); them text := lower(trim(p_to)); r text := encode(extensions.gen_random_bytes(12), 'hex'); i uuid;
+begin
+  if not exists(select 1 from kz_friends where status = 'friends' and ((a = me and b = them) or (a = them and b = me))) then raise exception 'kz_not_friends'; end if;
+  if (select count(*) from kz_invites where sender = me and created_at > now() - interval '1 minute') >= 10 then raise exception 'kz_slow_down'; end if;
+  update kz_invites set status = 'cancelled' where sender = me and status = 'waiting';
+  delete from kz_invites where created_at < now() - interval '1 day';
+  insert into kz_invites(sender, receiver, game, mode, room) values (me, them, p_game, p_mode, r) returning id into i;
+  return json_build_object('id', i, 'room', r);
+end $$;
+
+-- invites waiting for me + friend-invite count (checked every few seconds)
+create or replace function public.kz_inbox(p_token text) returns json
+language plpgsql security definer set search_path = public, extensions as $$
+declare me text := kz_user_for(p_token);
+begin
+  return json_build_object(
+    'requests', (select count(*) from kz_friends where b = me and status = 'pending'),
+    'invites', coalesce((select json_agg(json_build_object('id', i.id, 'from', i.sender, 'game', i.game, 'mode', i.mode, 'room', i.room,
+        'name', coalesce(acc.profile->>'name', i.sender), 'avatar', coalesce(acc.profile->>'avatar','🦊'), 'color', coalesce(acc.profile->>'color','#3ef0ff')) order by i.created_at desc)
+      from kz_invites i join kz_accounts acc on acc.username = i.sender
+      where i.receiver = me and i.status = 'waiting' and i.created_at > now() - interval '2 minutes'), '[]'::json));
+end $$;
+
+-- say yes or no to a game invite (yes gives back the room to join)
+create or replace function public.kz_invite_answer(p_token text, p_id uuid, p_accept boolean) returns json
+language plpgsql security definer set search_path = public, extensions as $$
+declare me text := kz_user_for(p_token); i kz_invites;
+begin
+  select * into i from kz_invites where id = p_id and receiver = me;
+  if i.id is null or i.status <> 'waiting' or i.created_at < now() - interval '2 minutes' then raise exception 'kz_invite_gone'; end if;
+  update kz_invites set status = case when p_accept then 'accepted' else 'declined' end where id = p_id;
+  return json_build_object('game', i.game, 'mode', i.mode, 'room', i.room, 'from', i.sender, 'accepted', p_accept);
+end $$;
+
+-- the person who invited checks the answer, or cancels
+create or replace function public.kz_invite_status(p_token text, p_id uuid, p_cancel boolean default false) returns text
+language plpgsql security definer set search_path = public, extensions as $$
+declare me text := kz_user_for(p_token); s text; t timestamptz;
+begin
+  if p_cancel then update kz_invites set status = 'cancelled' where id = p_id and sender = me and status = 'waiting'; end if;
+  select status, created_at into s, t from kz_invites where id = p_id and sender = me;
+  if s is null then raise exception 'kz_invite_gone'; end if;
+  if s = 'waiting' and t < now() - interval '2 minutes' then return 'expired'; end if;
+  return s;
+end $$;
+
+revoke all on function public.kz_game_invite(text,text,text,text), public.kz_inbox(text), public.kz_invite_answer(text,uuid,boolean), public.kz_invite_status(text,uuid,boolean) from public;
+grant execute on function public.kz_game_invite(text,text,text,text), public.kz_inbox(text), public.kz_invite_answer(text,uuid,boolean), public.kz_invite_status(text,uuid,boolean) to anon, authenticated;

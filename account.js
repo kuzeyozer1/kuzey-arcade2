@@ -151,7 +151,7 @@ function friendsUI(){const a=linked();
     <div class="aclist" id="frL"><p>Loading…</p></div><button class="acb alt" data-x>CLOSE</button>`,(m,close)=>{
     const L=m.querySelector('#frL'),Q=m.querySelector('#frQ');let t=null;
     const tabs=()=>m.querySelectorAll('[data-ft]').forEach(b=>b.classList.toggle('alt',b.dataset.ft!==frTab));
-    const row=p=>{const btn=p.rel==='friend'?`<span class="frok">✓ Friends</span><button class="frx" data-act="remove" aria-label="Remove friend">✕</button>`
+    const row=p=>{const btn=p.rel==='friend'?`<button class="frb" data-act="play">🎮 PLAY</button><button class="frx" data-act="remove" aria-label="Remove friend">✕</button>`
         :p.rel==='sent'?`<button class="frb alt" data-act="remove">Invited · cancel</button>`
         :p.rel==='received'?`<button class="frb" data-act="accept">✓ Accept</button><button class="frb alt" data-act="no">No</button>`
         :`<button class="frb" data-act="invite">＋ Invite</button>`;
@@ -163,7 +163,7 @@ function friendsUI(){const a=linked();
       L.querySelectorAll('[data-act]').forEach(b=>b.onclick=()=>act(b.closest('[data-u]').dataset.u,b.dataset.act,b))}
     async function load(){try{frList=await rpc('kz_people',{p_token:a.cloud.token,p_search:frTab==='all'?Q.value:''});frReq=frList.filter(p=>p.rel==='received').length;frBadge();draw()}
       catch(e){L.innerHTML=`<p class="acerr">${esc(e.message)}</p>`}}
-    async function act(u,what,b){if(frBusy)return;const p=frList.find(x=>x.username===u);
+    async function act(u,what,b){if(frBusy)return;const p=frList.find(x=>x.username===u);if(what==='play'){close();pickGame(p);return}
       if(what==='remove'&&p.rel==='friend'&&!confirm(`Stop being friends with ${p.name}?`))return;
       frBusy=true;b.disabled=true;try{
         if(what==='invite'){p.rel=await rpc('kz_friend_invite',{p_token:a.cloud.token,p_to:u});toast(p.rel==='friend'?`🎉 You and ${esc(p.name)} are friends now!`:`📨 Invite sent to ${esc(p.name)}`)}
@@ -176,6 +176,77 @@ function friendsUI(){const a=linked();
     if(frReq>0)frTab='invites';draw();load();
     const iv=setInterval(()=>{if(!document.body.contains(m))return clearInterval(iv);if(!document.hidden&&!frBusy&&!(frTab==='all'&&Q.value))load()},20000)})}
 ERR.kz_no_user='That player does not exist any more.';ERR.kz_too_many='You have 50 invites waiting already. Wait for some answers first.';
+
+// ================= MULTIPLAYER: invite a friend, then meet in a live room =================
+// Games say they can be played together with KuzeyAccount.registerGame(id,{start(room)}). Until a game does, the lobby says it is coming soon.
+const MPG=[['starsiege','Star Siege','🚀'],['skyraiders','Sky Raiders','✈️'],['galaxyguardian','Galaxy Guardian','👾'],['neonswarm','Neon Swarm','🔷'],['monstersurvivors','Monster Survivors','🧟'],
+ ['tankcommander','Tank Commander','🛡️'],['dodger','Space Dodger','☄️'],['temples','Five Temples','🏛️'],['voidbridge','Void Bridge','🌉'],['bastion','Bastion Defense','🏰'],['roborampart','Robo Rampart','🤖'],
+ ['castlesiege','Castle Siege','🏯'],['cardquest','Card Quest','🃏'],['crypt','Crypt Crawler','💀'],['turbotrails','Turbo Trails','🏎️'],['ninjarun','Ninja Run','🥷'],['pixelpeaks','Pixel Peaks','⛰️'],
+ ['minigolf','Mini Golf World','⛳'],['goalrush','Goal Rush','⚽'],['pinballplanet','Pinball Planet','🪐'],['gemcascade','Gem Cascade','💎'],['stack','Tower Stack','🧱'],['laser','Laser Labyrinth','🔦'],
+ ['words','Word Detective','🔎'],['beatblaster','Beat Blaster','🎵'],['bonjourparis','Bonjour Paris','🗼'],['snake','Neon Snake Rush','🐍'],['farm','Little Farmstead','🌾'],['gearworks','Gear Works','⚙️'],['craft','Kuzey Craft','⛏️']];
+const MODES={coop:['🤝','Fight together'],race:['🏁','Race']};
+const gameInfo=id=>MPG.find(g=>g[0]===id)||[id,id,'🎮'];
+const READY={};// games that can really be played together: id -> {start(room)}
+let invSeen={},inbox=[],lobby=null;
+// ---- check for invites every few seconds (friend invites + game invites) ----
+async function poll(){const a=linked();if(!a||document.hidden)return;try{const r=await rpc('kz_inbox',{p_token:a.cloud.token});
+  const before=frReq;frReq=r.requests;frBadge();if(frReq>before&&poll.done)toast('👋 You have a new friend invite!');poll.done=true;
+  inbox=r.invites||[];if(popOpen&&!inbox.some(i=>i.id===popOpen.id)){popOpen.close();popOpen=null}
+  const i=inbox[0];if(i&&!invSeen[i.id]&&!lobby&&!popOpen){invSeen[i.id]=1;invitePop(i)}}catch(e){}}
+let popOpen=null;
+function invitePop(i){const g=gameInfo(i.game),md=MODES[i.mode];try{SFXping()}catch(e){}
+  modal(`<div class="mpinv"><div class="achead">${av(i)}<div><b>${esc(i.name)}</b><p>wants to play with you!</p></div></div>
+    <div class="mpgame"><span>${g[2]}</span><div><b>${esc(g[1])}</b><small>${md[0]} ${md[1]}</small></div></div>
+    <div class="row"><button class="acb alt" id="ivNo">NO THANKS</button><button class="acb" id="ivGo">🎮 JOIN</button></div></div>`,(m,close)=>{
+    const t=setTimeout(()=>{close();popOpen=null},110000);popOpen={id:i.id,close:()=>{clearTimeout(t);close()}};
+    m.querySelector('#ivNo').onclick=async()=>{clearTimeout(t);close();popOpen=null;try{await rpc('kz_invite_answer',{p_token:linked().cloud.token,p_id:i.id,p_accept:false})}catch(e){}};
+    m.querySelector('#ivGo').onclick=async()=>{clearTimeout(t);close();popOpen=null;try{const r=await rpc('kz_invite_answer',{p_token:linked().cloud.token,p_id:i.id,p_accept:true});openLobby({room:r.room,game:r.game,mode:r.mode,host:r.from,friend:i})}
+      catch(e){toast(e.code==='kz_invite_gone'?'That invite is over. Ask your friend to invite you again!':esc(e.message))}}})}
+function SFXping(){const K=window.KIT;if(K&&K.sfx)K.sfx.power()}
+// ---- the MULTIPLAYER button: friends list -> game -> mode -> invite ----
+function mpUI(preGame){const a=linked();if(!a){friendsUI();return}
+  modal(`<h2>🎮 Multiplayer</h2><p>Who do you want to play with?</p><div class="aclist" id="mpL"><p>Loading friends…</p></div><button class="acb alt" data-x>CLOSE</button>`,async(m,close)=>{
+    const L=m.querySelector('#mpL');let list;try{list=(await rpc('kz_people',{p_token:a.cloud.token,p_search:''})).filter(p=>p.rel==='friend')}catch(e){L.innerHTML=`<p class="acerr">${esc(e.message)}</p>`;return}
+    list.sort((x,y)=>(y.online-x.online));
+    L.innerHTML=list.length?list.map(p=>`<button class="acitem" data-u="${esc(p.username)}">${av(p)}<div class="frname">${esc(p.name)} <i class="frol ${p.online?'on':''}"></i><small>${p.online?'Online now':'Offline · they will only see it if they open Kuzey Arcade'}</small></div><span class="frb">INVITE</span></button>`).join('')
+      :`<p>You have no friends yet. Tap <b>👥 FRIENDS</b> → <b>EVERYONE</b> and invite someone first!</p><button class="acb" id="mpF">👥 FIND FRIENDS</button>`;
+    const f=m.querySelector('#mpF');if(f)f.onclick=()=>{close();frTab='all';friendsUI()};
+    L.querySelectorAll('[data-u]').forEach(b=>b.onclick=()=>{const p=list.find(x=>x.username===b.dataset.u);close();preGame?pickMode(p,preGame):pickGame(p)})})}
+function pickGame(p){modal(`<div class="achead">${av(p)}<div><b>${esc(p.name)}</b><p>Which game?</p></div></div><div class="mpgrid">${MPG.map(g=>`<button data-g="${g[0]}"><span>${g[2]}</span>${esc(g[1])}${READY[g[0]]?'':'<small>soon</small>'}</button>`).join('')}</div><button class="acb alt" data-x>BACK</button>`,(m,close)=>{
+  m.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>{close();pickMode(p,b.dataset.g)})})}
+function pickMode(p,game){const g=gameInfo(game);modal(`<div class="mpgame"><span>${g[2]}</span><div><b>${esc(g[1])}</b><small>with ${esc(p.name)}</small></div></div>
+  <button class="acb big" data-md="coop"><span>🤝</span><div>Fight together<small>Same team: help each other win</small></div></button>
+  <button class="acb big" data-md="race"><span>🏁</span><div>Race<small>Who is the best? First one wins</small></div></button><button class="acb alt" data-x>BACK</button>`,(m,close)=>{
+  m.querySelectorAll('[data-md]').forEach(b=>b.onclick=async()=>{b.disabled=true;try{const r=await rpc('kz_game_invite',{p_token:linked().cloud.token,p_to:p.username,p_game:game,p_mode:b.dataset.md});close();
+    openLobby({room:r.room,game,mode:b.dataset.md,host:linked().cloud.user,friend:p,inviteId:r.id})}catch(e){b.disabled=false;toast(esc(e.message))}})})}
+// ---- the live room ----
+let SB=null;function loadSB(){return new Promise((ok,no)=>{if(window.supabase)return ok();const s=document.createElement('script');s.src='supabase.js';s.onload=ok;s.onerror=()=>no(new Error('Could not load the multiplayer part. Check the internet.'));document.head.appendChild(s)})}
+async function openLobby(o){const a=linked();if(!a)return;if(lobby)lobby.leave();const g=gameInfo(o.game),md=MODES[o.mode],me=a.cloud.user,host=o.host===me;
+  let close=modal(`<h2>🎮 ${esc(g[1])}</h2><p>${md[0]} ${md[1]}</p><div class="mpplayers" id="lbP"></div><p id="lbS" class="mpstat">Connecting…</p><p id="lbN" class="mpnote" hidden></p>
+    <button class="acb" id="lbR" disabled>✋ I'M READY</button><button class="acb alt" id="lbX">LEAVE</button>`,()=>{});
+  const M=[...document.querySelectorAll('.acm')].pop();M.dataset.sticky=1;const P=M.querySelector('#lbP'),S=M.querySelector('#lbS'),R=M.querySelector('#lbR');
+  let ready=false,ch=null,iv=null,done=false,started=false,people={},had=false;const N=M.querySelector('#lbN');
+  const L=lobby={leave(){if(done)return;done=true;clearInterval(iv);try{ch&&ch.send({type:'broadcast',event:'bye',payload:{u:me}});ch&&SB.removeChannel(ch)}catch(e){}lobby=null;close()},o};
+  M.querySelector('#lbX').onclick=async()=>{if(host&&o.inviteId&&!Object.keys(people).some(k=>k!==me))try{await rpc('kz_invite_status',{p_token:a.cloud.token,p_id:o.inviteId,p_cancel:true})}catch(e){}L.leave()};
+  const draw=()=>{const list=[{u:me,name:a.name,avatar:a.avatar,color:a.color,ready}];const other=Object.values(people).find(p=>p.u!==me);
+    if(other)list.push(other);else list.push({u:'',name:o.friend?o.friend.name:'Friend',avatar:o.friend?o.friend.avatar:'❔',color:'#55507a',wait:true});
+    P.innerHTML=list.map(p=>`<div class="mpp ${p.wait?'wait':''}">${av(p)}<b>${esc(p.name)}</b><small>${p.wait?'⏳ not here yet':p.ready?'✅ READY':'…getting ready'}</small></div>`).join('<span class="mpvs">'+(o.mode==='race'?'VS':'＋')+'</span>');
+    R.disabled=!other;R.textContent=ready?'✅ READY! (tap to wait)':'✋ I\'M READY';
+    if(other&&ready&&other.ready&&!started){started=true;countdown()}};
+  async function countdown(){for(const n of[3,2,1]){if(done)return;S.innerHTML=`<span class="mpcd">${n}</span>`;SFXping();await new Promise(r=>setTimeout(r,800))}if(done)return;
+    const G=READY[o.game];if(G){L.leave();G.start({room:o.room,mode:o.mode,host,me,channel:null})}
+    else if(location.pathname.endsWith('/'+o.game+'.html')||!READY[o.game]){N.innerHTML=`🛠️ <b>${esc(g[1])}</b> multiplayer is being built right now. You are connected, so it will work here as soon as the game part is ready!`;N.hidden=false;started=false;ready=false;track();draw()}}
+  const track=()=>ch&&ch.track({u:me,name:a.name,avatar:a.avatar,color:a.color,ready});
+  R.onclick=()=>{ready=!ready;track();draw()};draw();
+  try{await loadSB();if(!SB){const c=cloudCfg();SB=supabase.createClient(c.rtUrl||c.url,c.rtKey||c.key,{auth:{persistSession:false,autoRefreshToken:false}})}}catch(e){S.textContent=e.message;return}
+  ch=SB.channel('kz:'+o.room,{config:{broadcast:{self:false},presence:{key:me}}});
+  ch.on('presence',{event:'sync'},()=>{people={};const st=ch.presenceState();for(const k in st){const p=st[k][st[k].length-1];if(p)people[k]=p}
+      const other=Object.values(people).find(p=>p.u!==me);if(other)had=true;S.textContent=other?`${other.name} is here! Tap READY when you are.`:had?'Your friend left the room.':(host?`Waiting for ${o.friend?o.friend.name:'your friend'} to join…`:'Joining…');draw()})
+    .on('broadcast',{event:'bye'},({payload})=>{if(payload.u!==me){S.textContent='Your friend left the room.';ready=false;track()}})
+    .subscribe(s=>{if(s==='SUBSCRIBED'){track();if(!Object.keys(people).length)S.textContent=host?`Waiting for ${o.friend?o.friend.name:'your friend'} to answer…`:'Joining…'}else if(s==='CHANNEL_ERROR'||s==='TIMED_OUT')S.textContent='Connection problem. Check the internet and try again.'});
+  if(host&&o.inviteId)iv=setInterval(async()=>{if(Object.values(people).some(p=>p.u!==me)){clearInterval(iv);return}try{const st=await rpc('kz_invite_status',{p_token:a.cloud.token,p_id:o.inviteId});
+      if(st==='declined'){clearInterval(iv);S.textContent=`${o.friend.name} said no this time.`}else if(st==='expired'){clearInterval(iv);S.textContent=`${o.friend.name} didn't answer. Try again later!`}}catch(e){}},2500)}
+ERR.kz_not_friends='You can only invite friends.';ERR.kz_invite_gone='That invite is over.';
 
 // ---------- stats ----------
 function trophies(){let n=0,g=0;for(const k of liveKeys())if(k.startsWith('kuzey:ach:')){const c=Object.keys(get(k,{})).length;n+=c;if(c)g++}return{n,g}}
@@ -206,22 +277,30 @@ const css=`
 .acitem.on{border-color:#ffd23f}.acitem .acav{width:40px;height:40px;font-size:22px}.acitem small{display:block;color:#9a94c9;font-size:12px}
 .acerr{color:#ff7a9a;font-weight:600;min-height:1.2em}
 .achead{display:flex;align-items:center;gap:12px}.achead b{font:900 22px Orbitron,monospace}
-.acrow{display:flex;gap:10px;margin-top:14px}.acrow .acbar{margin-top:0;flex:1;min-width:0}
-.frbtn{position:relative;flex:none;width:96px;border:2px solid var(--line,#2c2468);background:var(--panel,#151036);border-radius:16px;color:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font:900 11px Orbitron,monospace;letter-spacing:.06em}
-.frbtn span{font-size:28px}.frbtn:hover{border-color:var(--pink,#ff3d9a)}
+.acrow{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}.acrow .acbar{margin-top:0;flex:1 1 100%;min-width:0}
+.frbtn{position:relative;flex:1;height:54px;border:2px solid var(--line,#2c2468);background:var(--panel,#151036);border-radius:16px;color:inherit;cursor:pointer;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:8px;font:900 13px Orbitron,monospace;letter-spacing:.06em}
+.frbtn span{font-size:24px}.frbtn:hover{border-color:var(--pink,#ff3d9a)}
 .frbtn b,.frdot{position:absolute;top:-6px;right:-6px;min-width:22px;height:22px;border-radius:11px;background:#ff3d5a;color:#fff;font:900 12px system-ui;display:grid;place-items:center;padding:0 5px}
 .frdot{position:static;display:inline-grid;margin-left:4px}.frbtn b[hidden],.frdot[hidden]{display:none}
 .frtabs .acb{padding:10px 6px;font-size:11px}
 .frrow{cursor:default}.frname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}.fract{display:flex;gap:6px;align-items:center;flex:none}
 .frb{border:0;border-radius:10px;padding:9px 10px;font:900 11px Orbitron,monospace;background:#ffd23f;color:#0b0820;cursor:pointer;white-space:nowrap}.frb.alt{background:#1d1748;color:#ecebff;border:2px solid #2c2468}
 .frx{border:0;background:none;color:#9a94c9;font-size:18px;cursor:pointer;padding:4px}.frok{color:#5cf2b4;font-weight:600;font-size:13px;white-space:nowrap}
-.frol{display:inline-block;width:9px;height:9px;border-radius:50%;background:#55507a;margin-left:2px}.frol.on{background:#5cf2b4;box-shadow:0 0 6px #5cf2b4}`;
+.frol{display:inline-block;width:9px;height:9px;border-radius:50%;background:#55507a;margin-left:2px}.frol.on{background:#5cf2b4;box-shadow:0 0 6px #5cf2b4}
+.mpbtn{border-color:var(--cyan,#3ef0ff)}.mpbtn:hover{border-color:var(--gold,#ffd23f)}
+.mpgame{display:flex;align-items:center;gap:12px;background:#0b0820;border:2px solid #2c2468;border-radius:14px;padding:10px 12px}.mpgame span{font-size:34px}.mpgame b{font:900 17px Orbitron,monospace;display:block}.mpgame small{color:#9a94c9}
+.mpinv{display:flex;flex-direction:column;gap:12px}
+.mpgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px}.mpgrid button{border:2px solid #2c2468;background:#0b0820;color:#fff;border-radius:12px;padding:8px 4px;cursor:pointer;font:600 12px 'Chakra Petch',sans-serif;display:flex;flex-direction:column;align-items:center;gap:2px}
+.mpgrid button span{font-size:28px}.mpgrid small{color:#9a94c9;font-size:10px}.mpgrid button:hover{border-color:#ffd23f}
+.mpplayers{display:flex;align-items:center;justify-content:center;gap:10px}.mpp{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;background:#0b0820;border:2px solid #2c2468;border-radius:14px;padding:12px 6px;text-align:center}
+.mpp .acav{width:60px;height:60px;font-size:34px}.mpp.wait{opacity:.5}.mpp small{color:#9a94c9}.mpvs{font:900 20px Orbitron,monospace;color:#ff3d9a}
+.mpstat{text-align:center;min-height:2.6em}.mpnote{background:#1d1748;border-left:4px solid #ffd23f;border-radius:8px;padding:10px 12px;font-size:14px}.mpcd{font:900 54px Orbitron,monospace;color:#ffd23f}`;
 const st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
 function modal(html,bind){const m=document.createElement('div');m.className='acm';m.innerHTML=`<div class="bx">${html}</div>`;document.body.appendChild(m);
-  const close=()=>m.remove();m.addEventListener('click',e=>{if(e.target===m)close()});m.querySelectorAll('[data-x]').forEach(b=>b.onclick=close);bind&&bind(m,close);return close}
+  const close=()=>m.remove();m.addEventListener('click',e=>{if(e.target===m&&!m.dataset.sticky)close()});m.querySelectorAll('[data-x]').forEach(b=>b.onclick=close);bind&&bind(m,close);return close}
 const av=(a,cls='')=>`<span class="acav ${cls}" style="border-color:${a.color};background:${a.color}22">${a.avatar}</span>`;
 function bar(){const el=document.getElementById('acct');if(!el)return;const a=cur(),t=trophies();
-  el.innerHTML=`<div class="acrow"><button class="acbar" id="acOpen">${av(a)}<span><b>${esc(a.name)}</b><small>${a.fresh?'Tap to create your account':`🏆 ${t.n} trophies · ${A.accounts.length>1?A.accounts.length+' players on this device':'Your account'}`}<br><span id="acSync">${a.cloud?(syncMsg||(a.cloud.token?'☁️ Online: '+esc(a.cloud.user):'☁️ Logged out · tap to log in')):cloudOn()&&!a.fresh?'☁️ Not online yet · tap to save online':''}</span></small></span><span class="go">${a.fresh?'CREATE':'ACCOUNT'}</span></button>${cloudOn()?'<button class="frbtn" id="frOpen" aria-label="Friends"><span>👥</span>FRIENDS<b id="frN" hidden>0</b></button>':''}</div>`;const fo=document.getElementById('frOpen');if(fo)fo.onclick=friendsUI;frBadge();
+  el.innerHTML=`<div class="acrow"><button class="acbar" id="acOpen">${av(a)}<span><b>${esc(a.name)}</b><small>${a.fresh?'Tap to create your account':`🏆 ${t.n} trophies · ${A.accounts.length>1?A.accounts.length+' players on this device':'Your account'}`}<br><span id="acSync">${a.cloud?(syncMsg||(a.cloud.token?'☁️ Online: '+esc(a.cloud.user):'☁️ Logged out · tap to log in')):cloudOn()&&!a.fresh?'☁️ Not online yet · tap to save online':''}</span></small></span><span class="go">${a.fresh?'CREATE':'ACCOUNT'}</span></button>${cloudOn()?'<button class="frbtn mpbtn" id="mpOpen" aria-label="Multiplayer"><span>🎮</span>MULTIPLAYER</button><button class="frbtn" id="frOpen" aria-label="Friends"><span>👥</span>FRIENDS<b id="frN" hidden>0</b></button>':''}</div>`;const fo=document.getElementById('frOpen');if(fo)fo.onclick=friendsUI;const mo=document.getElementById('mpOpen');if(mo)mo.onclick=()=>mpUI();frBadge();
   document.getElementById('acOpen').onclick=()=>{const c=cur();c.fresh?editor(c,true):c.cloud&&!c.cloud.token?cloudForm('login',c.cloud.user):menu()}}
 
 function menu(){const a=cur(),t=trophies(),kb=Math.ceil(bytes()/1024);
@@ -291,9 +370,9 @@ function loginUI(){modal(`<h2>📥 Log in from another device</h2><p>On your oth
 
 function toast(html){const t=document.createElement('div');t.className='acm';t.style.cssText='inset:auto 0 auto 0;top:calc(16px + env(safe-area-inset-top,0px));background:none;pointer-events:none';
   t.innerHTML=`<div class="bx" style="width:auto;max-width:90%;border-color:#ffd23f;padding:12px 16px;font-weight:600">${html}</div>`;document.body.appendChild(t);setTimeout(()=>t.remove(),3200)}
-window.KuzeyAccount={current:cur,menu,send,login:loginUI,switcher,cloud:cloudUI,sync,friends:friendsUI};
+window.KuzeyAccount={current:cur,menu,send,login:loginUI,switcher,cloud:cloudUI,sync,friends:friendsUI,multiplayer:mpUI,registerGame:(id,o)=>{READY[id]=o}};
 const hub=()=>!!document.getElementById('acct');
-function start(){bar();if(hub()){sync(false);frPoll();setInterval(frPoll,30000)}setInterval(()=>sync(!hub()),hub()?60000:90000)}
+function start(){bar();poll();setInterval(poll,hub()?6000:8000);if(hub()){sync(false)}setInterval(()=>sync(!hub()),hub()?60000:90000)}
 document.addEventListener('visibilitychange',()=>{if(document.hidden)sync(true);else if(hub())sync(false)});
 addEventListener('online',()=>sync(!hub()));
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
