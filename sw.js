@@ -1,5 +1,5 @@
 // Caches the arcade so it works offline. Bump VERSION when files change.
-const VERSION = 'arcade-v50';
+const VERSION = 'arcade-v51';
 const FILES = ['./', 'index.html', 'snake.html', 'temples.html', 'stack.html', 'dodger.html', 'words.html', 'bandit.html', 'craft.html', 'voidbridge.html', 'kit.js', 'cardquest.html', 'pinballplanet.html', 'beatblaster.html', 'ninjarun.html', 'gemcascade.html', 'monstersurvivors.html', 'galaxyguardian.html', 'castlesiege.html', 'tankcommander.html', 'neonswarm.html', 'starsiege.html', 'turbotrails.html', 'bastion.html', 'laser.html', 'minigolf.html', 'goalrush.html', 'pixelpeaks.html', 'crypt.html', 'farm.html', 'gearworks.html', 'skyraiders.html', 'roborampart.html', 'space.html', 'lab.css', 'pixel.html', 'beats.html', 'piano.html', 'elements.html', 'codes.html', 'timer.html', 'convert.html', 'weather.html', 'fractal.html', 'illusions.html', 'kaleido.html', 'typing.html', 'cards.html', 'mathgym.html', 'planner.html', 'picker.html', 'flags.html', 'voice.html', 'qr.html', 'flipbook.html', 'sosyal.html', 'elementals.html', 'snake-arena.html', 'app-forge.html', 'minecraft/', 'minecraft/index.html', 'manifest.webmanifest',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
 self.addEventListener('install', e => {
@@ -16,7 +16,7 @@ self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
   // Our own pages: try the network first so new games and apps show up right away, use the saved copy when offline.
   if (url.origin === location.origin) {
-    e.respondWith(fetch(e.request).then(res => {
+    e.respondWith(fetch(e.request, { cache: 'no-cache' }).then(res => {
       if (res.ok) { const copy = res.clone(); caches.open(VERSION).then(c => c.put(e.request, copy)); }
       return res;
     }).catch(() => caches.match(e.request).then(hit => hit || caches.match('index.html'))));

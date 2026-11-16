@@ -416,7 +416,7 @@ NP.n22=(x,t)=>{const g=x.createRadialGradient(80,30,5,80,45,90);g.addColorStop(0
   const s=Math.sin(t/600)*.08;card(56,58,-.3+s,'#f8d0c0');card(80,54,s,'#c8e0f8');card(104,58,.3+s,'#e0c8f8');
   x.fillStyle='#c84a3a';x.beginPath();x.moveTo(20,10);x.lineTo(32,14);x.lineTo(30,30);x.lineTo(20,36);x.lineTo(10,30);x.lineTo(8,14);x.closePath();x.fill();x.fillStyle='#ffd23f';x.fillRect(19,16,2,14);x.fillRect(14,21,12,2);
   x.fillStyle='#5ab05a';x.beginPath();x.ellipse(136,22,14,10,0,0,6.3);x.fill();x.fillStyle='#fff';x.fillRect(130,18,3,3);x.fillRect(139,18,3,3);x.fillStyle='#ff5d5d';x.fillRect(122,36,28,3)};
-function megaP(t){for(const id in NP){const c=document.getElementById(id);if(c)NP[id](c.getContext('2d'),t)}}
+function megaP(t){for(const id in NP){const c=document.getElementById(id);if(c)try{NP[id](c.getContext('2d'),t)}catch(e){}}}
 NP.n1=(x,t)=>{x.fillStyle='#050a1e';x.fillRect(0,0,160,90);x.fillStyle='#fff';for(let i=0;i<30;i++){const y=((i*37+(still?0:t/20)*(1+i%3))%90);x.fillRect((i*53)%160,y,1+i%2,1+i%2)}
   const sx=80+Math.sin(still?0:t/600)*40;x.fillStyle='#3ef0ff';for(let i=0;i<5;i++){const y=(70-((still?0:t/4)+i*18)%70);x.fillRect(sx-3,y,2,5);x.fillRect(sx+2,y,2,5)}
   x.fillStyle='#dfe9ff';x.beginPath();x.moveTo(sx,66);x.lineTo(sx+8,82);x.lineTo(sx-8,82);x.fill();x.fillStyle='#ff8a3d';x.fillRect(sx-2,82,4,4);
