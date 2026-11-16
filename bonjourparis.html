@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#10183a">
+<title>Bonjour Paris</title>
+<link rel="icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Chakra+Petch:wght@400;600&display=swap">
+<style>
+:root{--night:#0c1430;--panel:#16224a;--line:#2c3e7a;--ink:#fffaf0;--mute:#b8c4e8;--cyan:#6ad8ff;--pink:#ff6a8a;--gold:#ffd23f;--green:#5cf2b4;--display:'Orbitron',ui-monospace,monospace;--body:'Chakra Petch',system-ui,sans-serif;color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%;background:var(--night);color:var(--ink);font-family:var(--body);overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
+#stage{position:fixed;inset:0;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 0%,#1a3a7a,#0a1430 70%)}
+#cv{display:block;background:#000;box-shadow:0 0 40px rgba(92,216,255,.15);border-left:1px solid #26407a;border-right:1px solid #26407a}
+.screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;z-index:10;background:rgba(8,14,36,.85);overflow:auto}
+.screen[hidden]{display:none}
+.box{width:min(560px,100%);display:flex;flex-direction:column;gap:14px;margin:auto}
+h1{font-family:var(--display);font-weight:900;font-size:clamp(36px,10vw,62px);margin:0;line-height:1;text-align:center;letter-spacing:.06em;
+  background:linear-gradient(180deg,#fff,var(--cyan) 45%,var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 18px rgba(92,216,255,.4))}
+h2{font-family:var(--display);font-size:22px;margin:0;color:var(--gold);letter-spacing:.05em}
+.tag{text-align:center;color:var(--mute);margin:-4px 0 4px}
+.btn{font:900 15px var(--display);letter-spacing:.08em;border:2px solid var(--line);background:var(--panel);color:var(--ink);border-radius:12px;padding:14px 16px;cursor:pointer;text-align:left;display:flex;align-items:center;gap:12px;width:100%}
+.btn:hover,.btn:focus-visible{border-color:var(--cyan);outline:none}
+.btn.main{background:linear-gradient(90deg,var(--cyan),#ffd23f);color:#0a1430;border:0;justify-content:center;font-size:18px}
+.btn small{display:block;font:400 13px var(--body);color:var(--mute);letter-spacing:0}
+.btn.main small{color:#132}
+.btn .ic{font-size:24px}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1 1 140px}
+.who{display:flex;align-items:center;gap:10px;justify-content:center;color:var(--mute);font-size:15px}
+.who b{color:var(--ink)}
+.who button{background:none;border:1px solid var(--line);color:var(--mute);border-radius:8px;padding:4px 10px;cursor:pointer;font:inherit}
+.credits{font:900 18px var(--display);color:var(--gold);text-align:center}
+.sectors{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+.sec{border:2px solid var(--line);border-radius:14px;padding:10px;background:var(--panel);color:var(--ink);cursor:pointer;text-align:left;font:600 14px var(--body);display:flex;flex-direction:column;gap:4px;min-height:118px;position:relative;overflow:hidden}
+.sec b{font:900 13px var(--display);color:var(--c)}
+.sec .pl{width:38px;height:38px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff8,var(--c) 40%,#000 100%);box-shadow:0 0 16px var(--c)}
+.sec small{color:var(--mute)}
+.sec[disabled]{opacity:.35;cursor:default}
+.sec .st{position:absolute;right:8px;top:8px;font-size:14px}
+.ships{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.ship{border:2px solid var(--line);border-radius:14px;background:var(--panel);color:var(--ink);padding:8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;font:600 13px var(--body)}
+.ship.on{border-color:var(--gold);box-shadow:0 0 0 2px #ffd23f55}
+.shipwrap{display:flex;flex-direction:column;gap:4px}.shipwrap .ship{flex:1}
+.sell{border:1px solid var(--line);border-radius:10px;background:#3a2430;color:#ffb3c0;font:900 11px var(--display);padding:7px 4px;cursor:pointer}.sell:hover{border-color:#ff8a9a}
+.ship canvas{width:110px;height:110px}
+.ship b{font:900 13px var(--display)}
+.ship .bars{width:100%;display:grid;grid-template-columns:auto 1fr;gap:2px 6px;font-size:11px;color:var(--mute);align-items:center}
+.ship .bars i{display:block;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--cyan),var(--green))}
+.ship .price{color:var(--gold);font-family:var(--display);font-size:12px}
+.ship[disabled]{opacity:.45}
+.paint{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.paint button{width:34px;height:34px;border-radius:50%;border:3px solid transparent;cursor:pointer}
+.paint button.on{border-color:#fff}
+.ups{display:flex;flex-direction:column;gap:8px}
+.up{display:grid;grid-template-columns:40px 1fr auto;gap:10px;align-items:center;border:2px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--panel)}
+.up .ic{font-size:26px;text-align:center}
+.up b{font-family:var(--display);font-size:13px}
+.up small{display:block;color:var(--mute)}
+.up .pips{display:flex;gap:3px;margin-top:4px}.up .pips i{width:18px;height:6px;border-radius:3px;background:#26407a}.up .pips i.on{background:var(--gold)}
+.up button{font:900 13px var(--display);border:0;border-radius:10px;padding:10px 12px;background:var(--gold);color:#0a1430;cursor:pointer;min-width:84px}
+.up button[disabled]{background:#26407a;color:var(--mute);cursor:default}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stats div{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}
+.stats b{display:block;font:900 22px var(--display);color:var(--cyan)}
+.stats small{color:var(--mute)}
+.big{font:900 clamp(26px,7vw,40px) var(--display);text-align:center;margin:0}
+.center{text-align:center}
+.mute{color:var(--mute)}
+#hudBtns{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));right:calc(8px + env(safe-area-inset-right,0px));z-index:5;display:flex;gap:8px}
+#hudBtns[hidden]{display:none}
+#hudBtns button{width:44px;height:44px;border-radius:12px;border:2px solid #26407a;background:rgba(19,32,74,.85);color:#fff;font-size:20px;cursor:pointer}
+.help{font-size:14px;color:var(--mute);line-height:1.5}
+.help b{color:var(--ink)}
+.back{align-self:flex-start;background:none;border:0;color:var(--cyan);font:900 13px var(--display);cursor:pointer;padding:6px 0;letter-spacing:.08em}
+.daily{font-size:13px;color:var(--mute)}
+.stars{color:var(--gold);letter-spacing:2px}
+.codex{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.cx{background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:8px;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;font-size:13px}
+.cx canvas{width:80px;height:80px}.cx b{font:900 12px var(--display)}.cx small{color:var(--mute)}
+.cx.no{opacity:.4}
+.brief{background:var(--panel);border:2px solid var(--line);border-left:6px solid var(--c);border-radius:14px;padding:14px 16px;font-size:16px;line-height:1.55}
+.brief b{color:var(--c)}
+@media (max-height:620px){.btn{padding:10px 12px}}
+#cv{border:1px solid #26407a;border-left:1px solid #26407a}
+.region{border:2px solid var(--line);border-radius:14px;padding:10px;background:linear-gradient(160deg,var(--c1),var(--c2));color:var(--ink);cursor:pointer;text-align:left;font:600 14px var(--body);display:flex;flex-direction:column;gap:4px;min-height:118px;position:relative;overflow:hidden;text-shadow:0 1px 2px #0008}
+.region b{font:900 13px var(--display)}
+.region small{color:#e8f0ffcc}
+.region[disabled]{opacity:.35;cursor:default}
+.region .st{position:absolute;right:8px;top:8px;font-size:14px}
+.region .em{font-size:30px}
+#tBtns{position:fixed;right:calc(14px + env(safe-area-inset-right,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:5;display:flex;gap:12px}
+#tBtns button{width:76px;height:76px;border-radius:50%;border:2px solid #ffffff55;background:#ffffff1a;color:#fff;font:900 11px var(--display);touch-action:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+#tBtns button span{font-size:26px}
+#tBtns button.off{opacity:.35}
+
+#stage{background:linear-gradient(180deg,#0c1430,#1a2a5a)}
+#cv{touch-action:none}
+.btn.main{background:linear-gradient(90deg,#3a6aff,#fff 50%,#ff3a4a);color:#10183a;text-shadow:0 1px 0 #fff}
+h1{background:linear-gradient(90deg,#5a8aff,#fff 50%,#ff5a6a);-webkit-background-clip:text;background-clip:text}
+.flag{display:flex;height:6px;border-radius:3px;overflow:hidden;margin:2px 0 4px}.flag i{flex:1}.flag i:nth-child(1){background:#2a5aff}.flag i:nth-child(2){background:#fff}.flag i:nth-child(3){background:#ff3a4a}
+.qbox{display:flex;flex-direction:column;gap:10px}
+.qhead{display:flex;justify-content:space-between;font:600 14px var(--body);color:var(--mute)}
+.qbar{height:8px;background:var(--panel);border-radius:4px;overflow:hidden}.qbar i{display:block;height:100%;background:linear-gradient(90deg,#3a6aff,#ff3a4a);transition:width .3s}
+.qword{font:900 clamp(26px,7vw,40px) var(--display);text-align:center;padding:14px 8px;background:var(--panel);border:2px solid var(--line);border-radius:16px;position:relative}
+.qword .em{display:block;font-size:54px;margin-bottom:6px}.qword small{display:block;font:600 14px var(--body);color:var(--mute);margin-top:6px}
+.say{position:absolute;right:8px;top:8px;width:44px;height:44px;border-radius:50%;border:2px solid var(--line);background:#20306a;color:#fff;font-size:20px;cursor:pointer}
+.qopts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.qopts button{min-height:64px;border-radius:14px;border:2px solid var(--line);background:#1c2a5c;color:var(--ink);font:600 17px var(--body);cursor:pointer;padding:8px}
+.qopts button.ok{background:#1f7a4a;border-color:#5cf2b4}.qopts button.no{background:#7a1f2f;border-color:#ff6a8a}
+.qfact{background:#1a2550;border-left:4px solid var(--gold);border-radius:8px;padding:10px 12px;font-size:14px;color:var(--ink)}
+.phr{display:flex;flex-direction:column;gap:6px}
+.ph{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 10px;cursor:pointer;text-align:left;color:var(--ink);font:400 14px var(--body)}
+.ph b{font:600 17px var(--body);display:block}.ph small{color:var(--mute)}.ph .pe{font-size:26px;width:34px;text-align:center}.ph .pr{color:var(--gold);font-style:italic}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}.tabs button{flex:1;min-width:80px;padding:8px;border-radius:10px;border:2px solid var(--line);background:#16224a;color:var(--ink);font:600 13px var(--body);cursor:pointer}.tabs button.on{background:#3a5aff;border-color:#9ab0ff}
+.stk{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.st{border:2px solid var(--line);border-radius:14px;background:var(--panel);padding:8px 4px;text-align:center;color:var(--ink);cursor:pointer;font:600 12px var(--body)}
+.st .se{font-size:40px;display:block}.st.got{border-color:var(--gold);background:linear-gradient(180deg,#2a3a7a,#16224a)}.st[disabled]{opacity:.45;cursor:default}
+.mc{background:#1a2550;border-radius:12px;padding:12px;font-size:14px;line-height:1.5}.mc code{background:#0c1430;padding:2px 6px;border-radius:6px;color:var(--gold);font-size:13px}
+.mc ol{margin:6px 0;padding-left:20px}
+a.btn{text-decoration:none}
+
+</style>
+</head>
+<body>
+<div id="stage"><canvas id="cv" width="600" height="900" aria-label="Game"></canvas></div>
+<div id="hudBtns" hidden><button id="bPause" aria-label="Pause">⏸</button></div>
+<div class="screen" id="sMenu"><div class="box">
+  <a href="index.html" class="back">← ARCADE</a>
+  <h1>BONJOUR PARIS</h1><div class="flag"><i></i><i></i><i></i></div>
+  <p class="tag">Games, French words and Paris facts. Works on the plane, no internet needed!</p>
+  <div class="who"><span id="whoAv" style="font-size:26px">🦊</span><span><b id="whoName">Player</b></span><button id="whoEdit">edit</button></div>
+  <div class="credits">🪙 <span class="coins">0</span></div>
+  <div class="row"><button class="btn" id="mCatch"><span class="ic">🥐</span><span>CROISSANT CATCH<small id="iCatch">Catch the snacks, dodge pigeons</small></span></button>
+    <button class="btn" id="mDash"><span class="ic">🛴</span><span>SCOOTER DASH<small id="iDash">Race through the streets of Paris</small></span></button></div>
+  <div class="row"><button class="btn" id="mWords"><span class="ic">🗣️</span><span>FRENCH WORDS<small id="iWords">Learn 10 words a round</small></span></button>
+    <button class="btn" id="mQuiz"><span class="ic">🗼</span><span>PARIS QUIZ<small id="iQuiz">How much do you know?</small></span></button></div>
+  <div class="row"><button class="btn" id="mPhrase"><span class="ic">📖</span><span>PHRASEBOOK<small>Tap to hear it in French</small></span></button>
+    <button class="btn" id="mStick"><span class="ic">🎁</span><span>SOUVENIRS<small id="iStick">Spend coins on souvenirs</small></span></button></div>
+  <div class="row"><button class="btn" id="mMC"><span class="ic">⛏️</span><span>MINECRAFT ADD-ON<small>Paris Pack for Bedrock</small></span></button>
+    <button class="btn" id="mAch"><span class="ic">🏆</span><span>AWARDS<small id="achInfo">0/0</small></span></button></div>
+  <div class="row"><button class="btn" id="mSound"><span class="ic" id="sndIc">🔊</span><span>SOUND<small>On or off</small></span></button>
+    <button class="btn" id="mHelp"><span class="ic">✈️</span><span>PLANE TIPS<small>Make sure it works offline</small></span></button></div>
+</div></div>
+<div class="screen" id="sQuiz" hidden><div class="box qbox">
+  <div class="qhead"><button class="back" id="qQuit" style="position:static">← QUIT</button><span id="qNum">1/10</span><span>⭐ <b id="qScore">0</b></span></div>
+  <div class="qbar"><i id="qBar" style="width:0"></i></div>
+  <div class="qword" id="qWord"></div>
+  <div class="qopts" id="qOpts"></div>
+  <div class="qfact" id="qFact" hidden></div>
+  <button class="btn main" id="qNext" hidden>NEXT ▶</button>
+</div></div>
+<div class="screen" id="sPhrase" hidden><div class="box"><button class="back" data-go="sMenu">← BACK</button><h2>📖 PHRASEBOOK</h2>
+  <p class="mute" style="margin:0">Tap a phrase to hear it. The <span style="color:var(--gold)">yellow</span> line shows how to say it.</p>
+  <div class="tabs" id="phTabs"></div><div class="phr" id="phList"></div></div></div>
+<div class="screen" id="sStick" hidden><div class="box"><button class="back" data-go="sMenu">← BACK</button><h2>🎁 SOUVENIR SHOP</h2><div class="credits">🪙 <span class="coins">0</span></div>
+  <p class="mute" style="margin:0">Win coins in the games and collect all 12 souvenirs from Paris.</p><div class="stk" id="stList"></div></div></div>
+<div class="screen" id="sMC" hidden><div class="box"><button class="back" data-go="sMenu">← BACK</button><h2>⛏️ PARIS PACK</h2>
+  <p class="mute" style="margin:0">A Minecraft Bedrock add-on made for your trip.</p>
+  <div class="mc"><b>What's inside</b><br>🥖 <b>Baguette</b>: eat it, or hit mobs with it (7 damage!)<br>🥐 <b>Croissant</b> · 🍬 <b>Macaron</b> · 🫓 <b>Chocolate Crepe</b><br>🗼 A command that builds a <b>giant Eiffel Tower</b> (75 blocks high!)<br>🏛️ The <b>Arc de Triomphe</b> and a 🎆 fireworks show</div>
+  <a class="btn main" id="mcDl" href="paris-pack.mcaddon" download="paris-pack.mcaddon">⬇ DOWNLOAD PARIS PACK</a>
+  <div class="mc"><b>How to install (iPhone / iPad)</b><ol><li>Tap <b>Download</b> (do it <b>before</b> the flight, it needs internet).</li><li>Open the <b>Files</b> app → Downloads → tap <b>paris-pack.mcaddon</b> and choose <b>Minecraft</b> (or tap Share → Minecraft).</li><li>Minecraft says "Import started" then "Successfully imported".</li><li>Create a world → <b>Behavior Packs</b> → activate <b>Paris Pack</b> (the textures turn on by themselves).</li><li>Turn <b>Cheats</b> on so the commands work.</li></ol></div>
+  <div class="mc"><b>Commands</b> (type them in chat)<br><code>/function paris/help</code> list of everything<br><code>/function paris/eiffel</code> builds the tower in front of you<br><code>/function paris/arc</code> Arc de Triomphe<br><code>/function paris/kit</code> free Paris snacks<br><code>/function paris/fireworks</code> night show 🎆<br><br><b>Recipes</b> (crafting table)<br>🥖 3 wheat in a diagonal line<br>🥐 2 wheat + 1 egg<br>🍬 sugar + egg + pink dye → 4 macarons<br>🫓 wheat + egg + sugar + cocoa beans<br><br>💡 Tip: build the tower in a <b>flat</b> or <b>creative</b> world. Stand where you want it, look forward, then type the command. It appears 24 blocks ahead.</div>
+</div></div>
+<div class="screen" id="sHelp" hidden><div class="box help"><button class="back" data-go="sMenu">← BACK</button><h2>✈️ PLANE TIPS</h2>
+  <p><b>Before you take off</b> (while you still have internet):</p>
+  <p>1. Open <b>Kuzey Arcade</b> in Safari, wait 10 seconds, then pull down to reload once. Now every game is saved on your iPhone.</p>
+  <p>2. Tip: tap <b>Share → Add to Home Screen</b> so the arcade opens like an app.</p>
+  <p>3. Open each game you want to play one time, just to check it works.</p>
+  <p>4. Download the <b>Minecraft Paris Pack</b> and import it before the flight.</p>
+  <p>5. Then switch on <b>Airplane Mode</b> and test: the arcade should still open! ✈️</p>
+  <p>🔊 The French voice in the phrasebook uses your iPhone's built-in voice, which works offline too. If it stays quiet, check that silent mode is off.</p></div></div>
+<div class="screen" id="sPause" hidden><div class="box"><p class="big">⏸ PAUSED</p><button class="btn main" id="pResume">▶ KEEP PLAYING</button><button class="btn" id="pQuit"><span class="ic">🏠</span><span>QUIT</span></button></div></div>
+<div class="screen" id="sEnd" hidden><div class="box"><p class="big" id="eTitle">TRÈS BIEN!</p><p class="center stars" id="eStars" style="font-size:40px;margin:0"></p><div class="stats" id="eStats"></div><p class="center mute" id="eNote" style="margin:0"></p>
+  <button class="btn main" id="eAgain">🔁 PLAY AGAIN</button><button class="btn" id="eMenu"><span class="ic">🏠</span><span>MENU</span></button></div></div>
+
+<script src="kit.js"></script>
+<script>
+(()=>{
+'use strict';
+/* ---------- shared helpers (same in every game of this batch) ---------- */
+const {sfx:SFX,FX,util:U,scores:SC,ach:ACH,profile:PROF,ui:UI}=KIT;
+const $=id=>document.getElementById(id);
+const TAU=Math.PI*2,rnd=(a,b)=>a+Math.random()*(b-a),clamp=U.clamp,pick=a=>a[Math.floor(Math.random()*a.length)];
+function hashStr(s){let h=2166136261;for(const ch of s){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
+const todayKey=()=>{const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()};
+const fmtN=n=>Math.floor(n).toLocaleString();
+// scale a fixed-size canvas (W x H game units) to fit the window; reserve `below` pixels under it
+function makeFit(cv,W,H,below=()=>0){const st={dpr:1,s:1};function fit(){st.dpr=Math.min(2,devicePixelRatio||1);const s=Math.min(innerWidth/W,(innerHeight-below())/H);st.s=s;cv.style.width=W*s+'px';cv.style.height=H*s+'px';cv.width=Math.round(W*st.dpr);cv.height=Math.round(H*st.dpr)}
+  addEventListener('resize',fit);fit();st.fit=fit;st.toGame=(cx,cy)=>{const r=cv.getBoundingClientRect();return[(cx-r.left)/r.width*W,(cy-r.top)/r.height*H]};return st}
+const ONSHOW={};
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.hidden=s.id!==id);if(ONSHOW['*'])ONSHOW['*'](id);if(ONSHOW[id])ONSHOW[id]()}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b){SFX.click();show(b.dataset.go)}});
+function statGrid(el,rows){el.innerHTML=rows.map(([a,b])=>`<div><b>${b}</b><small>${a}</small></div>`).join('')}
+/* hangar: cards you can buy, choose and sell (the first item can never be sold) */
+function hangar(el,o){// o:{game,items:[{id,name,cost,desc,needs?,extra?}],save,coinKey,icon,draw(ctx,item,w,h),onChange,lockText}
+  const S=o.save,cur=()=>{const id=PROF.vehicle(o.game,o.items[0].id);return o.items.find(x=>x.id===id&&S.owned[id])||o.items[0]},icon=o.icon||'🪙';
+  const sellP=it=>Math.floor(it.cost/2);
+  function draw(){const c=cur();el.innerHTML=o.items.map((it,i)=>{const own=!!S.owned[it.id]||i===0,locked=it.needs&&!ACH.has(o.game,it.needs);
+      return`<div class="shipwrap"><button class="ship ${c.id===it.id?'on':''}" data-hid="${it.id}" ${!own&&(locked||S[o.coinKey]<it.cost)?'disabled':''}><canvas width="220" height="160"></canvas><b>${it.name}</b><small class="mute">${it.desc}</small>${it.extra||''}<span class="price">${own?(c.id===it.id?'✔ CHOSEN':'TAP TO CHOOSE'):locked?'🔒 '+(o.lockText||'Locked'):icon+' '+it.cost}</span></button>${own&&i>0?`<button class="sell" data-hsell="${it.id}">💰 SELL for ${icon}${sellP(it)}</button>`:''}</div>`}).join('');
+    el.querySelectorAll('[data-hid]').forEach(b=>{const it=o.items.find(x=>x.id===b.dataset.hid),g=b.querySelector('canvas').getContext('2d');g.scale(2,2);try{o.draw(g,it,110,80)}catch(e){}
+      b.onclick=()=>{if(!S.owned[it.id]&&it!==o.items[0]){if(S[o.coinKey]<it.cost)return;S[o.coinKey]-=it.cost;S.owned[it.id]=1;SFX.coin();o.onBuy&&o.onBuy(it)}PROF.setVehicle(o.game,it.id);SFX.click();o.onChange&&o.onChange();draw()}});
+    el.querySelectorAll('[data-hsell]').forEach(b=>b.onclick=()=>{const it=o.items.find(x=>x.id===b.dataset.hsell);
+      UI.modal(`<h2>💰 Sell ${it.name}?</h2><p style="margin:0">You get <b>${icon} ${sellP(it)}</b> back (half the price). You can buy it again later for ${icon} ${it.cost}.</p><div style="display:flex;gap:8px;justify-content:flex-end"><button class="kbtn2 alt" data-close>KEEP IT</button><button class="kbtn2" id="hsellYes">SELL</button></div>`,(m,close)=>{
+        m.querySelector('#hsellYes').onclick=()=>{delete S.owned[it.id];S[o.coinKey]+=sellP(it);if(PROF.vehicle(o.game,o.items[0].id)===it.id)PROF.setVehicle(o.game,o.items[0].id);SFX.coin();close();o.onChange&&o.onChange();draw()}})})}
+  draw();return{cur,draw}}
+/* upgrade list: o:{list:[{id,ic,name,desc,max,cost(l)}],save,key,coinKey,icon,onChange} */
+function upgradeList(el,o){const S=o.save,lv=id=>S[o.key][id]||0,icon=o.icon||'🪙';
+  el.innerHTML=o.list.map(u=>{const l=lv(u.id),full=l>=u.max,c=u.cost(l);return`<div class="up"><span class="ic">${u.ic}</span><div><b>${u.name}</b><small>${u.desc}</small><div class="pips">${Array.from({length:u.max},(_,i)=>`<i class="${i<l?'on':''}"></i>`).join('')}</div></div><button data-uid="${u.id}" ${full||S[o.coinKey]<c?'disabled':''}>${full?'MAX':icon+' '+c}</button></div>`}).join('');
+  el.querySelectorAll('[data-uid]').forEach(b=>b.onclick=()=>{const u=o.list.find(x=>x.id===b.dataset.uid),c=u.cost(lv(u.id));if(S[o.coinKey]<c||lv(u.id)>=u.max)return;S[o.coinKey]-=c;S[o.key][u.id]=lv(u.id)+1;SFX.coin();o.onChange&&o.onChange();upgradeList(el,o)})}
+// a simple two-stick touch controller: left half moves, right half aims (used by the arena games)
+function twinSticks(cv,toGame){const st={move:null,aim:null,mx:0,my:0,ax:0,ay:0,aiming:false};const R=60;
+  const upd=(s,e)=>{const dx=e.clientX-s.ox,dy=e.clientY-s.oy,d=Math.hypot(dx,dy),k=d>R?R/d:1;s.x=dx*k/R;s.y=dy*k/R};
+  cv.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse')return;e.preventDefault();const r=cv.getBoundingClientRect();const left=e.clientX<r.left+r.width/2;const s={id:e.pointerId,ox:e.clientX,oy:e.clientY,x:0,y:0};if(left&&!st.move)st.move=s;else if(!st.aim)st.aim=s});
+  cv.addEventListener('pointermove',e=>{for(const k of['move','aim']){const s=st[k];if(s&&s.id===e.pointerId)upd(s,e)}});
+  const end=e=>{for(const k of['move','aim'])if(st[k]&&st[k].id===e.pointerId)st[k]=null};cv.addEventListener('pointerup',end);cv.addEventListener('pointercancel',end);
+  st.draw=(ctx,scale)=>{for(const k of['move','aim']){const s=st[k];if(!s)continue;const r=cv.getBoundingClientRect();const[ox,oy]=toGame(s.ox,s.oy);ctx.strokeStyle='#ffffff44';ctx.lineWidth=3;ctx.beginPath();ctx.arc(ox,oy,R/scale,0,TAU);ctx.stroke();ctx.fillStyle='#ffffff55';ctx.beginPath();ctx.arc(ox+s.x*R/scale,oy+s.y*R/scale,22/scale,0,TAU);ctx.fill()}};
+  return st}
+/* ================================================================
+   BONJOUR PARIS  -  data
+   ================================================================ */
+const GAME='bonjourparis',W=600,H=900;
+const D=Object.assign({coins:0,best:{},words:0,quiz:0,stick:{},learned:{},rounds:0},JSON.parse(localStorage.getItem('kuzey:bonjourparis')||'{}'));
+function save(){try{localStorage.setItem('kuzey:bonjourparis',JSON.stringify(D))}catch(e){}}
+ACH.define(GAME,[
+ {id:'catch',icon:'🥐',name:'Croissant Catcher',desc:'Score 500 in Croissant Catch'},
+ {id:'catch2',icon:'🧺',name:'Bakery Boss',desc:'Score 1500 in Croissant Catch'},
+ {id:'dash',icon:'🛴',name:'Street Racer',desc:'Ride 1000 m in Scooter Dash'},
+ {id:'dash2',icon:'🏁',name:'Champs-Élysées',desc:'Ride 3000 m in Scooter Dash'},
+ {id:'words',icon:'🗣️',name:'Parlez-vous?',desc:'Get 10/10 in French Words'},
+ {id:'learn',icon:'🎓',name:'Petit Expert',desc:'Learn 40 different French words'},
+ {id:'quiz',icon:'🗼',name:'Paris Pro',desc:'Get 10/10 in the Paris Quiz'},
+ {id:'phrase',icon:'📖',name:'Tourist Ready',desc:'Listen to 15 phrases'},
+ {id:'stick1',icon:'🎁',name:'First Souvenir',desc:'Buy a souvenir'},
+ {id:'stickall',icon:'👑',name:'Collector',desc:'Collect all 12 souvenirs'}]);
+// French words: [french, english, emoji, how to say it]
+const WORDS=[
+ ['bonjour','hello','👋','bon-ZHOOR'],['merci','thank you','🙏','mair-SEE'],['au revoir','goodbye','👋','oh ruh-VWAR'],['oui','yes','👍','wee'],['non','no','👎','noh'],
+ ["s'il vous plaît",'please','🙂','seel voo PLAY'],['pardon','sorry','😬','par-DOH'],['le pain','bread','🍞','luh PAN'],['le fromage','cheese','🧀','luh fro-MAZH'],["l'eau",'water','💧','LOH'],
+ ['le chat','cat','🐱','luh SHAH'],['le chien','dog','🐶','luh shee-AN'],['la pomme','apple','🍎','la POM'],['la glace','ice cream','🍦','la GLASS'],["l'avion",'plane','✈️','la-vee-OH'],
+ ['le train','train','🚆','luh TRAN'],['la tour','tower','🗼','la TOOR'],['le musée','museum','🏛️','luh mew-ZAY'],['le pont','bridge','🌉','luh POH'],['le bateau','boat','⛵','luh ba-TOH'],
+ ['la voiture','car','🚗','la vwa-TOOR'],['la maison','house','🏠','la may-ZOH'],['rouge','red','🟥','ROOZH'],['bleu','blue','🟦','BLUH'],['blanc','white','⬜','BLAH'],
+ ['vert','green','🟩','VAIR'],['jaune','yellow','🟨','ZHOHN'],['un','one','1️⃣','UH'],['deux','two','2️⃣','DUH'],['trois','three','3️⃣','TWAH'],
+ ['quatre','four','4️⃣','KATR'],['cinq','five','5️⃣','SANK'],['dix','ten','🔟','DEESS'],['le soleil','sun','☀️','luh so-LAY'],['la lune','moon','🌙','la LEWN'],
+ ['le livre','book','📕','luh LEEVR'],["l'ami",'friend','🤝','la-MEE'],['la mère','mother','👩','la MAIR'],['le père','father','👨','luh PAIR'],['le frère','brother','👦','luh FRAIR'],
+ ['la sœur','sister','👧','la SUR'],['le poisson','fish','🐟','luh pwa-SOH'],['le poulet','chicken','🍗','luh poo-LAY'],['les frites','fries','🍟','lay FREET'],['le gâteau','cake','🎂','luh ga-TOH'],
+ ['grand','big','🐘','GRAH'],['petit','small','🐭','puh-TEE'],['chaud','hot','🔥','SHOH'],['froid','cold','🥶','FRWAH'],["l'hôtel",'hotel','🏨','loh-TEL']];
+const PHRASES={
+ '👋 Basics':[['Bonjour !','Hello! / Good morning','bon-ZHOOR','👋'],['Bonsoir !','Good evening','bon-SWAR','🌆'],['Merci beaucoup !','Thank you very much','mair-SEE boh-KOO','🙏'],["S'il vous plaît",'Please','seel voo PLAY','🙂'],['Excusez-moi','Excuse me','ex-kew-zay MWAH','🙋'],['Je m\'appelle Kuzey','My name is Kuzey','zhuh ma-PELL ...','📛'],['Comment ça va ?','How are you?','ko-MAH sa VA','😀'],['Ça va bien, merci','I am fine, thanks','sa va bee-AN, mair-SEE','😊'],['Au revoir !','Goodbye!','oh ruh-VWAR','👋'],['Je ne parle pas français','I don\'t speak French','zhuh nuh parl pa frah-SAY','🤷']],
+ '🥐 Food':[['Un croissant, s\'il vous plaît','A croissant, please','uh kwa-SAH seel voo PLAY','🥐'],['Je voudrais une glace','I would like an ice cream','zhuh voo-DRAY ewn GLASS','🍦'],['Un chocolat chaud','A hot chocolate','uh sho-ko-LA SHOH','☕'],['De l\'eau, s\'il vous plaît','Some water, please','duh LOH seel voo PLAY','💧'],['C\'est délicieux !','It is delicious!','say day-lee-SYUH','😋'],["L'addition, s'il vous plaît",'The bill, please','la-dee-SYOH seel voo PLAY','🧾'],['Une crêpe au chocolat','A chocolate crêpe','ewn KREP oh sho-ko-LA','🫓'],['J\'ai faim !','I am hungry!','zhay FAM','🍽️']],
+ '🗺️ Getting around':[['Où sont les toilettes ?','Where is the toilet?','oo soh lay twa-LET','🚻'],['Où est la tour Eiffel ?','Where is the Eiffel Tower?','oo ay la toor ay-FELL','🗼'],['Le métro','The subway','luh may-TROH','🚇'],['À gauche','To the left','ah GOHSH','⬅️'],['À droite','To the right','ah DRWAT','➡️'],['Tout droit','Straight ahead','too DRWAH','⬆️'],["C'est combien ?",'How much is it?','say kom-bee-AN','💶'],['Je suis perdu','I am lost','zhuh swee pair-DEW','😟']],
+ '🔢 Numbers':[['Un, deux, trois','One, two, three','UH, DUH, TWAH','🔢'],['Quatre, cinq, six','Four, five, six','KATR, SANK, SEES','🔢'],['Sept, huit, neuf, dix','Seven, eight, nine, ten','SET, WEET, NUF, DEESS','🔟'],['J\'ai dix ans','I am ten years old','zhay dee-ZAH','🎂']]};
+// quiz: [question, right answer, wrong1, wrong2, wrong3, fun fact]
+const QUIZ=[
+ ['What river flows through Paris?','The Seine','The Thames','The Nile','The Danube','The Seine is about 777 km long. Paris has 37 bridges over it!'],
+ ['When was the Eiffel Tower finished?','1889','1789','1950','1999','It was built for the World\'s Fair in 1889, and many people thought it was ugly at first!'],
+ ['About how tall is the Eiffel Tower?','330 metres','100 metres','50 metres','1000 metres','It is about as tall as an 81-floor building. In summer heat the metal grows by up to 15 cm!'],
+ ['What famous painting is in the Louvre?','The Mona Lisa','The Starry Night','The Scream','Sunflowers','Leonardo da Vinci painted the Mona Lisa. She is behind bulletproof glass.'],
+ ['What shape is the glass entrance of the Louvre?','A pyramid','A cube','A sphere','A star','The glass pyramid was finished in 1989.'],
+ ['What are the colours of the French flag?','Blue, white, red','Red, white, green','Blue, yellow, red','Black, red, gold','The flag is called "le drapeau tricolore", the three-coloured flag.'],
+ ['What is the money used in France?','The euro','The dollar','The pound','The franc','France used the franc until 2002, then switched to the euro.'],
+ ['What is Paris often called?','The City of Light','The Big Apple','The Windy City','The Eternal City','It got the name because it was one of the first cities with lots of street lights.'],
+ ['What happens to the Eiffel Tower at night?','It sparkles with lights','It turns off forever','It spins around','It plays music','Every hour after dark, 20,000 light bulbs sparkle for 5 minutes!'],
+ ['Which famous statue did France give to the USA?','The Statue of Liberty','The Thinker','Big Ben','The Little Mermaid','Gustave Eiffel, the tower man, also designed the inside of the Statue of Liberty!'],
+ ['What big sports event did Paris host in 2024?','The Olympic Games','The World Cup','The Super Bowl','Wimbledon','Paris also hosted the Olympics in 1900 and 1924.'],
+ ['Which famous arch stands at the top of the Champs-Élysées?','Arc de Triomphe','Golden Gate','Marble Arch','Gateway Arch','Napoleon ordered it to be built in 1806 to honour his army.'],
+ ['What is the white church on the hill of Montmartre?','Sacré-Cœur','Notre-Dame','St Paul\'s','Hagia Sophia','From the top of Montmartre you can see the whole city.'],
+ ['Which cathedral reopened in 2024 after a big fire?','Notre-Dame','Sacré-Cœur','Westminster','Cologne','The fire was in 2019. It took about 5 years to rebuild it.'],
+ ['What shape is a croissant?','A crescent moon','A square','A star','A triangle','"Croissant" means "crescent" in French.'],
+ ['How do you say "thank you" in French?','Merci','Hola','Danke','Grazie','Merci beaucoup = thank you very much!'],
+ ['What is the Paris subway called?','Le Métro','The Tube','The Subway','The U-Bahn','The Paris Métro opened in 1900 and has more than 300 stations.'],
+ ['Which animal is a symbol of France?','The rooster','The lion','The eagle','The kangaroo','The rooster (le coq) is often seen on French sports shirts.'],
+ ['Which king lived in the Palace of Versailles?','Louis XIV','King Arthur','Henry VIII','Napoleon','Louis XIV was called the Sun King. The palace has a famous Hall of Mirrors.'],
+ ['What fun park opened near Paris in 1992?','Disneyland Paris','Legoland','Universal Studios','Six Flags','It is the most visited theme park in Europe.'],
+ ['About how many steps go up to the 2nd floor of the Eiffel Tower?','About 670','About 20','About 5,000','About 100','After that you take the lift to the top.'],
+ ['What is the biggest art museum in the world?','The Louvre','The British Museum','The Met','The Prado','It would take about 100 days to look at every artwork for 30 seconds each!'],
+ ['How often is the Eiffel Tower repainted?','About every 7 years','Every day','Never','Every 100 years','It takes about 60 tonnes of paint each time!'],
+ ['What is the capital city of France?','Paris','Lyon','Marseille','Nice','About 2 million people live in Paris itself, and more than 10 million in the area around it.']];
+const STICKERS=[
+ {id:'beret',e:'🧢',n:'Beret',c:40},{id:'baguette',e:'🥖',n:'Baguette',c:50},{id:'croissant',e:'🥐',n:'Croissant',c:60},{id:'cheese',e:'🧀',n:'Cheese',c:80},
+ {id:'eiffel',e:'🗼',n:'Mini Eiffel',c:100},{id:'paint',e:'🎨',n:'Paint set',c:120},{id:'post',e:'💌',n:'Postcard',c:140},{id:'perfume',e:'🌸',n:'Perfume',c:160},
+ {id:'boat',e:'⛵',n:'Seine boat',c:200},{id:'mona',e:'🖼️',n:'Mona Lisa',c:250},{id:'crown',e:'👑',n:'King\'s crown',c:300},{id:'rocket',e:'🎆',n:'Fireworks',c:400}];
+/* ================================================================
+   ACTION GAMES: Croissant Catch + Scooter Dash (canvas)
+   ================================================================ */
+const cv=$('cv'),ctx=cv.getContext('2d');const FIT=makeFit(cv,W,H);const fx=new FX();fx.max=400;
+let G=null,paused=false,last=0;
+const keys={};addEventListener('keydown',e=>{keys[e.key]=1;if(G&&G.mode==='dash'){if(e.key==='ArrowLeft'||e.key==='a')dashMove(-1);if(e.key==='ArrowRight'||e.key==='d')dashMove(1)}if(e.key==='Escape'&&G&&!G.over)pause()});
+addEventListener('keyup',e=>{keys[e.key]=0});
+// --- drawing helpers (shapes, so they always show on every device) ---
+function drawCroissant(x,y,s,gold){ctx.save();ctx.translate(x,y);ctx.scale(s,s);const c1=gold?'#ffe066':'#e8a24a',c2=gold?'#ffb800':'#b8702a';
+  for(let i=-2;i<=2;i++){const a=i*.42;ctx.fillStyle=i%2?c2:c1;ctx.beginPath();ctx.ellipse(Math.sin(a)*16,-Math.cos(a)*6+6,10-Math.abs(i)*2,12-Math.abs(i)*2,a,0,TAU);ctx.fill()}
+  ctx.strokeStyle='#5a3010';ctx.lineWidth=1.5;ctx.stroke();if(gold){ctx.fillStyle='#fff';ctx.fillRect(-2,-8,3,3)}ctx.restore()}
+function drawBaguette(x,y,s,rot){ctx.save();ctx.translate(x,y);ctx.rotate(rot);ctx.scale(s,s);ctx.fillStyle='#d8963a';ctx.beginPath();ctx.ellipse(0,0,30,8,0,0,TAU);ctx.fill();ctx.strokeStyle='#7a4a1a';ctx.lineWidth=1.5;ctx.stroke();
+  ctx.strokeStyle='#f6d290';ctx.lineWidth=2.5;for(let i=-2;i<=2;i++){ctx.beginPath();ctx.moveTo(i*10-4,-4);ctx.lineTo(i*10+4,3);ctx.stroke()}ctx.restore()}
+function drawMacaron(x,y,s,col){ctx.save();ctx.translate(x,y);ctx.scale(s,s);ctx.fillStyle=col;ctx.beginPath();ctx.ellipse(0,-6,15,8,0,0,TAU);ctx.fill();ctx.beginPath();ctx.ellipse(0,7,15,8,0,0,TAU);ctx.fill();ctx.fillStyle='#fff5e6';ctx.fillRect(-14,-2,28,5);ctx.fillStyle='#ffffff88';ctx.beginPath();ctx.ellipse(-5,-9,5,2,0,0,TAU);ctx.fill();ctx.restore()}
+function drawPigeon(x,y,s,flap,dir=1){ctx.save();ctx.translate(x,y);ctx.scale(s*dir,s);ctx.fillStyle='#8a92a6';ctx.beginPath();ctx.ellipse(0,0,18,12,0,0,TAU);ctx.fill();ctx.fillStyle='#6a7290';ctx.beginPath();ctx.moveTo(-4,-2);ctx.lineTo(-16,-14-Math.sin(flap)*10);ctx.lineTo(8,-4);ctx.fill();
+  ctx.fillStyle='#5a9a8a';ctx.beginPath();ctx.arc(14,-6,8,0,TAU);ctx.fill();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(17,-8,3,0,TAU);ctx.fill();ctx.fillStyle='#000';ctx.beginPath();ctx.arc(18,-8,1.5,0,TAU);ctx.fill();ctx.fillStyle='#ffb040';ctx.beginPath();ctx.moveTo(21,-6);ctx.lineTo(28,-4);ctx.lineTo(21,-2);ctx.fill();ctx.restore()}
+function drawEiffel(x,y,h,col){ctx.save();ctx.translate(x,y);ctx.fillStyle=col;const w=h*.42;ctx.beginPath();ctx.moveTo(-w/2,0);ctx.quadraticCurveTo(-w*.12,-h*.35,-w*.06,-h*.9);ctx.lineTo(0,-h);ctx.lineTo(w*.06,-h*.9);ctx.quadraticCurveTo(w*.12,-h*.35,w/2,0);ctx.lineTo(w*.28,0);ctx.quadraticCurveTo(0,-h*.22,-w*.28,0);ctx.fill();
+  ctx.fillRect(-w*.3,-h*.3,w*.6,h*.03);ctx.fillRect(-w*.17,-h*.55,w*.34,h*.025);ctx.restore()}
+function drawHud(txt,right){ctx.fillStyle='#0008';ctx.fillRect(0,0,W,64);ctx.font='900 24px Orbitron, monospace';ctx.textAlign='left';ctx.fillStyle='#fff';ctx.fillText(txt,16,42);ctx.textAlign='right';ctx.fillText(right,W-70,42)}
+const hearts=n=>'❤'.repeat(Math.max(0,n));
+// ---------------- CROISSANT CATCH ----------------
+const MAC=['#ff8ab0','#9ad86a','#b08aff','#ffd36a','#7ad0ff'];
+function startCatch(){G={mode:'catch',t:0,time:60,score:0,lives:3,px:W/2,items:[],spawn:0,combo:0,best:0,over:false,tx:null};begin()}
+function catchUpdate(dt){const g=G;g.t+=dt;g.time-=dt;if(g.time<=0)return finish();
+  const sp=420;if(keys.ArrowLeft||keys.a)g.px-=sp*dt;if(keys.ArrowRight||keys.d)g.px+=sp*dt;if(g.tx!=null)g.px+=(g.tx-g.px)*Math.min(1,dt*14);g.px=clamp(g.px,50,W-50);
+  const lvl=Math.min(1,g.t/50);g.spawn-=dt;if(g.spawn<=0){g.spawn=.75-lvl*.4;const r=Math.random();
+    const k=r<.08+lvl*.12?'pigeon':r<.5?'croissant':r<.68?'baguette':r<.9?'macaron':r<.96?'gold':'clock';
+    g.items.push({k,x:rnd(40,W-40),y:-30,vy:(150+lvl*170)*(k==='macaron'?1.3:k==='gold'?1.5:1),vx:k==='pigeon'?rnd(-90,90):0,rot:rnd(0,TAU),col:pick(MAC),f:0})}
+  for(const it of g.items){it.y+=it.vy*dt;it.x+=it.vx*dt;if(it.x<30||it.x>W-30)it.vx*=-1;it.f+=dt*14;it.rot+=dt*2;
+    if(it.y>H-150&&it.y<H-100&&Math.abs(it.x-g.px)<62&&!it.done){it.done=1;
+      if(it.k==='pigeon'){g.lives--;g.combo=0;SFX.hurt();fx.shake(10);fx.text(it.x,it.y-20,'COO!','#ff6a8a',26);if(g.lives<=0)return finish()}
+      else if(it.k==='clock'){g.time+=5;SFX.power();fx.text(it.x,it.y-20,'+5s','#6ad8ff',26)}
+      else{g.combo++;const v={croissant:10,baguette:15,macaron:25,gold:60}[it.k]*(1+Math.floor(g.combo/10));g.score+=v;SFX.coin();fx.text(it.x,it.y-20,'+'+v,'#ffd23f',22);fx.burst(it.x,it.y,{n:8,color:['#ffd23f','#fff'],speed:120,life:.4});g.best=Math.max(g.best,g.combo)}}
+    if(it.y>H+40&&!it.done){it.done=1;if(it.k!=='pigeon'&&it.k!=='clock')g.combo=0}}
+  g.items=g.items.filter(i=>!i.done)}
+function catchDraw(){const g=G;const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#ffb27a');sky.addColorStop(.6,'#ffd8a8');sky.addColorStop(1,'#ffe8c8');ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#ffffffaa';ctx.beginPath();ctx.arc(470,170,50,0,TAU);ctx.fill();drawEiffel(120,H-120,520,'#a87a6a66');
+  ctx.fillStyle='#c89a7a66';for(let i=0;i<8;i++){const bx=i*80,bh=120+(i*53)%90;ctx.fillRect(bx,H-120-bh,70,bh)}
+  ctx.fillStyle='#7a5a4a';ctx.fillRect(0,H-120,W,120);ctx.fillStyle='#9a7a6a';for(let x=0;x<W;x+=40)ctx.fillRect(x+((Math.floor(x/40))%2)*10,H-110,30,10);
+  for(const it of g.items){if(it.k==='croissant'||it.k==='gold')drawCroissant(it.x,it.y,1.4,it.k==='gold');else if(it.k==='baguette')drawBaguette(it.x,it.y,1.2,it.rot);else if(it.k==='macaron')drawMacaron(it.x,it.y,1.2,it.col);else if(it.k==='pigeon')drawPigeon(it.x,it.y,1.4,it.f,it.vx<0?-1:1);
+    else{ctx.fillStyle='#6ad8ff';ctx.beginPath();ctx.arc(it.x,it.y,18,0,TAU);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(it.x,it.y);ctx.lineTo(it.x,it.y-11);ctx.moveTo(it.x,it.y);ctx.lineTo(it.x+8,it.y);ctx.stroke()}}
+  // basket with avatar
+  const x=g.px,y=H-120;ctx.font='54px sans-serif';ctx.textAlign='center';ctx.fillText(PROF.avatar,x,y-34);
+  ctx.fillStyle='#b8783a';ctx.beginPath();ctx.moveTo(x-62,y-40);ctx.lineTo(x+62,y-40);ctx.lineTo(x+48,y+6);ctx.lineTo(x-48,y+6);ctx.fill();ctx.strokeStyle='#7a4a1a';ctx.lineWidth=3;for(let i=-2;i<=2;i++){ctx.beginPath();ctx.moveTo(x+i*22,y-40);ctx.lineTo(x+i*18,y+6);ctx.stroke()}
+  ctx.fillStyle='#d8985a';ctx.fillRect(x-66,y-46,132,10);
+  fx.draw(ctx);drawHud('🥐 '+g.score,'⏱'+Math.ceil(g.time)+'  '+hearts(g.lives));if(g.combo>=5){ctx.textAlign='center';ctx.fillStyle='#fff';ctx.font='900 20px Orbitron, monospace';ctx.fillText('COMBO ×'+g.combo,W/2,96)}
+  if(g.t<3){ctx.fillStyle='#000a';ctx.fillRect(60,380,W-120,130);ctx.fillStyle='#fff';ctx.textAlign='center';ctx.font='900 22px Orbitron, monospace';ctx.fillText('CATCH THE SNACKS!',W/2,425);ctx.font='600 18px Chakra Petch, sans-serif';ctx.fillText('Drag or use ← → · Avoid the pigeons',W/2,460);ctx.fillText('⏱ clocks give +5 seconds',W/2,490)}}
+// ---------------- SCOOTER DASH ----------------
+const LANES=[W/2-150,W/2,W/2+150];
+function startDash(){G={mode:'dash',t:0,dist:0,speed:300,lane:1,px:LANES[1],obs:[],spawn:1,coins:0,lives:3,inv:0,over:false,side:0,score:0};begin()}
+function dashMove(d){if(!G||G.mode!=='dash'||G.over||paused)return;const n=clamp(G.lane+d,0,2);if(n!==G.lane){G.lane=n;SFX.whoosh()}}
+function dashUpdate(dt){const g=G;g.t+=dt;g.speed=Math.min(760,300+g.t*9);g.dist+=g.speed*dt/40;g.side=(g.side+g.speed*dt)%2000;g.inv=Math.max(0,g.inv-dt);
+  g.px+=(LANES[g.lane]-g.px)*Math.min(1,dt*16);
+  g.spawn-=g.speed*dt;if(g.spawn<=0){g.spawn=rnd(260,420);const free=Math.floor(Math.random()*3);
+    for(let l=0;l<3;l++){if(l===free){if(Math.random()<.7)for(let k=0;k<3;k++)g.obs.push({k:Math.random()<.08?'star':'coin',l,y:-40-k*70});continue}
+      if(Math.random()<.55)g.obs.push({k:pick(['cone','cone','bench','pigeon','puddle']),l,y:-40})}}
+  const PY=H-200;for(const o of g.obs){o.y+=g.speed*dt;if(o.hit)continue;if(o.l===g.lane&&Math.abs(o.y-PY)<44){
+      if(o.k==='coin'){o.hit=1;g.coins++;SFX.coin();fx.burst(LANES[o.l],o.y,{n:6,color:'#ffd23f',speed:100,life:.3})}
+      else if(o.k==='star'){o.hit=1;g.inv=4;SFX.power();fx.text(LANES[o.l],o.y-30,'SUPER!','#ffd23f',24)}
+      else if(g.inv>0){o.hit=1;SFX.hit();fx.burst(LANES[o.l],o.y,{n:12,color:['#fff','#ffd23f'],speed:200,life:.4})}
+      else{o.hit=1;g.lives--;g.inv=1.2;SFX.hurt();fx.shake(12);if(g.lives<=0)return finish()}}}
+  g.obs=g.obs.filter(o=>o.y<H+60&&!(o.hit&&(o.k==='coin'||o.k==='star')));g.score=Math.floor(g.dist)+g.coins*10}
+function dashDraw(){const g=G;ctx.fillStyle='#5a8a4a';ctx.fillRect(0,0,W,H);
+  // pavements with trees & landmarks scrolling
+  ctx.fillStyle='#c8b89a';ctx.fillRect(0,0,70,H);ctx.fillRect(W-70,0,70,H);
+  for(let i=-1;i<6;i++){const y=(i*200+g.side%200);ctx.fillStyle='#3a7a3a';ctx.beginPath();ctx.arc(35,y,26,0,TAU);ctx.arc(W-35,y+100,26,0,TAU);ctx.fill()}
+  const ly=(g.side/2)%1000-200;drawEiffel(36,ly+150,150,'#6a4a3a');ctx.fillStyle='#e8dcc8';ctx.fillRect(W-66,ly+560,60,70);ctx.fillStyle='#5a8a4a';ctx.fillRect(W-50,ly+590,28,40);
+  ctx.fillStyle='#4a4a5a';ctx.fillRect(70,0,W-140,H);ctx.strokeStyle='#ffffffaa';ctx.lineWidth=6;ctx.setLineDash([40,40]);ctx.lineDashOffset=-g.side;
+  for(const lx of[W/2-75,W/2+75]){ctx.beginPath();ctx.moveTo(lx,0);ctx.lineTo(lx,H);ctx.stroke()}ctx.setLineDash([]);
+  for(const o of g.obs){const x=LANES[o.l],y=o.y;if(o.hit&&o.k!=='coin')ctx.globalAlpha=.3;
+    if(o.k==='coin'){ctx.fillStyle='#ffd23f';ctx.beginPath();ctx.arc(x,y,16,0,TAU);ctx.fill();ctx.fillStyle='#b8901a';ctx.font='900 16px Orbitron';ctx.textAlign='center';ctx.fillText('€',x,y+6)}
+    else if(o.k==='star'){ctx.fillStyle='#fff066';ctx.beginPath();for(let i=0;i<10;i++){const r=i%2?10:24,a=i*Math.PI/5-Math.PI/2+g.t*3;ctx.lineTo(x+Math.cos(a)*r,y+Math.sin(a)*r)}ctx.fill()}
+    else if(o.k==='cone'){ctx.fillStyle='#ff7a1a';ctx.beginPath();ctx.moveTo(x,y-34);ctx.lineTo(x+24,y+24);ctx.lineTo(x-24,y+24);ctx.fill();ctx.fillStyle='#fff';ctx.fillRect(x-14,y-2,28,8);ctx.fillStyle='#333';ctx.fillRect(x-30,y+20,60,8)}
+    else if(o.k==='bench'){ctx.fillStyle='#2a6a3a';ctx.fillRect(x-50,y-20,100,14);ctx.fillRect(x-50,y+2,100,14);ctx.fillStyle='#222';ctx.fillRect(x-44,y-6,8,30);ctx.fillRect(x+36,y-6,8,30)}
+    else if(o.k==='pigeon')drawPigeon(x,y,1.6,g.t*14);
+    else{ctx.fillStyle='#4a7aca';ctx.beginPath();ctx.ellipse(x,y,48,22,0,0,TAU);ctx.fill();ctx.fillStyle='#8ab0ffaa';ctx.beginPath();ctx.ellipse(x-12,y-6,16,6,0,0,TAU);ctx.fill()}
+    ctx.globalAlpha=1}
+  const x=g.px,y=H-200;if(!(g.inv>0&&g.inv<1.2&&Math.floor(g.t*12)%2)){if(g.inv>1.2){ctx.fillStyle='#fff06666';ctx.beginPath();ctx.arc(x,y,52,0,TAU);ctx.fill()}
+    ctx.fillStyle='#ff3a4a';ctx.fillRect(x-6,y-10,12,70);ctx.fillStyle='#222';ctx.beginPath();ctx.arc(x,y+62,12,0,TAU);ctx.fill();ctx.beginPath();ctx.arc(x,y-12,10,0,TAU);ctx.fill();ctx.fillStyle='#ddd';ctx.fillRect(x-24,y-24,48,7);
+    ctx.font='50px sans-serif';ctx.textAlign='center';ctx.fillText(PROF.avatar,x,y+10)}
+  fx.draw(ctx);drawHud('🛴 '+Math.floor(g.dist)+' m','€'+g.coins+'  '+hearts(g.lives));
+  if(g.t<3){ctx.fillStyle='#000a';ctx.fillRect(60,380,W-120,130);ctx.fillStyle='#fff';ctx.textAlign='center';ctx.font='900 22px Orbitron, monospace';ctx.fillText('RIDE THROUGH PARIS!',W/2,425);ctx.font='600 18px Chakra Petch, sans-serif';ctx.fillText('Swipe or tap left/right · ← →',W/2,460);ctx.fillText('⭐ stars make you super strong',W/2,490)}}
+// input
+let sw=null;cv.addEventListener('pointerdown',e=>{if(!G||G.over||paused)return;e.preventDefault();const[gx]=FIT.toGame(e.clientX,e.clientY);sw={x:e.clientX,y:e.clientY,gx,t:performance.now(),moved:false};if(G.mode==='catch')G.tx=gx});
+cv.addEventListener('pointermove',e=>{if(!G||!sw)return;const[gx]=FIT.toGame(e.clientX,e.clientY);if(G.mode==='catch')G.tx=gx;else if(!sw.moved&&Math.abs(e.clientX-sw.x)>30){sw.moved=true;dashMove(e.clientX>sw.x?1:-1)}});
+addEventListener('pointerup',e=>{if(G&&G.mode==='dash'&&sw&&!sw.moved)dashMove(sw.gx<W/2?-1:1);sw=null;if(G&&G.mode==='catch')G.tx=null});
+// loop
+function begin(){fx.clear();paused=false;show(null);$('hudBtns').hidden=false;$('stage').hidden=false;last=performance.now();SFX.levelup()}
+function pause(){if(!G||G.over)return;paused=true;show('sPause')}
+$('bPause').onclick=pause;$('pResume').onclick=()=>{paused=false;show(null);last=performance.now()};$('pQuit').onclick=()=>{G=null;paused=false;$('hudBtns').hidden=true;show('sMenu')};
+function frame(now){requestAnimationFrame(frame);const dt=Math.min(.05,(now-last)/1000);last=now;if(!G)return;
+  if(!paused&&!G.over){G.mode==='catch'?catchUpdate(dt):dashUpdate(dt);fx.update(dt)}
+  ctx.setTransform(cv.width/W,0,0,cv.height/H,0,0);const[ox,oy]=fx.offset();ctx.translate(ox,oy);G.mode==='catch'?catchDraw():dashDraw()}
+requestAnimationFrame(frame);
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&G&&!G.over)pause()});
+function finish(){const g=G;if(g.over)return;g.over=true;$('hudBtns').hidden=true;const sc=g.mode==='catch'?g.score:Math.floor(g.dist);
+  const key=g.mode,old=D.best[key]||0,nb=sc>old;D.best[key]=Math.max(old,sc);
+  const coins=g.mode==='catch'?Math.floor(sc/20):Math.floor(sc/40)+g.coins;D.coins+=coins;
+  if(g.mode==='catch'){if(sc>=500)ACH.unlock(GAME,'catch');if(sc>=1500)ACH.unlock(GAME,'catch2')}else{if(sc>=1000)ACH.unlock(GAME,'dash');if(sc>=3000)ACH.unlock(GAME,'dash2')}
+  save();SC.submit(GAME,sc,key);
+  const stars=g.mode==='catch'?(sc>=1500?3:sc>=700?2:sc>=200?1:0):(sc>=3000?3:sc>=1500?2:sc>=500?1:0);
+  setTimeout(()=>endScreen({title:nb?'NEW RECORD!':(stars>=2?'TRÈS BIEN!':'BIEN JOUÉ!'),stars,stats:g.mode==='catch'?[['Score',fmtN(sc)],['Best combo',g.best],['Coins',' +'+coins]]:[['Distance',fmtN(sc)+' m'],['€ collected',g.coins],['Coins',' +'+coins]],note:'Best: '+fmtN(D.best[key])+(g.mode==='dash'?' m':''),again:g.mode==='catch'?startCatch:startDash}),nb?300:600);
+  nb?SFX.win():SFX.lose()}
+function endScreen(o){$('eTitle').textContent=o.title;$('eStars').textContent='⭐'.repeat(o.stars)+'☆'.repeat(3-o.stars);statGrid($('eStats'),o.stats);$('eNote').textContent=o.note;$('eAgain').onclick=()=>{SFX.click();o.again()};show('sEnd')}
+/* ================================================================
+   FRENCH WORDS + PARIS QUIZ (DOM)
+   ================================================================ */
+let frVoice=null;
+function pickVoice(){try{const v=speechSynthesis.getVoices();frVoice=v.find(x=>/^fr[-_]FR/i.test(x.lang)&&x.localService)||v.find(x=>/^fr/i.test(x.lang))||null}catch(e){}}
+try{pickVoice();speechSynthesis.onvoiceschanged=pickVoice}catch(e){}
+let heard=0;
+function say(txt){try{if(SFX.muted)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(txt.replace(/[!?]/g,''));u.lang='fr-FR';if(frVoice)u.voice=frVoice;u.rate=.85;speechSynthesis.speak(u)}catch(e){}}
+function shuffled(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+let Q=null;
+function startWords(){const pool=shuffled(WORDS).sort((a,b)=>(D.learned[a[0]]?1:0)-(D.learned[b[0]]?1:0)).slice(0,10);
+  Q={kind:'words',i:0,score:0,list:shuffled(pool).map((w,k)=>{const rev=k%3===2;const wrong=shuffled(WORDS.filter(x=>x!==w)).slice(0,3);
+    return rev?{word:w,prompt:`<span class="em">${w[2]}</span>"${w[1]}"<small>How do you say this in French?</small>`,right:w[0],opts:shuffled([w,...wrong]).map(x=>x[0]),fact:`<b>${w[0]}</b> means ${w[1]}. Say it like: <i style="color:var(--gold)">${w[3]}</i>`}
+      :{word:w,prompt:`<span class="em">${w[2]}</span>${w[0]}<small>What does this mean?</small>`,right:w[1],opts:shuffled([w,...wrong]).map(x=>x[1]),fact:`<b>${w[0]}</b> means ${w[1]}. Say it like: <i style="color:var(--gold)">${w[3]}</i>`}})};
+  show('sQuiz');qShow()}
+function startQuiz(){Q={kind:'quiz',i:0,score:0,list:shuffled(QUIZ).slice(0,10).map(q=>({prompt:`<span class="em">🗼</span><span style="font-size:.6em;line-height:1.3;display:block">${q[0]}</span>`,right:q[1],opts:shuffled(q.slice(1,5)),fact:'💡 '+q[5]}))};show('sQuiz');qShow()}
+function qShow(){const q=Q.list[Q.i];$('qNum').textContent=(Q.i+1)+'/'+Q.list.length;$('qScore').textContent=Q.score;$('qBar').style.width=(Q.i/Q.list.length*100)+'%';
+  $('qWord').innerHTML=q.prompt+(Q.kind==='words'?'<button class="say" id="qSay" aria-label="Listen">🔊</button>':'');$('qFact').hidden=true;$('qNext').hidden=true;
+  if(Q.kind==='words'){$('qSay').onclick=()=>say(q.word[0]);if(q.prompt.includes('What does'))setTimeout(()=>say(q.word[0]),250)}
+  $('qOpts').innerHTML=q.opts.map((o,i)=>`<button data-o="${i}">${o}</button>`).join('');
+  $('qOpts').querySelectorAll('[data-o]').forEach(b=>b.onclick=()=>{if(q.done)return;q.done=true;const ok=q.opts[+b.dataset.o]===q.right;
+    $('qOpts').querySelectorAll('[data-o]').forEach(x=>{if(q.opts[+x.dataset.o]===q.right)x.classList.add('ok')});if(!ok)b.classList.add('no');
+    if(ok){Q.score++;SFX.coin();if(q.word){D.learned[q.word[0]]=1}}else SFX.error();
+    if(Q.kind==='words')say(q.word[0]);$('qScore').textContent=Q.score;$('qFact').innerHTML=(ok?'✅ ':'❌ ')+q.fact;$('qFact').hidden=false;$('qNext').hidden=false;$('qNext').textContent=Q.i+1<Q.list.length?'NEXT ▶':'FINISH 🏁'})}
+$('qNext').onclick=()=>{SFX.click();Q.i++;if(Q.i<Q.list.length)qShow();else qEnd()};
+$('qQuit').onclick=()=>{Q=null;show('sMenu')};
+function qEnd(){const k=Q.kind,sc=Q.score,coins=sc*5+(sc===10?30:0);D.coins+=coins;D.rounds++;const old=D.best[k]||0;if(sc>old)D.best[k]=sc;
+  if(sc===10)ACH.unlock(GAME,k==='words'?'words':'quiz');if(Object.keys(D.learned).length>=40)ACH.unlock(GAME,'learn');save();
+  sc>=7?SFX.win():SFX.lose();const again=k==='words'?startWords:startQuiz;
+  endScreen({title:sc===10?'PARFAIT! 🎉':sc>=7?'TRÈS BIEN!':sc>=4?'BIEN JOUÉ!':'ON RÉESSAIE?',stars:sc>=10?3:sc>=7?2:sc>=4?1:0,stats:[['Correct',sc+'/10'],[k==='words'?'Words learned':'Best',k==='words'?Object.keys(D.learned).length+'/'+WORDS.length:old>sc?old+'/10':sc+'/10'],['Coins','+'+coins]],
+    note:sc===10?'Perfect round!':sc>=7?'Great job! (très bien = very good)':'Try again (on réessaie = let\'s try again)',again})}
+/* ================================================================
+   MENUS
+   ================================================================ */
+ONSHOW['*']=id=>{document.querySelectorAll('.coins').forEach(e=>e.textContent=fmtN(D.coins));if(id&&id!=='sPause'){$('hudBtns').hidden=true}};
+ONSHOW.sMenu=()=>{G=null;$('whoAv').textContent=PROF.avatar;$('whoName').textContent=PROF.name;const c=ACH.count(GAME);$('achInfo').textContent=c.got+'/'+c.total+' unlocked';$('sndIc').textContent=SFX.muted?'🔇':'🔊';
+  $('iCatch').textContent=D.best.catch?'Best: '+fmtN(D.best.catch):'Catch the snacks, dodge pigeons';$('iDash').textContent=D.best.dash?'Best: '+fmtN(D.best.dash)+' m':'Race through the streets of Paris';
+  $('iWords').textContent=Object.keys(D.learned).length+'/'+WORDS.length+' words learned';$('iQuiz').textContent=D.best.quiz!=null?'Best: '+D.best.quiz+'/10':'How much do you know?';
+  $('iStick').textContent=Object.keys(D.stick).length+'/12 collected'};
+let phTab=Object.keys(PHRASES)[0];
+ONSHOW.sPhrase=()=>{$('phTabs').innerHTML=Object.keys(PHRASES).map(k=>`<button class="${k===phTab?'on':''}" data-t="${k}">${k}</button>`).join('');
+  $('phTabs').querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{phTab=b.dataset.t;SFX.click();ONSHOW.sPhrase()});
+  $('phList').innerHTML=PHRASES[phTab].map((p,i)=>`<button class="ph" data-p="${i}"><span class="pe">${p[3]}</span><span><b>${p[0]}</b><small>${p[1]}</small><br><span class="pr">🔊 ${p[2]}</span></span></button>`).join('');
+  $('phList').querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{const p=PHRASES[phTab][+b.dataset.p];say(p[0]);heard++;D.heard=(D.heard||0)+1;if(D.heard>=15)ACH.unlock(GAME,'phrase');save()})};
+ONSHOW.sStick=()=>{$('stList').innerHTML=STICKERS.map(s=>{const got=D.stick[s.id];return`<button class="st ${got?'got':''}" data-s="${s.id}" ${!got&&D.coins<s.c?'disabled':''}><span class="se" style="${got?'':'filter:grayscale(1) brightness(.6)'}">${s.e}</span>${s.n}<br><small style="color:var(--gold)">${got?'✔ Yours!':'🪙 '+s.c}</small></button>`}).join('');
+  $('stList').querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{const s=STICKERS.find(x=>x.id===b.dataset.s);if(D.stick[s.id]){SFX.click();UI.toast(s.e+' '+s.n,'A souvenir from Paris');return}if(D.coins<s.c)return;
+    D.coins-=s.c;D.stick[s.id]=1;SFX.win();ACH.unlock(GAME,'stick1');if(Object.keys(D.stick).length>=STICKERS.length)ACH.unlock(GAME,'stickall');save();ONSHOW['*']('sStick');ONSHOW.sStick()})};
+$('whoEdit').onclick=()=>UI.profileEditor(ONSHOW.sMenu);
+$('mCatch').onclick=()=>{SFX.click();startCatch()};$('mDash').onclick=()=>{SFX.click();startDash()};
+$('mWords').onclick=()=>{SFX.click();startWords()};$('mQuiz').onclick=()=>{SFX.click();startQuiz()};
+$('mPhrase').onclick=()=>{SFX.click();show('sPhrase')};$('mStick').onclick=()=>{SFX.click();show('sStick')};$('mMC').onclick=()=>{SFX.click();show('sMC')};$('mHelp').onclick=()=>{SFX.click();show('sHelp')};
+$('mAch').onclick=()=>UI.achievements(GAME,'Bonjour Paris awards');$('mSound').onclick=()=>{SFX.toggle();ONSHOW.sMenu()};
+$('eMenu').onclick=()=>{G=null;show('sMenu')};
+show('sMenu');
+if(new URLSearchParams(location.search).has('test'))window.__bp={get G(){return G},D,startCatch,startDash,startWords,startQuiz,finish,dashMove};
+
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>

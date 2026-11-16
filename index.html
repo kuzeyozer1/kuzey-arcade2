@@ -140,6 +140,10 @@ h1{font-family:var(--display);font-weight:900;font-size:clamp(34px,9vw,64px);lin
       <canvas id="n22" width="160" height="90" aria-hidden="true"></canvas>
       <div class="info"><h2>Card Quest</h2><p>NEW! Card battle adventure: build your deck as you climb 3 acts, pick your path, fight bosses, collect relics. 4 heroes to buy and sell, about 48 cards and a Daily Quest.</p><span class="play">PLAY</span></div>
     </a>
+    <a class="game" href="bonjourparis.html" style="--acc:#5a8aff">
+      <canvas id="n23" width="160" height="90" aria-hidden="true"></canvas>
+      <div class="info"><h2>Bonjour Paris</h2><p>NEW! Paris games, French words and a Minecraft add-on. Plays offline!</p><span class="play">PLAY</span></div>
+    </a>
   </div>
 
   <div class="games">
@@ -416,6 +420,12 @@ NP.n22=(x,t)=>{const g=x.createRadialGradient(80,30,5,80,45,90);g.addColorStop(0
   const s=Math.sin(t/600)*.08;card(56,58,-.3+s,'#f8d0c0');card(80,54,s,'#c8e0f8');card(104,58,.3+s,'#e0c8f8');
   x.fillStyle='#c84a3a';x.beginPath();x.moveTo(20,10);x.lineTo(32,14);x.lineTo(30,30);x.lineTo(20,36);x.lineTo(10,30);x.lineTo(8,14);x.closePath();x.fill();x.fillStyle='#ffd23f';x.fillRect(19,16,2,14);x.fillRect(14,21,12,2);
   x.fillStyle='#5ab05a';x.beginPath();x.ellipse(136,22,14,10,0,0,6.3);x.fill();x.fillStyle='#fff';x.fillRect(130,18,3,3);x.fillRect(139,18,3,3);x.fillStyle='#ff5d5d';x.fillRect(122,36,28,3)};
+NP.n23=(x,t)=>{const g=x.createLinearGradient(0,0,0,90);g.addColorStop(0,'#ff9a6a');g.addColorStop(1,'#ffd8a8');x.fillStyle=g;x.fillRect(0,0,160,90);
+  x.fillStyle='#2a5aff';x.fillRect(0,0,53,6);x.fillStyle='#fff';x.fillRect(53,0,54,6);x.fillStyle='#ff3a4a';x.fillRect(107,0,53,6);
+  x.fillStyle='#fff8';x.beginPath();x.arc(128,26,13,0,7);x.fill();x.fillStyle='#7a5a4a';x.fillRect(0,78,160,12);
+  x.fillStyle='#5a3a2a';x.beginPath();x.moveTo(62,80);x.quadraticCurveTo(76,52,78,16);x.lineTo(80,8);x.lineTo(82,16);x.quadraticCurveTo(84,52,98,80);x.lineTo(90,80);x.quadraticCurveTo(80,64,70,80);x.fill();x.fillRect(68,56,24,3);x.fillRect(73,38,14,2);
+  const y=50+Math.sin(t/300)*14,cx=128;for(let i=-2;i<=2;i++){const a=i*.42;x.fillStyle=i%2?'#b8702a':'#e8a24a';x.beginPath();x.ellipse(cx+Math.sin(a)*11,y-Math.cos(a)*4+4,7-Math.abs(i)*1.4,8-Math.abs(i)*1.4,a,0,7);x.fill()}
+  const by=40+Math.cos(t/350)*12;x.save();x.translate(30,by);x.rotate(-.6+Math.sin(t/500)*.2);x.fillStyle='#d8963a';x.beginPath();x.ellipse(0,0,20,5,0,0,7);x.fill();x.strokeStyle='#f6d290';x.lineWidth=1.5;for(let k=-1;k<=1;k++){x.beginPath();x.moveTo(k*8-3,-2);x.lineTo(k*8+3,2);x.stroke()}x.restore()};
 function megaP(t){for(const id in NP){const c=document.getElementById(id);if(c)try{NP[id](c.getContext('2d'),t)}catch(e){}}}
 NP.n1=(x,t)=>{x.fillStyle='#050a1e';x.fillRect(0,0,160,90);x.fillStyle='#fff';for(let i=0;i<30;i++){const y=((i*37+(still?0:t/20)*(1+i%3))%90);x.fillRect((i*53)%160,y,1+i%2,1+i%2)}
   const sx=80+Math.sin(still?0:t/600)*40;x.fillStyle='#3ef0ff';for(let i=0;i<5;i++){const y=(70-((still?0:t/4)+i*18)%70);x.fillRect(sx-3,y,2,5);x.fillRect(sx+2,y,2,5)}
