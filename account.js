@@ -63,10 +63,10 @@ const CLOUD_URL='https://ahdidgzraaisooduipkt.supabase.co',CLOUD_KEY='sb_publish
 function cloudCfg(){const t=get(P+'cloudtest',null);return t||{url:CLOUD_URL,key:CLOUD_KEY}}
 const cloudOn=()=>!!cloudCfg().url&&!!cloudCfg().key;
 const ERR={kz_taken:'That username is already taken. Try another one.',kz_bad_name:'Usernames are 3 to 20 letters, numbers or _ (no spaces).',kz_short_pass:'The password must be at least 6 characters.',
-  kz_wrong:'Wrong username or password.',kz_slow_down:'Too many wrong tries. Wait 10 minutes and try again.',kz_logged_out:'You were logged out on this device. Log in again.',kz_conflict:'kz_conflict',kz_too_big:'Your saves are too big to put online (over 8 MB). Delete a big Kuzey Craft world and try again.'};
+  kz_wrong:'Wrong username or password.',kz_slow_down:'Too many wrong tries. Wait 10 minutes and try again.',kz_logged_out:'You were logged out on this device. Log in again.',kz_conflict:'kz_conflict',kz_need_setup:'This needs the new database setup. Open supabase-setup.html, tap COPY and run it in Supabase again.',kz_too_big:'Your saves are too big to put online (over 8 MB). Delete a big Kuzey Craft world and try again.'};
 async function rpc(fn,args){const c=cloudCfg(),h={'Content-Type':'application/json',apikey:c.key};if(c.key.startsWith('eyJ'))h.Authorization='Bearer '+c.key;
   let r;try{r=await fetch(c.url.replace(/\/+$/,'')+'/rest/v1/rpc/'+fn,{method:'POST',headers:h,body:JSON.stringify(args)})}catch(e){const x=new Error('No internet right now. Your progress is safe on this device.');x.offline=true;throw x}
-  const j=await r.json().catch(()=>null);if(!r.ok){const m=(j&&(j.message||j.hint))||('Server error '+r.status);const x=new Error(ERR[m]||m);x.code=m;throw x}
+  const j=await r.json().catch(()=>null);if(!r.ok){let m=(j&&(j.message||j.hint))||('Server error '+r.status);if(/Could not find the function/i.test(m))m='kz_need_setup';const x=new Error(ERR[m]||m);x.code=m;throw x}
   if(j&&j.error){const x=new Error(ERR[j.error]||j.error);x.code=j.error;throw x}return j}
 function clean(d){const o={};for(const k of Object.keys(d).sort())if(!SKIP.some(p=>k.startsWith(p)))o[k]=d[k];return o}
 const hashOf=d=>sha(JSON.stringify(clean(d)));
@@ -136,6 +136,47 @@ function passUI(a){modal(`<h2>🔑 Change password</h2><label>Old password<input
   m.querySelector('#pOk').onclick=async()=>{const err=m.querySelector('#pE');try{const nw=m.querySelector('#pN').value;await rpc('kz_change_pass',{p_user:a.cloud.user,p_old:m.querySelector('#pO').value,p_new:nw});close();
     await cloudLogin(a.cloud.user,nw)}catch(e){err.textContent=e.message}}})}
 
+// ================= FRIENDS =================
+const linked=()=>{const a=cur();return cloudOn()&&a&&a.cloud&&a.cloud.token?a:null};
+let frReq=0,frTab='friends',frList=null,frBusy=false;
+function frBadge(){const b=document.getElementById('frN');if(b){b.textContent=frReq;b.hidden=!frReq}}
+async function frPoll(){const a=linked();if(!a||document.hidden)return;try{const r=await rpc('kz_friend_count',{p_token:a.cloud.token});const before=frReq;frReq=r.requests;frBadge();
+  if(frReq>before&&before>=0&&frPoll.done)toast('👋 You have a new friend invite!');frPoll.done=true}catch(e){}}
+function friendsUI(){const a=linked();
+  if(!cloudOn()){toast('Online accounts are not switched on yet.');return}
+  if(!a){modal(`<h2>👥 Friends</h2><p>To add friends you need an <b>online account</b>. Then you can see everyone in Kuzey Arcade and invite them.</p><button class="acb" id="fGo">☁️ MAKE OR LOG IN TO AN ONLINE ACCOUNT</button><button class="acb alt" data-x>CLOSE</button>`,(m,close)=>{m.querySelector('#fGo').onclick=()=>{close();const c=cur();c.fresh?editor(c,true):cloudForm(c.cloud?'login':'signup',c.cloud?c.cloud.user:'')}});return}
+  modal(`<div class="achead">${av(a)}<div><b>👥 Friends</b><p>@${esc(a.cloud.user)}</p></div></div>
+    <div class="row frtabs"><button class="acb" data-ft="friends">FRIENDS</button><button class="acb" data-ft="invites">INVITES <span class="frdot" id="frT"></span></button><button class="acb" data-ft="all">EVERYONE</button></div>
+    <input id="frQ" placeholder="🔍 Search by name" autocapitalize="none" autocorrect="off" spellcheck="false" hidden>
+    <div class="aclist" id="frL"><p>Loading…</p></div><button class="acb alt" data-x>CLOSE</button>`,(m,close)=>{
+    const L=m.querySelector('#frL'),Q=m.querySelector('#frQ');let t=null;
+    const tabs=()=>m.querySelectorAll('[data-ft]').forEach(b=>b.classList.toggle('alt',b.dataset.ft!==frTab));
+    const row=p=>{const btn=p.rel==='friend'?`<span class="frok">✓ Friends</span><button class="frx" data-act="remove" aria-label="Remove friend">✕</button>`
+        :p.rel==='sent'?`<button class="frb alt" data-act="remove">Invited · cancel</button>`
+        :p.rel==='received'?`<button class="frb" data-act="accept">✓ Accept</button><button class="frb alt" data-act="no">No</button>`
+        :`<button class="frb" data-act="invite">＋ Invite</button>`;
+      return`<div class="acitem frrow" data-u="${esc(p.username)}">${av(p)}<div class="frname">${esc(p.name)} <i class="frol ${p.online?'on':''}" title="${p.online?'Online now':'Offline'}"></i><small>@${esc(p.username)}${p.online?' · online now':''}</small></div><div class="fract">${btn}</div></div>`};
+    function draw(){tabs();Q.hidden=frTab!=='all';if(!frList){L.innerHTML='<p>Loading…</p>';return}
+      const inv=frList.filter(p=>p.rel==='received');const d=m.querySelector('#frT');d.textContent=inv.length||'';d.hidden=!inv.length;
+      let list=frTab==='friends'?frList.filter(p=>p.rel==='friend'):frTab==='invites'?frList.filter(p=>p.rel==='received'||p.rel==='sent'):frList;
+      L.innerHTML=list.length?list.map(row).join(''):`<p>${frTab==='friends'?'No friends yet. Go to <b>EVERYONE</b> and invite someone!':frTab==='invites'?'No invites right now.':'Nobody found.'}</p>`;
+      L.querySelectorAll('[data-act]').forEach(b=>b.onclick=()=>act(b.closest('[data-u]').dataset.u,b.dataset.act,b))}
+    async function load(){try{frList=await rpc('kz_people',{p_token:a.cloud.token,p_search:frTab==='all'?Q.value:''});frReq=frList.filter(p=>p.rel==='received').length;frBadge();draw()}
+      catch(e){L.innerHTML=`<p class="acerr">${esc(e.message)}</p>`}}
+    async function act(u,what,b){if(frBusy)return;const p=frList.find(x=>x.username===u);
+      if(what==='remove'&&p.rel==='friend'&&!confirm(`Stop being friends with ${p.name}?`))return;
+      frBusy=true;b.disabled=true;try{
+        if(what==='invite'){p.rel=await rpc('kz_friend_invite',{p_token:a.cloud.token,p_to:u});toast(p.rel==='friend'?`🎉 You and ${esc(p.name)} are friends now!`:`📨 Invite sent to ${esc(p.name)}`)}
+        else if(what==='accept'){p.rel=await rpc('kz_friend_answer',{p_token:a.cloud.token,p_from:u,p_accept:true});toast(`🎉 You and ${esc(p.name)} are friends now!`)}
+        else if(what==='no'){p.rel=await rpc('kz_friend_answer',{p_token:a.cloud.token,p_from:u,p_accept:false})}
+        else p.rel=await rpc('kz_friend_remove',{p_token:a.cloud.token,p_other:u});
+        frReq=frList.filter(x=>x.rel==='received').length;frBadge()}catch(e){toast(esc(e.message))}frBusy=false;draw()}
+    m.querySelectorAll('[data-ft]').forEach(b=>b.onclick=()=>{frTab=b.dataset.ft;if(frTab==='all'&&Q.value){Q.value='';load()}draw()});
+    Q.oninput=()=>{clearTimeout(t);t=setTimeout(load,300)};
+    if(frReq>0)frTab='invites';draw();load();
+    const iv=setInterval(()=>{if(!document.body.contains(m))return clearInterval(iv);if(!document.hidden&&!frBusy&&!(frTab==='all'&&Q.value))load()},20000)})}
+ERR.kz_no_user='That player does not exist any more.';ERR.kz_too_many='You have 50 invites waiting already. Wait for some answers first.';
+
 // ---------- stats ----------
 function trophies(){let n=0,g=0;for(const k of liveKeys())if(k.startsWith('kuzey:ach:')){const c=Object.keys(get(k,{})).length;n+=c;if(c)g++}return{n,g}}
 function bytes(){let n=0;for(const k of liveKeys())n+=k.length+(localStorage.getItem(k)||'').length;return n}
@@ -164,13 +205,23 @@ const css=`
 .acitem{display:flex;align-items:center;gap:10px;border:2px solid #2c2468;border-radius:14px;padding:8px 10px;background:#0b0820;cursor:pointer;color:#fff;font:600 16px 'Chakra Petch',sans-serif;text-align:left}
 .acitem.on{border-color:#ffd23f}.acitem .acav{width:40px;height:40px;font-size:22px}.acitem small{display:block;color:#9a94c9;font-size:12px}
 .acerr{color:#ff7a9a;font-weight:600;min-height:1.2em}
-.achead{display:flex;align-items:center;gap:12px}.achead b{font:900 22px Orbitron,monospace}`;
+.achead{display:flex;align-items:center;gap:12px}.achead b{font:900 22px Orbitron,monospace}
+.acrow{display:flex;gap:10px;margin-top:14px}.acrow .acbar{margin-top:0;flex:1;min-width:0}
+.frbtn{position:relative;flex:none;width:96px;border:2px solid var(--line,#2c2468);background:var(--panel,#151036);border-radius:16px;color:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font:900 11px Orbitron,monospace;letter-spacing:.06em}
+.frbtn span{font-size:28px}.frbtn:hover{border-color:var(--pink,#ff3d9a)}
+.frbtn b,.frdot{position:absolute;top:-6px;right:-6px;min-width:22px;height:22px;border-radius:11px;background:#ff3d5a;color:#fff;font:900 12px system-ui;display:grid;place-items:center;padding:0 5px}
+.frdot{position:static;display:inline-grid;margin-left:4px}.frbtn b[hidden],.frdot[hidden]{display:none}
+.frtabs .acb{padding:10px 6px;font-size:11px}
+.frrow{cursor:default}.frname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}.fract{display:flex;gap:6px;align-items:center;flex:none}
+.frb{border:0;border-radius:10px;padding:9px 10px;font:900 11px Orbitron,monospace;background:#ffd23f;color:#0b0820;cursor:pointer;white-space:nowrap}.frb.alt{background:#1d1748;color:#ecebff;border:2px solid #2c2468}
+.frx{border:0;background:none;color:#9a94c9;font-size:18px;cursor:pointer;padding:4px}.frok{color:#5cf2b4;font-weight:600;font-size:13px;white-space:nowrap}
+.frol{display:inline-block;width:9px;height:9px;border-radius:50%;background:#55507a;margin-left:2px}.frol.on{background:#5cf2b4;box-shadow:0 0 6px #5cf2b4}`;
 const st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
 function modal(html,bind){const m=document.createElement('div');m.className='acm';m.innerHTML=`<div class="bx">${html}</div>`;document.body.appendChild(m);
   const close=()=>m.remove();m.addEventListener('click',e=>{if(e.target===m)close()});m.querySelectorAll('[data-x]').forEach(b=>b.onclick=close);bind&&bind(m,close);return close}
 const av=(a,cls='')=>`<span class="acav ${cls}" style="border-color:${a.color};background:${a.color}22">${a.avatar}</span>`;
 function bar(){const el=document.getElementById('acct');if(!el)return;const a=cur(),t=trophies();
-  el.innerHTML=`<button class="acbar" id="acOpen">${av(a)}<span><b>${esc(a.name)}</b><small>${a.fresh?'Tap to create your account':`🏆 ${t.n} trophies · ${A.accounts.length>1?A.accounts.length+' players on this device':'Your account'}`}<br><span id="acSync">${a.cloud?(syncMsg||(a.cloud.token?'☁️ Online: '+esc(a.cloud.user):'☁️ Logged out · tap to log in')):cloudOn()&&!a.fresh?'☁️ Not online yet · tap to save online':''}</span></small></span><span class="go">${a.fresh?'CREATE':'ACCOUNT'}</span></button>`;
+  el.innerHTML=`<div class="acrow"><button class="acbar" id="acOpen">${av(a)}<span><b>${esc(a.name)}</b><small>${a.fresh?'Tap to create your account':`🏆 ${t.n} trophies · ${A.accounts.length>1?A.accounts.length+' players on this device':'Your account'}`}<br><span id="acSync">${a.cloud?(syncMsg||(a.cloud.token?'☁️ Online: '+esc(a.cloud.user):'☁️ Logged out · tap to log in')):cloudOn()&&!a.fresh?'☁️ Not online yet · tap to save online':''}</span></small></span><span class="go">${a.fresh?'CREATE':'ACCOUNT'}</span></button>${cloudOn()?'<button class="frbtn" id="frOpen" aria-label="Friends"><span>👥</span>FRIENDS<b id="frN" hidden>0</b></button>':''}</div>`;const fo=document.getElementById('frOpen');if(fo)fo.onclick=friendsUI;frBadge();
   document.getElementById('acOpen').onclick=()=>{const c=cur();c.fresh?editor(c,true):c.cloud&&!c.cloud.token?cloudForm('login',c.cloud.user):menu()}}
 
 function menu(){const a=cur(),t=trophies(),kb=Math.ceil(bytes()/1024);
@@ -240,9 +291,9 @@ function loginUI(){modal(`<h2>📥 Log in from another device</h2><p>On your oth
 
 function toast(html){const t=document.createElement('div');t.className='acm';t.style.cssText='inset:auto 0 auto 0;top:calc(16px + env(safe-area-inset-top,0px));background:none;pointer-events:none';
   t.innerHTML=`<div class="bx" style="width:auto;max-width:90%;border-color:#ffd23f;padding:12px 16px;font-weight:600">${html}</div>`;document.body.appendChild(t);setTimeout(()=>t.remove(),3200)}
-window.KuzeyAccount={current:cur,menu,send,login:loginUI,switcher,cloud:cloudUI,sync};
+window.KuzeyAccount={current:cur,menu,send,login:loginUI,switcher,cloud:cloudUI,sync,friends:friendsUI};
 const hub=()=>!!document.getElementById('acct');
-function start(){bar();if(hub())sync(false);setInterval(()=>sync(!hub()),hub()?60000:90000)}
+function start(){bar();if(hub()){sync(false);frPoll();setInterval(frPoll,30000)}setInterval(()=>sync(!hub()),hub()?60000:90000)}
 document.addEventListener('visibilitychange',()=>{if(document.hidden)sync(true);else if(hub())sync(false)});
 addEventListener('online',()=>sync(!hub()));
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();

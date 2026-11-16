@@ -135,3 +135,90 @@ revoke all on function public.kz_signup(text,text,jsonb,jsonb,text), public.kz_l
   public.kz_push(text,jsonb,jsonb,timestamptz,boolean), public.kz_logout(text), public.kz_change_pass(text,text,text) from public;
 grant execute on function public.kz_signup(text,text,jsonb,jsonb,text), public.kz_login(text,text,text), public.kz_meta(text), public.kz_pull(text),
   public.kz_push(text,jsonb,jsonb,timestamptz,boolean), public.kz_logout(text), public.kz_change_pass(text,text,text) to anon, authenticated;
+
+-- ================= FRIENDS =================
+-- a = who sent the invite, b = who got it. status: 'pending' or 'friends'.
+create table if not exists public.kz_friends(
+  a text not null references public.kz_accounts(username) on delete cascade,
+  b text not null references public.kz_accounts(username) on delete cascade,
+  status text not null default 'pending' check (status in ('pending','friends')),
+  created_at timestamptz not null default now(),
+  primary key (a, b),
+  check (a <> b));
+create unique index if not exists kz_friends_pair on public.kz_friends(least(a,b), greatest(a,b));
+alter table public.kz_friends enable row level security;
+revoke all on public.kz_friends from anon, authenticated;
+
+-- everyone with an account (name, avatar, colour, online or not) and how they relate to me
+create or replace function public.kz_people(p_token text, p_search text default '')
+returns json language plpgsql security definer set search_path = public, extensions as $$
+declare me text := kz_user_for(p_token); q text := lower(trim(coalesce(p_search,'')));
+begin
+  return coalesce((select json_agg(x order by x.rel_order, x.online desc, x.username) from (
+    select acc.username,
+           coalesce(acc.profile->>'name', acc.username) as name,
+           coalesce(acc.profile->>'avatar', '🦊') as avatar,
+           coalesce(acc.profile->>'color', '#3ef0ff') as color,
+           coalesce((select max(s.used_at) from kz_sessions s where s.username = acc.username) > now() - interval '3 minutes', false) as online,
+           case when f.status = 'friends' then 'friend' when f.a = me then 'sent' when f.b = me then 'received' else 'none' end as rel,
+           case when f.status = 'friends' then 1 when f.b = me then 0 when f.a = me then 2 else 3 end as rel_order
+      from kz_accounts acc
+      left join kz_friends f on (f.a = me and f.b = acc.username) or (f.b = me and f.a = acc.username)
+     where acc.username <> me
+       and (q = '' or acc.username like '%' || q || '%' or lower(coalesce(acc.profile->>'name','')) like '%' || q || '%')
+     order by rel_order, acc.username
+     limit 300) x), '[]'::json);
+end $$;
+
+-- send an invite (if they already invited me, we just become friends)
+create or replace function public.kz_friend_invite(p_token text, p_to text) returns text
+language plpgsql security definer set search_path = public, extensions as $$
+declare me text := kz_user_for(p_token); them text := lower(trim(p_to)); f kz_friends;
+begin
+  if them = me or not exists(select 1 from kz_accounts where username = them) then raise exception 'kz_no_user'; end if;
+  select * into f from kz_friends where (a = me and b = them) or (a = them and b = me);
+  if f.a is not null then
+    if f.status = 'friends' then return 'friend'; end if;
+    if f.b = me then update kz_friends set status = 'friends' where a = them and b = me; return 'friend'; end if;
+    return 'sent';
+  end if;
+  if (select count(*) from kz_friends where a = me and status = 'pending') >= 50 then raise exception 'kz_too_many'; end if;
+  insert into kz_friends(a, b) values (me, them);
+  return 'sent';
+end $$;
+
+-- accept or say no to an invite
+create or replace function public.kz_friend_answer(p_token text, p_from text, p_accept boolean) returns text
+language plpgsql security definer set search_path = public, extensions as $$
+declare me text := kz_user_for(p_token); them text := lower(trim(p_from));
+begin
+  if p_accept then
+    update kz_friends set status = 'friends' where a = them and b = me and status = 'pending';
+    return 'friend';
+  end if;
+  delete from kz_friends where a = them and b = me and status = 'pending';
+  return 'none';
+end $$;
+
+-- cancel my invite, or stop being friends
+create or replace function public.kz_friend_remove(p_token text, p_other text) returns text
+language plpgsql security definer set search_path = public, extensions as $$
+declare me text := kz_user_for(p_token); them text := lower(trim(p_other));
+begin
+  delete from kz_friends where (a = me and b = them) or (a = them and b = me);
+  return 'none';
+end $$;
+
+-- how many invites are waiting for me (for the red badge)
+create or replace function public.kz_friend_count(p_token text) returns json
+language plpgsql security definer set search_path = public, extensions as $$
+declare me text := kz_user_for(p_token);
+begin
+  return json_build_object('requests', (select count(*) from kz_friends where b = me and status = 'pending'),
+                           'friends', (select count(*) from kz_friends where (a = me or b = me) and status = 'friends'));
+end $$;
+
+revoke all on function public.kz_people(text,text), public.kz_friend_invite(text,text), public.kz_friend_answer(text,text,boolean),
+  public.kz_friend_remove(text,text), public.kz_friend_count(text) from public;
+grant execute on function public.kz_people(text,text), public.kz_friend_invite(text,text), public.kz_friend_answer(text,text,boolean),
+  public.kz_friend_remove(text,text), public.kz_friend_count(text) to anon, authenticated;
