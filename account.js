@@ -56,6 +56,86 @@ function login(p){const ex=A.accounts.find(a=>a.id===p.acct.id);
     for(const k of liveKeys())localStorage.removeItem(k);A.accounts=A.accounts.filter(x=>x!==o);A.current=a.id;for(const k in p.data)localStorage.setItem(k,p.data[k]);writeProfile(a);saveA();location.reload();return}
   saveA();set(P+'data:'+a.id,p.data);switchTo(a.id)}
 
+// ================= ONLINE ACCOUNTS (Supabase) =================
+// Put your Supabase Project URL and its anon / publishable key here (Project Settings -> API). That key is meant to be
+// public: the database only lets it call the kz_* functions from supabase-setup.sql. NEVER put the service_role / secret key here.
+const CLOUD_URL='',CLOUD_KEY='';
+function cloudCfg(){const t=get(P+'cloudtest',null);return t||{url:CLOUD_URL,key:CLOUD_KEY}}
+const cloudOn=()=>!!cloudCfg().url&&!!cloudCfg().key;
+const ERR={kz_taken:'That username is already taken. Try another one.',kz_bad_name:'Usernames are 3 to 20 letters, numbers or _ (no spaces).',kz_short_pass:'The password must be at least 6 characters.',
+  kz_wrong:'Wrong username or password.',kz_slow_down:'Too many wrong tries. Wait 10 minutes and try again.',kz_logged_out:'You were logged out on this device. Log in again.',kz_conflict:'kz_conflict',kz_too_big:'Your saves are too big to put online (over 8 MB). Delete a big Kuzey Craft world and try again.'};
+async function rpc(fn,args){const c=cloudCfg(),h={'Content-Type':'application/json',apikey:c.key};if(c.key.startsWith('eyJ'))h.Authorization='Bearer '+c.key;
+  let r;try{r=await fetch(c.url.replace(/\/+$/,'')+'/rest/v1/rpc/'+fn,{method:'POST',headers:h,body:JSON.stringify(args)})}catch(e){const x=new Error('No internet right now. Your progress is safe on this device.');x.offline=true;throw x}
+  const j=await r.json().catch(()=>null);if(!r.ok){const m=(j&&(j.message||j.hint))||('Server error '+r.status);const x=new Error(ERR[m]||m);x.code=m;throw x}
+  if(j&&j.error){const x=new Error(ERR[j.error]||j.error);x.code=j.error;throw x}return j}
+function clean(d){const o={};for(const k of Object.keys(d).sort())if(!SKIP.some(p=>k.startsWith(p)))o[k]=d[k];return o}
+const hashOf=d=>sha(JSON.stringify(clean(d)));
+const devName=()=>(/iPad/.test(navigator.userAgent)?'iPad':/iPhone/.test(navigator.userAgent)?'iPhone':/Android/.test(navigator.userAgent)?'Android':/Mac/.test(navigator.userAgent)?'Mac':/Win/.test(navigator.userAgent)?'Windows':'Device');
+const profOut=a=>({name:a.name,avatar:a.avatar,color:a.color});
+function reloadA(){A=get(P+'list',A)}
+let syncing=false,syncMsg='';
+function setSync(msg){syncMsg=msg;const e=document.getElementById('acSync');if(e)e.textContent=msg}
+function applyData(a,data){for(const k of liveKeys())localStorage.removeItem(k);for(const k in data)if(!SKIP.some(p=>k.startsWith(p)))localStorage.setItem(k,data[k]);writeProfile(a)}
+async function pushNow(a,force){const snap=snapshot();const r=await rpc('kz_push',{p_token:a.cloud.token,p_profile:profOut(a),p_data:snap,p_base:a.cloud.base,p_force:!!force});
+  reloadA();const b=A.accounts.find(x=>x.id===a.id);b.cloud.base=r.updated_at;b.cloud.hash=await hashOf(snap);b.cloud.at=Date.now();saveA();return b}
+async function pullNow(a){const r=await rpc('kz_pull',{p_token:a.cloud.token});reloadA();const b=A.accounts.find(x=>x.id===a.id);
+  if(r.profile&&r.profile.name){b.name=r.profile.name;b.avatar=r.profile.avatar||b.avatar;b.color=r.profile.color||b.color}
+  applyData(b,r.data||{});b.cloud.base=r.updated_at;b.cloud.hash=await hashOf(r.data||{});b.cloud.at=Date.now();saveA();return b}
+// bg = inside a game: only upload, never replace what is on the screen
+async function sync(bg){if(syncing||!cloudOn())return;reloadA();let a=cur();if(!a||!a.cloud||!a.cloud.token)return;syncing=true;
+  try{setSync('☁️ Syncing…');const meta=await rpc('kz_meta',{p_token:a.cloud.token});const h=await hashOf(snapshot());
+    const localCh=h!==a.cloud.hash,remoteCh=meta.updated_at!==a.cloud.base;
+    if(localCh&&!remoteCh){try{await pushNow(a)}catch(e){if(e.code!=='kz_conflict')throw e;if(!bg)await conflict(a)}}
+    else if(!localCh&&remoteCh){if(!bg){await pullNow(a);location.reload();return}}
+    else if(localCh&&remoteCh){if(!bg)await conflict(a)}
+    else{a.cloud.at=Date.now();saveA()}
+    setSync('☁️ Saved online · '+(cur().cloud?'just now':''))}
+  catch(e){if(e.code==='kz_logged_out'){reloadA();const b=cur();b.cloud.token=null;saveA();setSync('☁️ Logged out · tap to log in')}else setSync(e.offline?'☁️ Offline · will sync later':'☁️ Could not sync');if(!bg&&!e.offline&&e.code!=='kz_logged_out')console.warn(e)}
+  finally{syncing=false}}
+async function conflict(a){// both this device and the online copy changed: if they are the same, nothing to do
+  const r=await rpc('kz_pull',{p_token:a.cloud.token});const rh=await hashOf(r.data||{}),lh=await hashOf(snapshot());
+  if(rh===lh){reloadA();const b=cur();b.cloud.base=r.updated_at;b.cloud.hash=lh;saveA();return}
+  const t=trophies(),rt=Object.entries(r.data||{}).filter(([k])=>k.startsWith('kuzey:ach:')).reduce((n,[k,v])=>{try{return n+Object.keys(JSON.parse(v)).length}catch(e){return n}},0);
+  return new Promise(res=>modal(`<h2>☁️ Which progress do you want?</h2><p>You played on another device too, so there are two different saves.</p>
+    <button class="acb big" id="kL"><span>📱</span><div>Keep THIS device<small>🏆 ${t.n} trophies · the online copy gets replaced</small></div></button>
+    <button class="acb big" id="kR"><span>☁️</span><div>Use the ONLINE copy<small>🏆 ${rt} trophies · saved ${new Date(r.updated_at).toLocaleString()}</small></div></button>`,(m,close)=>{
+    m.querySelector('#kL').onclick=async()=>{close();await pushNow(cur(),true);res()};m.querySelector('#kR').onclick=async()=>{close();await pullNow(cur());location.reload()}}))}
+// log in to an online account on this device
+async function cloudLogin(user,pass){const r=await rpc('kz_login',{p_user:user,p_pass:pass,p_device:devName()});const pr=r.profile||{};
+  const local=A.accounts.find(a=>a.cloud&&a.cloud.user===r.username);
+  const acct={id:local?local.id:newId(),name:pr.name||r.username,avatar:pr.avatar||'🦊',color:pr.color||'#3ef0ff',pin:local?local.pin:null,created:local?local.created:Date.now(),
+    cloud:{user:r.username,token:r.token,base:r.updated_at,hash:await hashOf(r.data||{}),at:Date.now()}};
+  login({acct,data:r.data||{}})}
+async function cloudSignup(user,pass){const a=cur(),snap=snapshot();const r=await rpc('kz_signup',{p_user:user,p_pass:pass,p_profile:profOut(a),p_data:snap,p_device:devName()});
+  reloadA();const b=cur();b.cloud={user:r.username,token:r.token,base:r.updated_at,hash:await hashOf(snap),at:Date.now()};delete b.fresh;saveA();return b}
+function cloudUI(){const a=cur();if(!cloudOn()){modal(`<h2>☁️ Online accounts</h2><p>Online accounts are not switched on yet. (The arcade owner has to add the Supabase settings.)</p><button class="acb alt" data-x>OK</button>`);return}
+  if(a.cloud&&a.cloud.token){modal(`<h2>☁️ Online account</h2><div class="achead">${av(a)}<div><b>${esc(a.cloud.user)}</b><p id="cuS">${syncMsg||'☁️ Linked'}</p></div></div>
+    <p>Your progress saves online by itself. On another device, open Kuzey Arcade → Account → <b>Log in</b> with <b>${esc(a.cloud.user)}</b> and your password.</p>
+    <button class="acb" id="cuSync">🔄 SYNC NOW</button><button class="acb alt" id="cuPass">🔑 CHANGE PASSWORD</button><button class="acb red" id="cuOut">🚪 LOG OUT OF THIS DEVICE</button><button class="acb alt" data-x>CLOSE</button>`,(m,close)=>{
+    m.querySelector('#cuSync').onclick=async()=>{const s=m.querySelector('#cuS');s.textContent='☁️ Syncing…';await sync(false);s.textContent=syncMsg};
+    m.querySelector('#cuPass').onclick=()=>{close();passUI(a)};
+    m.querySelector('#cuOut').onclick=async()=>{if(!confirm('Log out of '+a.cloud.user+' on this device? Your progress stays online, and you can log in again any time.'))return;close();
+      await sync(false).catch(()=>{});try{await rpc('kz_logout',{p_token:cur().cloud.token})}catch(e){}reloadA();const b=cur();delete b.cloud;saveA();bar();toast('Logged out of the online account.')}});return}
+  if(a.cloud&&!a.cloud.token){cloudForm('login',a.cloud.user);return}
+  cloudForm(a.fresh||trophies().n===0?'login':'signup')}
+function cloudForm(mode,user=''){modal(`<h2>☁️ Online account</h2><div class="tabs2 row"><button class="acb ${mode==='login'?'':'alt'}" data-m="login">LOG IN</button><button class="acb ${mode==='signup'?'':'alt'}" data-m="signup">CREATE</button></div>
+  <p id="cfP">${mode==='login'?'Log in with your online account. Your progress comes to this device.':'Make an online account. Your progress on this device is saved online, and you can log in on any device.'}</p>
+  <label>Username<input id="cfU" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="20" value="${esc(user)}" placeholder="like kuzey_10"></label>
+  <label>Password<input id="cfW" type="password" autocomplete="${mode==='login'?'current-password':'new-password'}" placeholder="at least 6 characters"></label>
+  ${mode==='signup'?'<label>Password again<input id="cfW2" type="password" autocomplete="new-password"></label><p style="font-size:13px">💡 Tell a parent your username and password so you don\'t forget them. Don\'t use your real full name.</p>':''}
+  <div class="acerr" id="cfE"></div><div class="row"><button class="acb alt" data-x>CANCEL</button><button class="acb" id="cfOk">${mode==='login'?'LOG IN':'CREATE'}</button></div>`,(m,close)=>{
+  m.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{close();cloudForm(b.dataset.m,m.querySelector('#cfU').value)});
+  m.querySelector('#cfOk').onclick=async()=>{const u=m.querySelector('#cfU').value.trim().toLowerCase(),w=m.querySelector('#cfW').value,err=m.querySelector('#cfE'),b=m.querySelector('#cfOk');err.textContent='';
+    if(!/^[a-z0-9_]{3,20}$/.test(u)){err.textContent=ERR.kz_bad_name;return}if(w.length<6){err.textContent=ERR.kz_short_pass;return}
+    if(mode==='signup'&&w!==m.querySelector('#cfW2').value){err.textContent='The two passwords are different.';return}
+    b.disabled=true;b.textContent='…';
+    try{if(mode==='login'){await cloudLogin(u,w)}else{await cloudSignup(u,w);close();bar();toast('☁️ Online account made! Your progress is saved online.')}}
+    catch(e){err.textContent=e.message;b.disabled=false;b.textContent=mode==='login'?'LOG IN':'CREATE'}}})}
+function passUI(a){modal(`<h2>🔑 Change password</h2><label>Old password<input id="pO" type="password" autocomplete="current-password"></label><label>New password<input id="pN" type="password" autocomplete="new-password"></label>
+  <p style="font-size:13px">Your other devices will need to log in again with the new password.</p><div class="acerr" id="pE"></div><div class="row"><button class="acb alt" data-x>CANCEL</button><button class="acb" id="pOk">CHANGE</button></div>`,(m,close)=>{
+  m.querySelector('#pOk').onclick=async()=>{const err=m.querySelector('#pE');try{const nw=m.querySelector('#pN').value;await rpc('kz_change_pass',{p_user:a.cloud.user,p_old:m.querySelector('#pO').value,p_new:nw});close();
+    await cloudLogin(a.cloud.user,nw)}catch(e){err.textContent=e.message}}})}
+
 // ---------- stats ----------
 function trophies(){let n=0,g=0;for(const k of liveKeys())if(k.startsWith('kuzey:ach:')){const c=Object.keys(get(k,{})).length;n+=c;if(c)g++}return{n,g}}
 function bytes(){let n=0;for(const k of liveKeys())n+=k.length+(localStorage.getItem(k)||'').length;return n}
@@ -90,34 +170,35 @@ function modal(html,bind){const m=document.createElement('div');m.className='acm
   const close=()=>m.remove();m.addEventListener('click',e=>{if(e.target===m)close()});m.querySelectorAll('[data-x]').forEach(b=>b.onclick=close);bind&&bind(m,close);return close}
 const av=(a,cls='')=>`<span class="acav ${cls}" style="border-color:${a.color};background:${a.color}22">${a.avatar}</span>`;
 function bar(){const el=document.getElementById('acct');if(!el)return;const a=cur(),t=trophies();
-  el.innerHTML=`<button class="acbar" id="acOpen">${av(a)}<span><b>${esc(a.name)}</b><small>${a.fresh?'Tap to create your account':`🏆 ${t.n} trophies · ${A.accounts.length>1?A.accounts.length+' players on this device':'Your account'}`}</small></span><span class="go">${a.fresh?'CREATE':'ACCOUNT'}</span></button>`;
-  document.getElementById('acOpen').onclick=()=>cur().fresh?editor(cur(),true):menu()}
+  el.innerHTML=`<button class="acbar" id="acOpen">${av(a)}<span><b>${esc(a.name)}</b><small>${a.fresh?'Tap to create your account':`🏆 ${t.n} trophies · ${A.accounts.length>1?A.accounts.length+' players on this device':'Your account'}`}<br><span id="acSync">${a.cloud?(syncMsg||(a.cloud.token?'☁️ Online: '+esc(a.cloud.user):'☁️ Logged out · tap to log in')):cloudOn()&&!a.fresh?'☁️ Not online yet · tap to save online':''}</span></small></span><span class="go">${a.fresh?'CREATE':'ACCOUNT'}</span></button>`;
+  document.getElementById('acOpen').onclick=()=>{const c=cur();c.fresh?editor(c,true):c.cloud&&!c.cloud.token?cloudForm('login',c.cloud.user):menu()}}
 
 function menu(){const a=cur(),t=trophies(),kb=Math.ceil(bytes()/1024);
   modal(`<div class="achead">${av(a)}<div><b>${esc(a.name)}</b><p>🏆 ${t.n} trophies in ${t.g} games · ${a.pin?'🔒 PIN on':'🔓 no PIN'}</p></div></div>
+    ${cloudOn()?`<button class="acb big" id="mCloud" style="border-color:#3ef0ff"><span>☁️</span><div>${a.cloud&&a.cloud.token?'Online account: '+esc(a.cloud.user):'Online account'}<small>${a.cloud&&a.cloud.token?'Saved online · sync, password, log out':'Save online and log in on any device with a password'}</small></div></button>`:''}
     <button class="acb big" id="mEdit"><span>✏️</span><div>Edit my account<small>Name, avatar, colour and PIN</small></div></button>
-    <button class="acb big" id="mSend"><span>📤</span><div>Use my account on another device<small>Makes a login code for your iPad, computer or a new phone</small></div></button>
-    <button class="acb big" id="mLogin"><span>📥</span><div>Log in from another device<small>Paste your login code or open the file</small></div></button>
+    <button class="acb big" id="mSend"><span>📤</span><div>Login code (no internet needed)<small>Move your account to another device with a code or AirDrop</small></div></button>
+    <button class="acb big" id="mLogin"><span>📥</span><div>Log in with a code<small>Paste a login code or open a .kuzey file</small></div></button>
     <button class="acb big" id="mSwitch"><span>👥</span><div>Switch player<small>${A.accounts.length} account${A.accounts.length>1?'s':''} on this device · add a new one</small></div></button>
     <p style="font-size:12px;color:#9a94c9">Your progress is saved on this device (${kb} KB). Nobody else can see it.</p>
     <button class="acb alt" data-x>CLOSE</button>`,(m,close)=>{
     m.querySelector('#mEdit').onclick=()=>{close();editor(a)};m.querySelector('#mSend').onclick=()=>{close();send()};
-    m.querySelector('#mLogin').onclick=()=>{close();loginUI()};m.querySelector('#mSwitch').onclick=()=>{close();switcher()}})}
+    m.querySelector('#mLogin').onclick=()=>{close();loginUI()};const mc=m.querySelector('#mCloud');if(mc)mc.onclick=()=>{close();cloudUI()};m.querySelector('#mSwitch').onclick=()=>{close();switcher()}})}
 
 function editor(a,first){let p={name:first&&a.name==='Player'?'':a.name,avatar:a.avatar,color:a.color};
-  modal(`<h2>${first?'👤 Create your account':'✏️ Edit account'}</h2>${first?'<p>Your trophies, coins and saves from every game stay with your account.</p>':''}
+  modal(`<h2>${first?'👤 Create your account':'✏️ Edit account'}</h2>${first?'<p>Your trophies, coins and saves from every game stay with your account.</p>'+(cloudOn()?'<button class="acb alt" id="eCl">☁️ I ALREADY HAVE AN ONLINE ACCOUNT</button>':''):''}
     <label>Name<input id="eN" maxlength="14" value="${esc(p.name)}" placeholder="Your name"></label>
     <b>Avatar</b><div class="grid" id="eA">${AV.map(x=>`<button data-a="${x}" class="${x===p.avatar?'on':''}">${x}</button>`).join('')}</div>
     <b>Colour</b><div class="grid">${COL.map(c=>`<button class="sw ${c===p.color?'on':''}" data-c="${c}" style="background:${c}" aria-label="colour ${c}"></button>`).join('')}</div>
-    <label><b>Secret PIN</b> (4 to 6 numbers)${a.pin?' · leave empty to keep your PIN':''}<input id="eP" class="pin" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password" placeholder="••••"></label>
+    <label><b>Secret PIN</b> (4 to 6 numbers, optional)${a.pin?' · leave empty to keep your PIN':''}<input id="eP" class="pin" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password" placeholder="••••"></label>
     <p style="font-size:13px">You need the PIN to log in on another device, and to switch to your account if other people use this device. Don't tell anyone, but tell a parent!</p>
     <div class="acerr" id="eE"></div><div class="row"><button class="acb alt" data-x>CANCEL</button><button class="acb" id="eOk">SAVE</button></div>`,(m,close)=>{
+    const ecl=m.querySelector('#eCl');if(ecl)ecl.onclick=()=>{close();cloudForm('login')};
     m.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{p.avatar=b.dataset.a;m.querySelectorAll('[data-a]').forEach(x=>x.classList.toggle('on',x===b))});
     m.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{p.color=b.dataset.c;m.querySelectorAll('[data-c]').forEach(x=>x.classList.toggle('on',x===b))});
     m.querySelector('#eOk').onclick=async()=>{const name=m.querySelector('#eN').value.trim().slice(0,14),pin=m.querySelector('#eP').value.trim(),err=m.querySelector('#eE');
       if(!name){err.textContent='Type your name.';return}if(pin&&!/^\d{4,6}$/.test(pin)){err.textContent='The PIN must be 4 to 6 numbers.';return}
-      if(!pin&&!a.pin){err.textContent='Choose a secret PIN so only you can log in.';return}
-      if(pin)a.pin=await pinHash(a,pin);a.name=name;a.avatar=p.avatar;a.color=p.color;delete a.fresh;saveA();if(a.id===A.current)writeProfile(a);close();bar();if(first)toast('🎉 Account ready! Welcome, '+esc(name)+'!')}})}
+      if(pin)a.pin=await pinHash(a,pin);a.name=name;a.avatar=p.avatar;a.color=p.color;delete a.fresh;saveA();if(a.id===A.current)writeProfile(a);close();bar();if(first){toast('🎉 Account ready! Welcome, '+esc(name)+'!');if(cloudOn()&&!a.cloud)setTimeout(()=>cloudForm('signup'),600)}else if(a.cloud)sync(true)}})}
 
 function askPin(a,title,cb){modal(`<div class="achead">${av(a)}<div><b>${esc(a.name)}</b><p>${title}</p></div></div><input class="pin" id="pP" type="password" inputmode="numeric" maxlength="6" placeholder="PIN"><div class="acerr" id="pE"></div>
   <div class="row"><button class="acb alt" data-x>CANCEL</button><button class="acb" id="pOk">OK</button></div>`,(m,close)=>{const i=m.querySelector('#pP');setTimeout(()=>i.focus(),50);
@@ -159,6 +240,10 @@ function loginUI(){modal(`<h2>📥 Log in from another device</h2><p>On your oth
 
 function toast(html){const t=document.createElement('div');t.className='acm';t.style.cssText='inset:auto 0 auto 0;top:calc(16px + env(safe-area-inset-top,0px));background:none;pointer-events:none';
   t.innerHTML=`<div class="bx" style="width:auto;max-width:90%;border-color:#ffd23f;padding:12px 16px;font-weight:600">${html}</div>`;document.body.appendChild(t);setTimeout(()=>t.remove(),3200)}
-window.KuzeyAccount={current:cur,menu,send,login:loginUI,switcher};
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bar);else bar();
+window.KuzeyAccount={current:cur,menu,send,login:loginUI,switcher,cloud:cloudUI,sync};
+const hub=()=>!!document.getElementById('acct');
+function start(){bar();if(hub())sync(false);setInterval(()=>sync(!hub()),hub()?60000:90000)}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)sync(true);else if(hub())sync(false)});
+addEventListener('online',()=>sync(!hub()));
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();
