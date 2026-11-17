@@ -183,5 +183,6 @@ const util={
 
 window.KIT={profile,sfx:SFX,FX,scores,ach,pad:{create:makePad},ui,util};
 // accounts: keeps each player's progress separate and saves it online in the background
+if(!document.querySelector('script[src$="lang.js"]')){const l=document.createElement('script');l.src='lang.js';(document.head||document.documentElement).appendChild(l)}
 if(!document.querySelector('script[src$="account.js"]')){const s=document.createElement('script');s.src='account.js';(document.head||document.documentElement).appendChild(s)}
 })();

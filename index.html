@@ -40,12 +40,17 @@ h1{font-family:var(--display);font-weight:900;font-size:clamp(34px,9vw,64px);lin
 .help ol{margin:0;padding-left:20px;color:var(--mute)}
 .help b{color:var(--ink)}
 .installed{color:var(--cyan)}
+#langSw{position:absolute;top:0;right:0;display:flex;gap:4px;background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:3px}
+#langSw button{border:0;border-radius:9px;padding:6px 9px;background:transparent;color:var(--mute);font:900 12px var(--display);cursor:pointer}
+#langSw button.on{background:var(--cyan);color:var(--night)}
+h1{padding-right:110px}@media (max-width:520px){h1{padding-right:0;margin-top:40px}}
 @media (prefers-reduced-motion:reduce){.game{transition:none}}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header>
+  <header style="position:relative">
+    <div id="langSw"></div>
     <h1>KUZEY ARCADE</h1>
     <p class="sub">Over 25 games, made with Claude, all with awards and your own avatar. They work offline once you've opened them.</p>
       <div id="acct"></div>
@@ -288,6 +293,7 @@ h1{font-family:var(--display);font-weight:900;font-size:clamp(34px,9vw,64px);lin
     </ol>
   </div>
 </div>
+<script src="lang.js"></script>
 <script src="account.js"></script>
 <script>
 // tiny animated previews
