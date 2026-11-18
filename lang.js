@@ -6,7 +6,7 @@
 const KEY='kuzey:lang';let lang='en';try{lang=JSON.parse(localStorage.getItem(KEY))||'en'}catch(e){}
 const TR={
 // ---------- arcade home page ----------
-"Over 25 games, made with Claude, all with awards and your own avatar. They work offline once you've opened them.":"25'ten fazla oyun, Claude ile yapıldı. Hepsinde ödüller ve kendi avatarın var. Bir kez açtıktan sonra internetsiz de çalışırlar.",
+"Over 60 games, made with Claude, all with awards and your own avatar. They work offline once you've opened them.":"60'tan fazla oyun, Claude ile yapıldı. Hepsinde ödüller ve kendi avatarın var. Bir kez açtıktan sonra internetsiz de çalışırlar.",
 "🆕 NEW MEGA GAMES":"🆕 YENİ MEGA OYUNLAR","LABS & TOOLS":"LABORATUVAR VE ARAÇLAR","PLAY":"OYNA","OPEN":"AÇ",
 "NEW! A huge space shooter: 8 sectors, 8 giant bosses, 8 ships to buy and paint, upgrades, Endless and a Daily Run.":"YENİ! Dev bir uzay savaşı: 8 bölge, 8 dev boss, satın alıp boyayabileceğin 8 gemi, geliştirmeler, Sonsuz mod ve Günlük Uçuş.",
 "NEW! Top-down racing with drifts, jumps and nitro. 15 tracks, 5 cups, 12 cars to buy, paint and tune, Time Trial ghosts and a Daily Challenge.":"YENİ! Yukarıdan bakışlı yarış: drift, atlama ve nitro. 15 pist, 5 kupa, satın alıp boyayabileceğin 12 araba, zamana karşı hayaletler ve Günlük Görev.",
@@ -125,6 +125,7 @@ const TR={
 "Your progress saves online by itself. On another device, open Kuzey Arcade → Account →":"İlerlemen kendiliğinden çevrimiçi kaydedilir. Başka bir cihazda Kuzey Arcade → Hesap →",
 "No friends yet. Go to":"Henüz arkadaşın yok.","and invite someone!":"bölümüne gidip birini davet et!","🔑 Change password":"🔑 Şifreyi değiştir","Old password":"Eski şifre","New password":"Yeni şifre","CHANGE":"DEĞİŞTİR",
 "PIN":"PIN","OPEN":"AÇ",
+"All":"Hepsi","Adventure":"Macera","Action":"Aksiyon","Puzzle":"Bulmaca","Strategy":"Strateji","Racing & Sports":"Yarış ve Spor","Pretend & Build":"Hayal Et ve İnşa Et","Music & Art":"Müzik ve Sanat","Learning":"Öğrenme","Multiplayer":"Çok oyunculu","Tools":"Araçlar","🔍 Search games":"🔍 Oyun ara","No games found. Try another word!":"Oyun bulunamadı. Başka bir kelime dene!",
 "Achievement unlocked!":"Başarım açıldı!","👤 Your player":"👤 Oyuncun"};
 // texts with names or numbers in them
 const RX=[[/^🏆 (\d+) trophies in (\d+) games · 🔓 no PIN$/,'🏆 $2 oyunda $1 kupa · 🔓 PIN yok'],[/^🏆 (\d+) trophies in (\d+) games · 🔒 PIN on$/,'🏆 $2 oyunda $1 kupa · 🔒 PIN açık'],
@@ -139,7 +140,7 @@ const RX=[[/^🏆 (\d+) trophies in (\d+) games · 🔓 no PIN$/,'🏆 $2 oyunda
 function tr(t){const k=t.replace(/\s+/g,' ').trim();if(!k)return null;if(TR[k])return t.replace(k,TR[k]);for(const[r,v]of RX)if(r.test(k))return t.replace(k,k.replace(r,v));return null}
 function walk(root){if(lang!=='tr')return;const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.parentNode&&/^(SCRIPT|STYLE|TEXTAREA)$/.test(n.parentNode.nodeName)?2:1});
   const list=[];let n;while(n=w.nextNode())list.push(n);for(const x of list){const v=tr(x.nodeValue);if(v!=null&&v!==x.nodeValue)x.nodeValue=v}
-  if(root.querySelectorAll)for(const el of root.querySelectorAll('[placeholder]')){const v=tr(el.getAttribute('placeholder'));if(v)el.setAttribute('placeholder',v)}}
+  if(root.querySelectorAll)for(const el of[...(root.hasAttribute&&root.hasAttribute('placeholder')?[root]:[]),...root.querySelectorAll('[placeholder]')]){const v=tr(el.getAttribute('placeholder'));if(v)el.setAttribute('placeholder',v)}}
 let obs=null;
 function start(){if(lang!=='tr')return;document.documentElement.lang='tr';walk(document.body);
   obs=new MutationObserver(ms=>{for(const m of ms){if(m.type==='characterData'){const v=tr(m.target.nodeValue);if(v!=null&&v!==m.target.nodeValue)m.target.nodeValue=v}else m.addedNodes.forEach(a=>{if(a.nodeType===3){const v=tr(a.nodeValue);if(v!=null&&v!==a.nodeValue)a.nodeValue=v}else if(a.nodeType===1)walk(a)})}});
