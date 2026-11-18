@@ -76,6 +76,7 @@ h2{font:900 22px var(--display);margin:0;color:var(--gold)}h3{font:900 13px var(
   <div class="shipcard"><canvas id="shipPrev" width="180" height="108"></canvas><div><b id="shipName">Arrow</b><small id="shipDesc"></small><small id="pilot"></small></div><button class="btn" id="mShip" style="padding:8px 12px">🚀 Ships</button></div>
   <div class="stats"><div><b id="best">0</b><small>Best km</small></div><div><b id="bank">0</b><small>🪙 Coins</small></div><div><b id="zoneBest">1</b><small>Furthest zone</small></div></div>
   <button class="btn main" id="mLaunch">🚀 LAUNCH <small>Endless run</small></button>
+  <button class="btn" id="mMulti" style="border-color:#3ef0ff"><span class="ic">🎮</span><span>MULTIPLAYER<small>Fly together or race a friend</small></span></button>
   <div class="row">
     <button class="btn" id="mDaily"><span class="ic">📅</span><span>DAILY RUN<small id="dInfo">Same space for everyone</small></span></button>
     <button class="btn" id="mHangar"><span class="ic">🔧</span><span>UPGRADES<small>Make your ship stronger</small></span></button>
@@ -196,7 +197,7 @@ const ZLEN=1000;
 /* ---------------- run state ---------------- */
 const stars=Array.from({length:140},()=>({x:Math.random(),y:Math.random(),z:Math.random()}));
 let G=null,mode='endless',paused=false,input={x:null,keys:{}},lastTap=0;
-function launch(m){mode=m;const s=ship();const rnd=m==='daily'?U.rng(hashStr(todayKey())):Math.random;
+function launch(m,seed){mode=m;const s=ship();const rnd=seed?U.rng(seed):m==='daily'?U.rng(hashStr(todayKey())):Math.random;
   G={x:W/2,y:H*.8,vx:0,shield:(SV.shield||0)+s.sh,hitT:0,rocks:[],coins:[],picks:[],mines:[],bolts:[],gates:[],parts:[],texts:[],dist:0,got:0,t:0,spawn:0,cspawn:1,pspawn:6,zspawn:3,dead:false,speed:180,
     zone:0,near:0,picksN:0,dashes:0,dashCd:0,dashT:0,fx:{},ship:s,rnd,lostShield:false,phaseT:0,shake:0};
   input.x=null;paused=false;show(null);$('hud').hidden=false;$('dashBtn').hidden=!matchMedia('(pointer:coarse)').matches;pips();SFX.levelup();banner(ZONES[0].icon+' '+ZONES[0].name)}
@@ -207,11 +208,11 @@ function pips(){$('pips').innerHTML=Array.from({length:G.shield},()=>'<i></i>').
 let banT=0,banS='';function banner(s){banS=s;banT=2.5}
 function txt(x,y,s,c='#ffd23f'){G.texts.push({x,y,s,c,life:1})}
 function burst(x,y,n,c,sp=6){for(let k=0;k<n;k++)G.parts.push({x,y,vx:(Math.random()-.5)*sp,vy:(Math.random()-.5)*sp,life:1,c})}
-function crash(){G.dead=true;burst(G.x,G.y,50,G.ship.col,9);burst(G.x,G.y,30,'#ff5d6c',7);SFX.explode();G.shake=16;
+function crash(){if(MPS&&mpDown())return;G.dead=true;burst(G.x,G.y,50,G.ship.col,9);burst(G.x,G.y,30,'#ff5d6c',7);SFX.explode();G.shake=16;
   const d=Math.floor(G.dist),newBest=d>SV.best;SV.coins+=G.got;SV.runs++;SV.km+=d;SV.dodged+=G.near;SV.pickups+=G.picksN;SV.dashes+=G.dashes;if(newBest)SV.best=d;SV.zoneBest=Math.max(SV.zoneBest,G.zone+1);
   const lb=SV.lb[mode]=(SV.lb[mode]||[]);lb.push({s:d,n:PROF.name,a:PROF.avatar,ship:G.ship.name,d:Date.now()});lb.sort((a,b)=>b.s-a.s);SV.lb[mode]=lb.slice(0,10);
   if(mode==='daily'){SV.daily[todayKey()]=Math.max(SV.daily[todayKey()]||0,d);ACH.unlock(GAME,'daily')}
-  msProgress({dist:d,got:G.got,near:G.near,picks:G.picksN,dashes:G.dashes,zone:G.zone});store();
+  msProgress({dist:d,got:G.got,near:G.near,picks:G.picksN,dashes:G.dashes,zone:G.zone});store();if(MPS){MPS.finish({score:d,txt:G.got+' coins'});$('oAgain').hidden=true}
   setTimeout(()=>{$('hud').hidden=true;$('dashBtn').hidden=true;$('oTitle').textContent=newBest?'NEW RECORD!':'SHIP DOWN';$('oDist').textContent=d+' km';$('oSub').textContent=`Reached ${ZONES[G.zone%6].icon} ${ZONES[G.zone%6].name}${G.zone>=6?' (loop '+(Math.floor(G.zone/6)+1)+')':''}`;
     $('oStats').innerHTML=[['🪙 Coins','+'+G.got],['😅 Near misses',G.near],['🎁 Pickups',G.picksN],['💨 Dashes',G.dashes]].map(([a,b])=>`<div><b>${b}</b><small>${a}</small></div>`).join('');drawMissions($('oMs'),false);show('sOver')},1100)}
 function hit(r){if(G.dashT>0||G.fx.ghost>0||G.phaseT>0){if(G.fx.ghost>0||G.phaseT>0){ACH.unlock(GAME,'ghost')}return false}if(G.hitT>0)return false;
@@ -322,7 +323,7 @@ let lbTab='endless';function drawScores(){$('lbTabs').innerHTML=[['endless','End
   const lb=SV.lb[lbTab]||[];$('lbList').innerHTML=lb.length?lb.map((e,i)=>`<div><b>${['🥇','🥈','🥉'][i]||'#'+(i+1)}</b><span>${e.a} ${e.n} <small style="color:var(--mute)">· ${e.ship||''}</small></span><b>${e.s} km</b></div>`).join(''):'<p class="tag" style="text-align:left">No runs yet!</p>';
   $('life').innerHTML=[['Runs',SV.runs],['Total km',SV.km],['Near misses',SV.dodged],['Pickups',SV.pickups],['Dashes',SV.dashes],['Missions',SV.msDone]].map(([a,b])=>`<div><b>${b}</b><small>${a}</small></div>`).join('')}
 $('oAgain').onclick=()=>launch(mode);$('oMenu').onclick=()=>{G=null;show('sMenu')};
-function pause(){if(!G||G.dead)return;paused=true;show('sPause')}$('bPause').onclick=pause;$('pzGo').onclick=()=>{paused=false;show(null)};$('pzQuit').onclick=()=>{paused=false;show(null);crash()};
+function pause(){if(!G||G.dead)return;if(MPS){if(confirm('Leave the multiplayer game?'))MPS.quit();return}paused=true;show('sPause')}$('bPause').onclick=pause;$('pzGo').onclick=()=>{paused=false;show(null)};$('pzQuit').onclick=()=>{paused=false;show(null);crash()};
 /* ---------------- input ---------------- */
 addEventListener('pointerdown',e=>{if(!G||G.dead||paused||e.target.closest('.screen,#dashBtn,#bPause,.kmodal'))return;input.x=e.clientX;const n=performance.now();if(e.pointerType!=='mouse'&&n-lastTap<260)dash();lastTap=n;if(e.pointerType==='mouse'&&e.button===2)dash()});
 addEventListener('pointermove',e=>{if(!G||G.dead)return;if(input.x!=null||(e.pointerType==='mouse'&&$('sMenu').hidden))input.x=e.clientX});
@@ -332,9 +333,30 @@ addEventListener('keydown',e=>{if(document.querySelector('.kmodal'))return;const
   if(k===' '||k==='Shift'){e.preventDefault();if(!$('sOver').hidden){$('oAgain').click();return}if(!$('sMenu').hidden){$('mLaunch').click();return}if(!$('sPause').hidden){$('pzGo').click();return}dash()}
   if(k==='p'||k==='Escape'){if(!$('sPause').hidden)$('pzGo').click();else pause()}});
 addEventListener('keyup',e=>{input.keys[e.key]=false});
-document.addEventListener('visibilitychange',()=>{if(document.hidden)pause()});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&!MPS)pause()});
 msProgress(null);store();show('sMenu');requestAnimationFrame(frame);
-if(new URLSearchParams(location.search).has('test'))window.__dg={get G(){return G},SV,launch,step,dash,takePick};
+
+/* ---------------- multiplayer: race (fly farthest) or together (rescue each other) ---------------- */
+let MPS=null,GHD=null,RESC=null,downs=0;
+function mpDown(){if(MPS.mode!=='coop'||G.waiting)return!!G.waiting;if(!GHD||GHD.dead||GHD.out||downs>=3||MPS.left||MPS.oppFin)return false;
+  downs++;G.dead=true;G.waiting=true;burst(G.x,G.y,40,G.ship.col,8);SFX.explode();G.shake=12;MPS.send('down',{need:5+downs*5});banner('🆘 WAIT FOR '+MPS.peer.name.toUpperCase()+'!');return true}
+function mpRevive(){G.dead=false;G.waiting=false;G.hitT=2.5;G.rocks=G.rocks.filter(r=>r.y<G.y-200);G.mines=[];banner('BACK IN! '+MPS.peer.name+' saved you');SFX.power()}
+const _frameMP=frame;frame=function(now){_frameMP(now);if(!MPS||!G||!GHD||GHD.x==null)return;const t=now/1000;
+  if(!GHD.dead){ctx.globalAlpha=.45;drawShip(ctx,GHD.ship,GHD.x*W,G.y,1,0,t);ctx.globalAlpha=1;ctx.fillStyle='#fff';ctx.font='900 10px Orbitron';ctx.textAlign='center';ctx.fillText(MPS.peer.avatar+' '+MPS.peer.name,GHD.x*W,G.y+40)}
+  ctx.textAlign='center';ctx.font='900 15px Orbitron';
+  if(RESC&&!RESC.done&&!G.dead){ctx.fillStyle=Math.floor(t*3)%2?'#ffd23f':'#fff';ctx.fillText('🆘 SAVE '+MPS.peer.name.toUpperCase()+': 🪙 '+Math.min(RESC.need,G.got-RESC.from)+'/'+RESC.need,W/2,92)}
+  else if(G.waiting){ctx.fillStyle='#ffd23f';ctx.fillText(MPS.peer.name+' is collecting coins to save you…',W/2,H/2)}
+  else if(MPS.mode==='race'&&!G.dead){const dd=Math.round((GHD.d||0)-G.dist);ctx.fillStyle=dd>0?'#ff8a3d':'#5cf2b4';ctx.fillText(dd>0?MPS.peer.name+' is '+dd+' km ahead':dd<0?'You lead by '+(-dd)+' km!':'Side by side!',W/2,92)}};
+setInterval(()=>{if(!MPS||!G)return;MPS.send('p',{x:+(G.x/W).toFixed(3),d:Math.floor(G.dist),dead:G.dead?1:0});if(!G.dead)MPS.status({score:Math.floor(G.dist),txt:'🪙 '+G.got});
+  if(RESC&&!RESC.done&&!G.dead&&G.got-RESC.from>=RESC.need){RESC.done=true;MPS.send('rescue',1);banner('RESCUED '+MPS.peer.name.toUpperCase()+'!');SFX.levelup()}},100);
+if(new URLSearchParams(location.search).get('mp')){const w=()=>window.KuzeyAccount&&KuzeyAccount.session?KuzeyAccount.session({unit:' km',hello:()=>({ship:ship().id}),
+    start(SS,go){MPS=SS;const ps=SHIPS.find(s=>s.id===(SS.host?go.guest:go.host).ship)||SHIPS[0];GHD={ship:ps};launch('mp',go.seed);banner(SS.mode==='coop'?'🤝 FLY TOGETHER!':'🏁 RACE '+SS.peer.name.toUpperCase()+'!');
+      SS.recv('p',d=>{Object.assign(GHD,d)});SS.recv('down',d=>{GHD.dead=1;if(G&&!G.dead){RESC={need:d.need,from:G.got,done:false};banner('🆘 '+MPS.peer.name.toUpperCase()+' CRASHED!');SFX.hurt()}});
+      SS.recv('rescue',()=>{if(G&&G.waiting)mpRevive()})},
+    onOppFinish(){if(GHD)GHD.out=true;RESC=null;if(G&&G.waiting){G.waiting=false;G.dead=false;crash()}},
+    onLeave(){if(GHD)GHD.out=true;RESC=null;if(G&&G.waiting){G.waiting=false;G.dead=false;crash()}}}):setTimeout(w,100);w()}
+$('mMulti').onclick=()=>{if(window.KuzeyAccount)KuzeyAccount.multiplayer('dodger')};
+if(new URLSearchParams(location.search).has('test'))window.__dg={get G(){return G},SV,launch,step,dash,takePick,crash:()=>crash(),get MPS(){return MPS},get RESC(){return RESC},get GHD(){return GHD}};
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 })();
 </script>
