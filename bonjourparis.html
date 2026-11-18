@@ -136,6 +136,7 @@ a.btn{text-decoration:none}
   <div class="credits">🪙 <span class="coins">0</span></div>
   <div class="row"><button class="btn" id="mCatch"><span class="ic">🥐</span><span>CROISSANT CATCH<small id="iCatch">Catch the snacks, dodge pigeons</small></span></button>
     <button class="btn" id="mDash"><span class="ic">🛴</span><span>SCOOTER DASH<small id="iDash">Race through the streets of Paris</small></span></button></div>
+  <button class="btn" id="mMP" style="border-color:#3ef0ff"><span class="ic">🎮</span><span>MULTIPLAYER<small>Paris Party quiz with a friend (needs internet)</small></span></button>
   <div class="row"><button class="btn" id="mWords"><span class="ic">🗣️</span><span>FRENCH WORDS<small id="iWords">Learn 10 words a round</small></span></button>
     <button class="btn" id="mQuiz"><span class="ic">🗼</span><span>PARIS QUIZ<small id="iQuiz">How much do you know?</small></span></button></div>
   <div class="row"><button class="btn" id="mPhrase"><span class="ic">📖</span><span>PHRASEBOOK<small>Tap to hear it in French</small></span></button>
@@ -399,7 +400,8 @@ function pickVoice(){try{const v=speechSynthesis.getVoices();frVoice=v.find(x=>/
 try{pickVoice();speechSynthesis.onvoiceschanged=pickVoice}catch(e){}
 let heard=0;
 function say(txt){try{if(SFX.muted)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(txt.replace(/[!?]/g,''));u.lang='fr-FR';if(frVoice)u.voice=frVoice;u.rate=.85;speechSynthesis.speak(u)}catch(e){}}
-function shuffled(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+let QR=Math.random;
+function shuffled(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(QR()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 let Q=null;
 function startWords(){const pool=shuffled(WORDS).sort((a,b)=>(D.learned[a[0]]?1:0)-(D.learned[b[0]]?1:0)).slice(0,10);
   Q={kind:'words',i:0,score:0,list:shuffled(pool).map((w,k)=>{const rev=k%3===2;const wrong=shuffled(WORDS.filter(x=>x!==w)).slice(0,3);
@@ -407,21 +409,35 @@ function startWords(){const pool=shuffled(WORDS).sort((a,b)=>(D.learned[a[0]]?1:
       :{word:w,prompt:`<span class="em">${w[2]}</span>${w[0]}<small>What does this mean?</small>`,right:w[1],opts:shuffled([w,...wrong]).map(x=>x[1]),fact:`<b>${w[0]}</b> means ${w[1]}. Say it like: <i style="color:var(--gold)">${w[3]}</i>`}})};
   show('sQuiz');qShow()}
 function startQuiz(){Q={kind:'quiz',i:0,score:0,list:shuffled(QUIZ).slice(0,10).map(q=>({prompt:`<span class="em">🗼</span><span style="font-size:.6em;line-height:1.3;display:block">${q[0]}</span>`,right:q[1],opts:shuffled(q.slice(1,5)),fact:'💡 '+q[5]}))};show('sQuiz');qShow()}
-function qShow(){const q=Q.list[Q.i];$('qNum').textContent=(Q.i+1)+'/'+Q.list.length;$('qScore').textContent=Q.score;$('qBar').style.width=(Q.i/Q.list.length*100)+'%';
-  $('qWord').innerHTML=q.prompt+(Q.kind==='words'?'<button class="say" id="qSay" aria-label="Listen">🔊</button>':'');$('qFact').hidden=true;$('qNext').hidden=true;
-  if(Q.kind==='words'){$('qSay').onclick=()=>say(q.word[0]);if(q.prompt.includes('What does'))setTimeout(()=>say(q.word[0]),250)}
+function qShow(){const q=Q.list[Q.i];$('qNum').textContent=(Q.i+1)+'/'+Q.list.length+(MPQ?mpTurnTxt():'');$('qScore').textContent=Q.score;$('qBar').style.width=(Q.i/Q.list.length*100)+'%';
+  $('qWord').innerHTML=q.prompt+(q.word?'<button class="say" id="qSay" aria-label="Listen">🔊</button>':'');$('qFact').hidden=true;$('qNext').hidden=true;
+  if(q.word){$('qSay').onclick=()=>say(q.word[0]);if(q.prompt.includes('What does'))setTimeout(()=>say(q.word[0]),250)}
   $('qOpts').innerHTML=q.opts.map((o,i)=>`<button data-o="${i}">${o}</button>`).join('');
   $('qOpts').querySelectorAll('[data-o]').forEach(b=>b.onclick=()=>{if(q.done)return;q.done=true;const ok=q.opts[+b.dataset.o]===q.right;
     $('qOpts').querySelectorAll('[data-o]').forEach(x=>{if(q.opts[+x.dataset.o]===q.right)x.classList.add('ok')});if(!ok)b.classList.add('no');
     if(ok){Q.score++;SFX.coin();if(q.word){D.learned[q.word[0]]=1}}else SFX.error();
-    if(Q.kind==='words')say(q.word[0]);$('qScore').textContent=Q.score;$('qFact').innerHTML=(ok?'✅ ':'❌ ')+q.fact;$('qFact').hidden=false;$('qNext').hidden=false;$('qNext').textContent=Q.i+1<Q.list.length?'NEXT ▶':'FINISH 🏁'})}
+    if(q.word)say(q.word[0]);$('qScore').textContent=Q.score;if(MPQ)mpAnswered(+b.dataset.o,ok);$('qFact').innerHTML=(ok?'✅ ':'❌ ')+q.fact;$('qFact').hidden=false;$('qNext').hidden=false;$('qNext').textContent=Q.i+1<Q.list.length?'NEXT ▶':'FINISH 🏁'})}
 $('qNext').onclick=()=>{SFX.click();Q.i++;if(Q.i<Q.list.length)qShow();else qEnd()};
-$('qQuit').onclick=()=>{Q=null;show('sMenu')};
-function qEnd(){const k=Q.kind,sc=Q.score,coins=sc*5+(sc===10?30:0);D.coins+=coins;D.rounds++;const old=D.best[k]||0;if(sc>old)D.best[k]=sc;
+$('qQuit').onclick=()=>{if(MPQ){if(confirm('Leave the multiplayer game?'))MPQ.S.quit();return}Q=null;show('sMenu')};
+function qEnd(){if(MPQ&&!MPQ.done){MPQ.done=true;MPQ.S.finish({score:Q.score,shared:MPQ.S.mode==='coop',txt:Q.score+'/10 right'})}const k=Q.kind,sc=Q.score,coins=sc*5+(sc===10?30:0);D.coins+=coins;D.rounds++;const old=D.best[k]||0;if(sc>old)D.best[k]=sc;
   if(sc===10)ACH.unlock(GAME,k==='words'?'words':'quiz');if(Object.keys(D.learned).length>=40)ACH.unlock(GAME,'learn');save();
   sc>=7?SFX.win():SFX.lose();const again=k==='words'?startWords:startQuiz;
   endScreen({title:sc===10?'PARFAIT! 🎉':sc>=7?'TRÈS BIEN!':sc>=4?'BIEN JOUÉ!':'ON RÉESSAIE?',stars:sc>=10?3:sc>=7?2:sc>=4?1:0,stats:[['Correct',sc+'/10'],[k==='words'?'Words learned':'Best',k==='words'?Object.keys(D.learned).length+'/'+WORDS.length:old>sc?old+'/10':sc+'/10'],['Coins','+'+coins]],
     note:sc===10?'Perfect round!':sc>=7?'Great job! (très bien = very good)':'Try again (on réessaie = let\'s try again)',again})}
+
+/* ================= MULTIPLAYER: Paris Party quiz (take turns together, or race) ================= */
+let MPQ=null;
+function mpList(seed){QR=U.rng(seed);const ws=shuffled(WORDS).slice(0,5),qs=shuffled(QUIZ).slice(0,5),out=[];
+  ws.forEach((w,k)=>{const wrong=shuffled(WORDS.filter(x=>x!==w)).slice(0,3);out.push(k%2?{word:w,prompt:`<span class="em">${w[2]}</span>"${w[1]}"<small>How do you say this in French?</small>`,right:w[0],opts:shuffled([w,...wrong]).map(x=>x[0]),fact:`<b>${w[0]}</b> means ${w[1]}. Say it like: <i style="color:var(--gold)">${w[3]}</i>`}
+    :{word:w,prompt:`<span class="em">${w[2]}</span>${w[0]}<small>What does this mean?</small>`,right:w[1],opts:shuffled([w,...wrong]).map(x=>x[1]),fact:`<b>${w[0]}</b> means ${w[1]}. Say it like: <i style="color:var(--gold)">${w[3]}</i>`});
+    const q=qs[k];out.push({prompt:`<span class="em">🗼</span><span style="font-size:.6em;line-height:1.3;display:block">${q[0]}</span>`,right:q[1],opts:shuffled(q.slice(1,5)),fact:'💡 '+q[5]})});QR=Math.random;return out}
+const mpMine=()=>!MPQ||MPQ.S.mode!=='coop'||(Q.i%2===0)===MPQ.S.host;
+function mpTurnTxt(){const S=MPQ.S;if(S.mode==='race')return' · 🏁 vs '+S.peer.name;setTimeout(()=>{$('qOpts').style.pointerEvents=mpMine()?'':'none';$('qOpts').style.opacity=mpMine()?'':'.7'},0);return mpMine()?' · 👉 YOUR TURN':' · ⏳ '+S.peer.name+' answers'}
+function mpAnswered(o,ok){const S=MPQ.S;$('qNext').hidden=true;if(S.mode==='coop'&&mpMine())S.send('ans',{i:Q.i,o});S.status({score:Q.score,txt:(Q.i+1)+'/10 answered'});
+  const i=Q.i;setTimeout(()=>{if(Q&&Q.i===i&&MPQ){Q.i++;if(Q.i<Q.list.length)qShow();else qEnd()}},2600)}
+if(new URLSearchParams(location.search).get('mp')){const w=()=>window.KuzeyAccount&&KuzeyAccount.session?KuzeyAccount.session({
+    start(SS,go){MPQ={S:SS};Q={kind:'mp',i:0,score:0,list:mpList(go.seed)};show('sQuiz');qShow();
+      SS.recv('ans',d=>{if(!Q||Q.i!==d.i||mpMine())return;const b=$('qOpts').querySelector(`[data-o="${d.o}"]`);if(b)b.onclick()})}}):setTimeout(w,100);w()}
 /* ================================================================
    MENUS
    ================================================================ */
@@ -440,7 +456,7 @@ ONSHOW.sStick=()=>{$('stList').innerHTML=STICKERS.map(s=>{const got=D.stick[s.id
     D.coins-=s.c;D.stick[s.id]=1;SFX.win();ACH.unlock(GAME,'stick1');if(Object.keys(D.stick).length>=STICKERS.length)ACH.unlock(GAME,'stickall');save();ONSHOW['*']('sStick');ONSHOW.sStick()})};
 $('whoEdit').onclick=()=>UI.profileEditor(ONSHOW.sMenu);
 $('mCatch').onclick=()=>{SFX.click();startCatch()};$('mDash').onclick=()=>{SFX.click();startDash()};
-$('mWords').onclick=()=>{SFX.click();startWords()};$('mQuiz').onclick=()=>{SFX.click();startQuiz()};
+$('mMP').onclick=()=>{if(window.KuzeyAccount)KuzeyAccount.multiplayer('bonjourparis')};$('mWords').onclick=()=>{SFX.click();startWords()};$('mQuiz').onclick=()=>{SFX.click();startQuiz()};
 $('mPhrase').onclick=()=>{SFX.click();show('sPhrase')};$('mStick').onclick=()=>{SFX.click();show('sStick')};$('mcShare').onclick=async()=>{const note=$('mcShareNote');try{const r=await fetch('paris-pack.mcaddon');const blob=await r.blob();
   const f=new File([blob],'paris-pack.mcaddon',{type:'application/octet-stream'});
   if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});note.innerHTML='Did you pick <b>Minecraft</b>? It should say <b>Import started</b>.'}
@@ -450,7 +466,7 @@ $('mMC').onclick=()=>{SFX.click();show('sMC')};$('mHelp').onclick=()=>{SFX.click
 $('mAch').onclick=()=>UI.achievements(GAME,'Bonjour Paris awards');$('mSound').onclick=()=>{SFX.toggle();ONSHOW.sMenu()};
 $('eMenu').onclick=()=>{G=null;show('sMenu')};
 show('sMenu');
-if(new URLSearchParams(location.search).has('test'))window.__bp={get G(){return G},D,startCatch,startDash,startWords,startQuiz,finish,dashMove};
+if(new URLSearchParams(location.search).has('test'))window.__bp={get G(){return G},get Q(){return Q},D,startCatch,startDash,startWords,startQuiz,finish,dashMove};
 
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 })();
