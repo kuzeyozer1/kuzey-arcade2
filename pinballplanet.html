@@ -117,6 +117,7 @@ h2{font-family:var(--display);font-size:22px;margin:0;color:var(--gold);letter-s
   <div class="who"><span id="whoAv" style="font-size:26px">🦊</span><span>Wizard <b id="whoName">Player</b></span><button id="whoEdit">edit</button></div>
   <div class="credits">🎫 <span id="mTok">0</span> tokens</div>
   <button class="btn main" id="mPlay">▶ PLAY<small id="mInfo">Choose a table</small></button>
+  <button class="btn" id="mMulti" style="border-color:#3ef0ff"><span class="ic">🎮</span><span>MULTIPLAYER<small>Flipper Friends or score battle</small></span></button>
   <div class="row"><button class="btn" id="mDaily"><span class="ic">📅</span><span>DAILY TABLE<small id="dailyInfo">One ball, same for all</small></span></button>
     <button class="btn" id="mBalls"><span class="ic">🔮</span><span>BALLS<small>Buy, choose and sell</small></span></button></div>
   <div class="row"><button class="btn" id="mAch"><span class="ic">🏆</span><span>AWARDS<small id="achInfo">0/0</small></span></button>
@@ -221,7 +222,7 @@ function buildTable(T){const segs=[],add=(pts,o={})=>{for(let i=0;i<pts.length-1
     targets:[0,1,2].map(i=>({x1:40,y1:420+i*42,x2:40,y2:452+i*42,down:false,i})),lanes:[268,332,204].map((x,i)=>({x:i<2?x:396,y:192,lit:false})),
     hole:{x:470,y:470,r:18},spinner:{x:120,y:250,a:0,v:0}}}
 /* ---------- game ---------- */
-let G=null,paused=false;
+let G=null,paused=false,MPS=null;
 function newGame(ti,daily){const T=daily?TABLES[hashStr(todayKey())%3]:TABLES[ti];G={T,ti,daily,L:buildTable(T),balls:[],ballsLeft:daily?1:3,score:0,mult:1,locks:0,save:0,tilt:0,tilted:false,
   flip:{l:{a:0,v:0},r:{a:0,v:0}},hold:{l:false,r:false},plunge:0,plunging:false,ms:{bump:0,drops:0,lanes:0,holes:0,slings:0,multi:0,score:0},msDone:[false,false,false],phase:'play',banner:{t:2,a:T.name.toUpperCase(),b:'Hold to launch!'},skill:Math.floor(Math.random()*3),t:0};
   fx.clear();newBall();return G}
@@ -257,8 +258,8 @@ function update(dt){if(!G||G.phase!=='play')return;G.t+=dt;fx.update(dt);if(G.ba
   G.T.missions.forEach((m,i)=>{if(!G.msDone[i]&&G.ms[m[1]]>=m[2]){G.msDone[i]=true;addScore(25000);G.banner={t:2,a:'MISSION DONE!',b:m[0]};SFX.win();if(G.msDone.every(x=>x))ACH.unlock(GAME,'missions')}});
   if(G.score>=100000)ACH.unlock(GAME,'s100k');if(G.score>=1000000)ACH.unlock(GAME,'s1m');if(G.daily&&G.score>=100000)ACH.unlock(GAME,'daily');
   if(!G.balls.length){addScore(0);G.ballsLeft--;const bonus=G.ms.bump*50*G.mult;G.score+=bonus;G.mult=1;if(G.ballsLeft>0){G.banner={t:1.6,a:'BALL LOST',b:'Bonus +'+fmtN(bonus)};newBall()}else{G.phase='over';SFX.lose();setTimeout(endGame,900)}}}
-function launch(){const b=G&&G.balls.find(q=>q.inLane&&q.y>900);G.plunging=false;if(!b){G.plunge=0;return}b.vy=-(900+G.plunge*1500);b.inLane=false;G.plunge=0;SFX.whoosh()}
-function nudge(){if(!G||G.phase!=='play'||G.tilted)return;G.tilt+=.45;fx.shake(8);for(const b of G.balls){b.vx+=rnd(-160,160);b.vy-=180;if(b.y>820&&b.vy<0)ACH.unlock(GAME,'save')}SFX.hit();if(G.tilt>1){G.tilted=true;G.banner={t:2,a:'TILT!',b:'Flippers off for this ball'};ACH.unlock(GAME,'tilt');SFX.error()}}
+function launch(){if(MPS&&MPS.mode==='coop'&&!MPS.host){if(G)G.plunging=false;return}const b=G&&G.balls.find(q=>q.inLane&&q.y>900);G.plunging=false;if(!b){G.plunge=0;return}b.vy=-(900+G.plunge*1500);b.inLane=false;G.plunge=0;SFX.whoosh()}
+function nudge(){if(!G||G.phase!=='play'||G.tilted||(MPS&&MPS.mode==='coop'&&!MPS.host))return;G.tilt+=.45;fx.shake(8);for(const b of G.balls){b.vx+=rnd(-160,160);b.vy-=180;if(b.y>820&&b.vy<0)ACH.unlock(GAME,'save')}SFX.hit();if(G.tilt>1){G.tilted=true;G.banner={t:2,a:'TILT!',b:'Flippers off for this ball'};ACH.unlock(GAME,'tilt');SFX.error()}}
 
 /* ================================================================
    DRAWING
@@ -318,17 +319,38 @@ ONSHOW.sStats=()=>statGrid($('statList'),TABLES.map(T=>[T.em+' '+T.name,fmtN(D.b
 $('whoEdit').onclick=()=>UI.profileEditor(ONSHOW.sMenu);$('mPlay').onclick=()=>show('sTables');$('mDaily').onclick=()=>start(0,true);$('mBalls').onclick=()=>show('sBalls');$('mHelp').onclick=()=>show('sHelp');$('mStats').onclick=()=>show('sStats');
 $('mAch').onclick=()=>UI.achievements(GAME,'Pinball Planet awards');$('mSound').onclick=()=>{SFX.toggle();ONSHOW.sMenu()};
 let lastArgs=[0,false];function start(ti,daily){lastArgs=[ti,daily];newGame(ti,daily);paused=false;show(null)}
-function togglePause(){if(!G||G.phase!=='play')return;paused=!paused;show(paused?'sPause':null);last=performance.now()}
+function togglePause(){if(MPS){if(G&&confirm('Leave the multiplayer game?'))MPS.quit();return}if(!G||G.phase!=='play')return;paused=!paused;show(paused?'sPause':null);last=performance.now()}
 $('bPause').onclick=togglePause;$('pResume').onclick=togglePause;$('pQuit').onclick=()=>{paused=false;G.phase='over';endGame()};
-function endGame(){if(!G||G.ended)return;const g=G;g.ended=true;D.games++;const before=bestAll();const k=g.T.id;if(!g.daily)D.best[k]=Math.max(D.best[k]||0,g.score);else D.daily[todayKey()]=Math.max(D.daily[todayKey()]||0,g.score);
+function endGame(){if(!G||G.ended)return;const g=G;g.ended=true;if(MPS){if(MPS.mode==='coop'&&MPS.host)for(let i=0;i<3;i++)setTimeout(()=>MPS.send('end',{s:g.score}),i*400);MPS.finish({score:g.score,shared:MPS.mode==='coop',txt:g.T.name});$('eAgain').hidden=true}D.games++;const before=bestAll();const k=g.T.id;if(!g.daily)D.best[k]=Math.max(D.best[k]||0,g.score);else D.daily[todayKey()]=Math.max(D.daily[todayKey()]||0,g.score);
   const tok=Math.floor(g.score/5000)+g.msDone.filter(Boolean).length*20;D.tok+=tok;SC.submit(GAME+':'+k,g.score);if(bestAll()>=60000)ACH.unlock(GAME,'pirate');if(bestAll()>=120000)ACH.unlock(GAME,'candy');save();
   const unlocked=TABLES.find(T=>before<T.need&&bestAll()>=T.need);$('eTitle').textContent=g.score>=(D.best[k]||0)&&g.score>0&&!g.daily?'NEW HIGH SCORE!':'GAME OVER';
   statGrid($('eStats'),[['Score',fmtN(g.score)],['Table',g.T.name],['Missions',g.msDone.filter(Boolean).length+'/3'],['Tokens','+'+tok]]);$('eNote').textContent=unlocked?'🎉 New table unlocked: '+unlocked.name+'!':'';show('sEnd')}
 $('eAgain').onclick=()=>start(...lastArgs);$('eMenu').onclick=()=>{G=null;show('sMenu')};
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&G&&!paused&&G.phase==='play')togglePause()});
-let last=performance.now();function frame(now){const dt=Math.min(.025,(now-last)/1000);last=now;if(G&&!paused)update(dt);render();requestAnimationFrame(frame)}
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&G&&!paused&&G.phase==='play'&&!MPS)togglePause()});
+let last=performance.now();function frame(now){const dt=Math.min(.025,(now-last)/1000);last=now;if(G&&MPS)mpPre(dt);if(G&&!paused)(GUESTPB?guestUpdate:update)(dt);render();requestAnimationFrame(frame)}
+
+/* ================= MULTIPLAYER: Flipper Friends (one table, left + right flipper) or score battle ================= */
+let GUESTPB=false,NETR=false,lastR=false;const NP={};
+function mpPre(dt){if(MPS.mode==='coop'){if(MPS.host){G.hold.r=NETR;NP.acc=(NP.acc||0)+dt;if(NP.acc>=1/20&&G.phase==='play'){NP.acc=0;MPS.send('s',snapPB())}}
+    else{G.hold.l=false;G.plunging=false;if(G.hold.r!==lastR){lastR=G.hold.r;MPS.send('fr',lastR?1:0)}}}
+  if(G.phase==='play')MPS.status({score:G.score,txt:(MPS.mode==='coop'?'🤝 ':'')+'ball '+Math.max(1,4-G.ballsLeft)+'/3'})}
+const r1=v=>Math.round(v*10)/10;
+function snapPB(){const L=G.L;return{s:G.score,m:G.mult,bl:G.ballsLeft,bn:G.banner,ms:G.ms,md:G.msDone,tl:G.tilted,b:G.balls.map(b=>[r1(b.x),r1(b.y),Math.round(b.vx),Math.round(b.vy),b.inLane?1:0,b.held?1:0]),fl:[+G.flip.l.a.toFixed(3),+G.flip.r.a.toFixed(3)],pl:+G.plunge.toFixed(2),
+  bu:L.bumpers.map(x=>+x.lit.toFixed(2)),tg:L.targets.map(x=>x.down?1:0),ln:L.lanes.map(x=>x.lit?1:0),sp:+L.spinner.a.toFixed(2)}}
+function onSnapPB(d){if(!G||G.ended)return;NP.at=performance.now();if(d.s>G.score)SFX.tone(900+Math.random()*300,.03,{vol:.02});Object.assign(G,{score:d.s,mult:d.m,ballsLeft:d.bl,ms:d.ms,msDone:d.md,tilted:d.tl,plunge:d.pl});if(d.bn&&(!G.banner||G.banner.a!==d.bn.a))G.banner=d.bn;
+  const old=G.balls;G.balls=d.b.map((a,i)=>({x:a[0],y:a[1],x0:a[0],y0:a[1],vx:a[2],vy:a[3],inLane:!!a[4],held:a[5],trail:(old[i]&&old[i].trail)||[]}));G.flip.l.a=d.fl[0];NP.ra=d.fl[1];
+  const L=G.L;L.bumpers.forEach((x,i)=>{if(d.bu[i]>x.lit+.05)SFX.tone(500,.05,{vol:.04});x.lit=d.bu[i]});L.targets.forEach((x,i)=>x.down=!!d.tg[i]);L.lanes.forEach((x,i)=>x.lit=!!d.ln[i]);L.spinner.a=d.sp}
+function guestUpdate(dt){G.t+=dt;fx.update(dt);if(G.banner){G.banner.t-=dt;if(G.banner.t<=0)G.banner=null}
+  const s=G.flip.r,want=G.hold.r&&!G.tilted?1:0;s.a+=Math.sign(want-s.a)*Math.min(Math.abs(want-s.a),dt*(want?14:9));
+  const age=Math.min(.12,(performance.now()-(NP.at||0))/1000);for(const b of G.balls){if(b.inLane||b.held)continue;b.x=b.x0+b.vx*age;b.y=b.y0+b.vy*age+.5*GRAV*age*age;b.trail.push([b.x,b.y]);if(b.trail.length>8)b.trail.shift()}}
+if(new URLSearchParams(location.search).get('mp')){const w=()=>window.KuzeyAccount&&KuzeyAccount.session?KuzeyAccount.session({
+    start(SS,go){MPS=SS;GUESTPB=SS.mode==='coop'&&!SS.host;start(go.seed%3,false);
+      if(SS.mode==='coop'){G.banner={t:3,a:'FLIPPER FRIENDS!',b:SS.host?'You: LEFT flipper + launch':'You: RIGHT flipper'};
+        SS.recv('fr',d=>{NETR=!!d});SS.recv('s',d=>{if(GUESTPB)onSnapPB(d)});SS.recv('end',d=>{if(GUESTPB&&G&&!G.ended){G.score=d.s;G.phase='over';endGame()}})}},
+    onLeave(){if(G&&!G.ended&&MPS.mode==='coop'){G.phase='over';endGame()}}}):setTimeout(w,100);w()}
+$('mMulti').onclick=()=>{if(window.KuzeyAccount)KuzeyAccount.multiplayer('pinballplanet')};
 show('sMenu');requestAnimationFrame(frame);
-if(new URLSearchParams(location.search).has('test'))window.__pb={get G(){return G},D,start,update,launch,nudge,flipSeg};
+if(new URLSearchParams(location.search).has('test'))window.__pb={get G(){return G},D,start,update,launch,nudge,flipSeg,get MPS(){return MPS}};
 
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 })();
