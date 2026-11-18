@@ -117,6 +117,7 @@ h2{font-family:var(--display);font-size:22px;margin:0;color:var(--gold);letter-s
   <div class="who"><span id="whoAv" style="font-size:26px">🦊</span><span>DJ <b id="whoName">Player</b></span><button id="whoEdit">edit</button></div>
   <div class="credits">🎟️ <span id="mTix">0</span> tickets</div>
   <button class="btn main" id="mPlay">▶ PLAY<small id="mInfo">12 songs</small></button>
+  <button class="btn" id="mMulti" style="border-color:#3ef0ff"><span class="ic">🎮</span><span>MULTIPLAYER<small>Duet (2 lanes each) or score battle</small></span></button>
   <div class="row"><button class="btn" id="mDaily"><span class="ic">📅</span><span>DAILY JAM<small id="dailyInfo">A new song every day</small></span></button>
     <button class="btn" id="mStages"><span class="ic">🎪</span><span>STAGES<small>Buy, choose and sell looks</small></span></button></div>
   <div class="row"><button class="btn" id="mAch"><span class="ic">🏆</span><span>AWARDS<small id="achInfo">0/0</small></span></button>
@@ -223,16 +224,17 @@ function compose(song,diff,seed){const rng=U.rng(seed);const R=()=>rng();const b
   return{ev:ev.sort((a,b)=>a.t-b.t),notes:out,end:2.5+bar*4*beat+2,beat}}
 /* ---------- playing ---------- */
 let G=null,paused=false;
+let MPS=null;
 function newSong(si,diff,daily){const song=daily?Object.assign({},SONGS[hashStr(todayKey())%12],{name:'Daily Jam',e:'📅',bpm:100+hashStr('bpm'+todayKey())%60}):SONGS[si];const seed=daily?hashStr('bb'+todayKey()):1000+si*31;
   const C=compose(song,diff,seed);G={song,si,diff,daily,C,notes:C.notes.map(n=>Object.assign({},n,{hit:null})),ei:0,t:-1.5,score:0,combo:0,maxCombo:0,life:1,fever:0,feverOn:0,fevers:0,counts:{perfect:0,great:0,good:0,miss:0},held:[null,null,null,null],press:[0,0,0,0],judge:null,phase:'play',beatPulse:0};fx.clear();return G}
 function sound(e,delay){const o={delay:Math.max(0,delay)};switch(e.k){
   case'kick':SFX.tone(150,.16,Object.assign({type:'sine',slide:-110,vol:.22},o));break;case'snare':SFX.noise(.11,Object.assign({vol:.09,lp:3500},o));break;case'hat':SFX.noise(.03,Object.assign({vol:.025,lp:9000},o));break;
   case'bass':SFX.tone(e.f,e.d,Object.assign({type:'triangle',vol:.09},o));break;case'pad':SFX.tone(e.f,e.d,Object.assign({type:'sine',vol:.025,attack:.08},o));break;case'lead':SFX.tone(e.f,e.d,Object.assign({type:'square',vol:.035},o));break}}
 const WIN={perfect:.05,great:.1,good:.15};
-function hitLane(l){if(!G||G.phase!=='play'||paused)return;G.press[l]=.12;const t=G.t-D.offset/1000;let best=null,bd=.18;for(const n of G.notes){if(n.hit||n.lane!==l)continue;const d=Math.abs(n.t-t);if(d<bd){bd=d;best=n}if(n.t-t>.2)break}
+function hitLane(l){if(!G||G.phase!=='play'||paused)return;if(G.duet&&!G.duet.includes(l))return;G.press[l]=.12;const t=G.t-D.offset/1000;let best=null,bd=.18;for(const n of G.notes){if(n.hit||n.lane!==l)continue;const d=Math.abs(n.t-t);if(d<bd){bd=d;best=n}if(n.t-t>.2)break}
   if(!best)return;const j=bd<=WIN.perfect?'perfect':bd<=WIN.great?'great':bd<=WIN.good?'good':'miss';judge(best,j);if(best.len&&j!=='miss')G.held[l]=best}
-function release(l){if(!G)return;const n=G.held[l];if(!n)return;G.held[l]=null;const t=G.t-D.offset/1000;if(t<n.t+n.len-.12){n.tailMiss=true;G.combo=0;G.life-=.04;showJudge('miss',l)}else{G.score+=100;fx.burst(LX+l*LW+LW/2,HITY,{n:10,color:curStage().cols[l],speed:120,life:.3})}}
-function judge(n,j){n.hit=j;G.counts[j]++;if(j==='miss'){G.combo=0;G.life-=G.diff===0?0:.08;showJudge(j,n.lane);return}
+function release(l){if(!G)return;const n=G.held[l];if(!n)return;G.held[l]=null;const t=G.t-D.offset/1000;if(t<n.t+n.len-.12){n.tailMiss=true;G.combo=0;G.life-=.04;showJudge('miss',l);if(G.duet)MPS.send('tl',0)}else{G.score+=100;if(G.duet)MPS.send('tl',1);fx.burst(LX+l*LW+LW/2,HITY,{n:10,color:curStage().cols[l],speed:120,life:.3})}}
+function judge(n,j,remote){n.hit=j;if(G.duet&&!remote)MPS.send('j',{i:G.notes.indexOf(n),j});G.counts[j]++;if(j==='miss'){G.combo=0;G.life-=G.diff===0?0:.08;showJudge(j,n.lane);return}
   D.notes++;G.combo++;G.maxCombo=Math.max(G.maxCombo,G.combo);if(G.combo>=100)ACH.unlock(GAME,'c100');if(D.notes>=10000)ACH.unlock(GAME,'notes');
   G.score+=({perfect:300,great:200,good:100}[j])*(G.feverOn>0?2:1)*(1+Math.min(G.combo,100)/200);G.life=Math.min(1,G.life+.015);if(G.feverOn<=0){G.fever=Math.min(1,G.fever+(j==='perfect'?.025:.012));if(G.fever>=1){G.feverOn=8;G.fever=0;G.fevers++;if(G.fevers>=3)ACH.unlock(GAME,'fever');SFX.power()}}
   showJudge(j,n.lane);const st=curStage();fx.burst(LX+n.lane*LW+LW/2,HITY,{n:j==='perfect'?18:10,color:[st.cols[n.lane],'#fff'],speed:j==='perfect'?220:140,life:.35})}
@@ -241,8 +243,8 @@ function update(dt){if(!G||G.phase!=='play')return;G.t+=dt;fx.update(dt);if(G.ju
   // schedule music a little ahead so it plays on time
   while(G.ei<G.C.ev.length&&G.C.ev[G.ei].t<G.t+.12){const e=G.C.ev[G.ei++];if(e.t>=G.t-.05)sound(e,e.t-G.t);if(e.k==='kick')G.kickAt=e.t}
   if(G.kickAt&&G.t>=G.kickAt&&G.t-G.kickAt<dt*1.5)G.beatPulse=1;G.beatPulse=Math.max(0,G.beatPulse-dt*4);
-  const t=G.t-D.offset/1000;for(const n of G.notes){if(n.hit)continue;if(n.t>t)break;if(t-n.t>WIN.good)judge(n,'miss')}
-  for(let l=0;l<4;l++){const n=G.held[l];if(n&&t>=n.t+n.len){G.held[l]=null;G.score+=100;fx.burst(LX+l*LW+LW/2,HITY,{n:10,color:'#fff',speed:120,life:.3})}else if(n&&Math.random()<.5)fx.trail(LX+l*LW+LW/2,HITY,curStage().cols[l],4,.3)}
+  const t=G.t-D.offset/1000;for(const n of G.notes){if(n.hit)continue;if(n.t>t)break;if(G.duet&&!G.duet.includes(n.lane)){if(t-n.t>3)n.hit='gone';continue}if(t-n.t>WIN.good)judge(n,'miss')}
+  for(let l=0;l<4;l++){const n=G.held[l];if(n&&t>=n.t+n.len){G.held[l]=null;G.score+=100;if(G.duet)MPS.send('tl',1);fx.burst(LX+l*LW+LW/2,HITY,{n:10,color:'#fff',speed:120,life:.3})}else if(n&&Math.random()<.5)fx.trail(LX+l*LW+LW/2,HITY,curStage().cols[l],4,.3)}
   if(G.life<=0&&G.diff>0){G.phase='fail';SFX.lose();setTimeout(()=>endSong(false),600);return}
   if(G.t>G.C.end){G.phase='done';endSong(true)}}
 function accuracy(){const c=G.counts,tot=c.perfect+c.great+c.good+c.miss;return tot?(c.perfect*1+c.great*.75+c.good*.4)/tot:0}
@@ -273,6 +275,7 @@ function render(){const c=ctx,t=performance.now()/1000;c.setTransform(FIT.dpr,0,
   for(const n of G.notes){if(n.hit&&!(n.len&&G.held[n.lane]===n))continue;const y=HITY-(n.t-now)*sp;if(y<-60-n.len*sp)break;if(y>H+40&&!n.len)continue;const x=LX+n.lane*LW;
     if(n.len){const y2=HITY-(n.t+n.len-now)*sp,hy=G.held[n.lane]===n?HITY:y;c.fillStyle=st.cols[n.lane]+(n.tailMiss?'33':'77');c.fillRect(x+LW/2-14,y2,28,hy-y2)}
     if(!(n.len&&G.held[n.lane]===n))noteShape(c,st,n.lane,x,y,LW,26)}
+  if(G&&G.duet){c.textAlign='center';c.font='900 18px Orbitron';for(let l=0;l<4;l++){const mine=G.duet.includes(l);c.fillStyle=mine?'#5cf2b4':'#ffd23f';c.globalAlpha=.85;c.fillText(l%2?'':(mine?'👉 YOU':(MPS.peer.avatar||'')+' '+MPS.peer.name),LX+l*LW+LW,H-14)}c.globalAlpha=1;for(let l=0;l<4;l++)if(!G.duet.includes(l)){c.fillStyle='#00000066';c.fillRect(LX+l*LW,0,LW,H)}}
   fx.draw(c);
   // HUD
   c.textAlign='left';c.font='900 28px Orbitron';c.fillStyle='#fff';c.fillText(fmtN(G.score),LX+LW*4+40,60);c.font='900 13px Orbitron';c.fillStyle='#ffffffaa';c.fillText(G.song.e+' '+G.song.name.toUpperCase(),LX+LW*4+40,88);c.fillText(['EASY','NORMAL','HARD'][G.diff]+' · '+Math.round(accuracy()*100)+'%',LX+LW*4+40,108);
@@ -309,9 +312,9 @@ $('mOffset').onclick=()=>UI.modal(`<h2>🎚️ Timing</h2><p style="margin:0">If
   const set=v=>{D.offset=clamp(v,-200,200);save();m.querySelector('#ofV').textContent=D.offset+' ms';ONSHOW.sMenu()};m.querySelector('#ofM').onclick=()=>set(D.offset-10);m.querySelector('#ofP').onclick=()=>set(D.offset+10)});
 let lastArgs=[0,1,false];
 function start(si,diff,daily){lastArgs=[si,diff,daily];newSong(si,diff,daily);paused=false;show(null)}
-function togglePause(){if(!G||G.phase!=='play')return;paused=!paused;show(paused?'sPause':null);last=performance.now()}
+function togglePause(){if(MPS){if(G&&confirm('Leave the multiplayer game?'))MPS.quit();return}if(!G||G.phase!=='play')return;paused=!paused;show(paused?'sPause':null);last=performance.now()}
 $('bPause').onclick=togglePause;$('pResume').onclick=()=>{paused=false;show(null);G.t-=1.2;G.ei=G.C.ev.findIndex(e=>e.t>=G.t+.05);if(G.ei<0)G.ei=G.C.ev.length;last=performance.now()};$('pRestart').onclick=()=>start(...lastArgs);$('pQuit').onclick=()=>{paused=false;G=null;show('sSongs')};
-function endSong(clear){const g=G;const acc=accuracy(),grade=clear?gradeOf(acc):'D',k=g.daily?'daily':g.si+'-'+g.diff;let tix=0;
+function endSong(clear){const g=G;const acc=accuracy(),grade=clear?gradeOf(acc):'D',k=g.daily?'daily':g.si+'-'+g.diff;if(MPS&&!g.mpDone){g.mpDone=true;MPS.finish({score:Math.round(g.score),won:false,shared:!!g.duet,txt:(clear?'grade '+grade:'out of energy')+' · '+Math.round(acc*100)+'%'});$('eAgain').hidden=true}let tix=0;
   if(clear){ACH.unlock(GAME,'first');if(gradeRank(grade)>=3)ACH.unlock(GAME,'a');if(grade==='S')ACH.unlock(GAME,'s');if(g.counts.miss===0)ACH.unlock(GAME,'fc');if(g.diff===2)ACH.unlock(GAME,'hard');if(g.diff===2&&g.si===11&&!g.daily)ACH.unlock(GAME,'boss');
     if(!g.daily){if(!D.grade[k]||gradeRank(grade)>gradeRank(D.grade[k]))D.grade[k]=grade;if(!D.grade[g.si]||gradeRank(grade)>gradeRank(D.grade[g.si]))D.grade[g.si]=grade;D.best[k]=Math.max(D.best[k]||0,Math.round(g.score));if(SONGS.every((s,i)=>D.grade[i]))ACH.unlock(GAME,'all')}
     else{D.daily[todayKey()]=grade;ACH.unlock(GAME,'daily')}tix=10+gradeRank(grade)*8+g.diff*10}
@@ -319,8 +322,16 @@ function endSong(clear){const g=G;const acc=accuracy(),grade=clear?gradeOf(acc):
   statGrid($('eStats'),[['Score',fmtN(g.score)],['Accuracy',Math.round(acc*100)+'%'],['Max combo',g.maxCombo],['Perfect',g.counts.perfect],['Great',g.counts.great],['Good',g.counts.good],['Miss',g.counts.miss],['Tickets','+'+tix]]);
   $('eNote').textContent=clear?(gradeRank(grade)>=2?'':'Get a B to unlock the next song!'):'Try Easy mode — you can\'t run out of energy there.';if(clear)SFX.win();show('sEnd')}
 $('eAgain').onclick=()=>start(...lastArgs);$('eMenu').onclick=()=>{G=null;show(lastArgs[2]?'sMenu':'sSongs')};
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&G&&!paused&&G.phase==='play')togglePause()});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&G&&!paused&&G.phase==='play'&&!MPS)togglePause()});
 let last=performance.now();function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;if(G&&!paused)update(dt);render();requestAnimationFrame(frame)}
+
+/* ================= MULTIPLAYER: duet (each plays 2 lanes of one song) or score battle ================= */
+if(new URLSearchParams(location.search).get('mp')){const w=()=>window.KuzeyAccount&&KuzeyAccount.session?KuzeyAccount.session({
+    start(SS,go){MPS=SS;start(go.seed%6,1,false);if(SS.mode==='coop'){G.duet=SS.host?[0,1]:[2,3];
+        SS.recv('j',d=>{const n=G&&G.notes[d.i];if(n&&(!n.hit||n.hit==='gone')&&G.phase==='play'){if(n.hit==='gone')n.hit=null;judge(n,d.j,true)}});
+        SS.recv('tl',ok=>{if(!G||G.phase!=='play')return;if(ok)G.score+=100;else{G.combo=0;G.life-=.04}})}
+      setInterval(()=>{if(G&&G.phase==='play')SS.status({score:Math.round(G.score),txt:'combo '+G.combo+' · '+Math.round(accuracy()*100)+'%'})},400)}}):setTimeout(w,100);w()}
+$('mMulti').onclick=()=>{if(window.KuzeyAccount)KuzeyAccount.multiplayer('beatblaster')};
 show('sMenu');requestAnimationFrame(frame);
 if(new URLSearchParams(location.search).has('test'))window.__bb={get G(){return G},D,start,update,hitLane,release,compose,SONGS};
 
