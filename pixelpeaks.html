@@ -79,6 +79,7 @@ h3{font:900 14px var(--display);margin:0;color:var(--cyan);letter-spacing:.06em}
     <p class="tag">Run, jump and climb four worlds to the very top.</p>
     <div style="display:grid;place-items:center"><canvas id="menuHero" width="160" height="160" style="width:80px;height:80px"></canvas></div>
     <button class="btn main" id="mPlay">▶ ADVENTURE<small id="progInfo">5 worlds, 35 levels, 5 bosses</small></button>
+    <button class="btn" id="mMulti" style="border-color:#3ef0ff"><span class="ic">🎮</span><span>MULTIPLAYER<small>Climb together or race a friend</small></span></button>
     <div class="row">
       <button class="btn" id="mDress"><span class="ic">🎩</span><span>WARDROBE<small>Outfits, hats and capes</small></span></button>
       <button class="btn" id="mSpeed"><span class="ic">⏱️</span><span>SPEEDRUN<small>Race the clock on any level</small></span></button>
@@ -361,7 +362,7 @@ function touchTiles(p){const x0=Math.floor(p.x/TS),x1=Math.floor((p.x+p.w)/TS),y
     if(ch==='^'&&p.y+p.h>ty*TS+14)hurt();
     if(ch==='L'&&p.y+p.h>ty*TS+10)hurt(true);
     if(ch==='J'&&p.vy>=0&&p.y+p.h<=ty*TS+20){p.vy=-1050;p.y=ty*TS-p.h;p.air=1;SFX.tone(300,.3,{type:'sine',slide:600,vol:.1});ACH.unlock(GAME,'spring');G.springT={x:tx,y:ty,t:.3}}}
-  for(const f of G.flags)if(!f.on&&overlap(p,{x:f.x-8,y:f.y,w:32,h:64})){f.on=true;G.check=[f.x,f.y+30];SFX.levelup();fx.text(f.x,f.y-10,'CHECKPOINT','#5cf2b4',14)}
+  for(const f of G.flags)if(!f.on&&overlap(p,{x:f.x-8,y:f.y,w:32,h:64})){f.on=true;G.check=[f.x,f.y+30];if(MPS&&MPS.mode==='coop')MPS.send('flag',G.flags.indexOf(f));SFX.levelup();fx.text(f.x,f.y-10,'CHECKPOINT','#5cf2b4',14)}
   if(G.goal&&overlap(p,G.goal)&&G.state==='play')finish()}
 function hurt(fall){const p=G.p;if(G.state!=='play')return;if(!fall&&p.inv>0)return;G.hurt=true;p.hearts--;SFX.hurt();G.shake=8;hud();
   if(fall||p.hearts<=0){if(p.hearts<=0){p.hearts=3;G.deaths++;D.deaths++}p.x=G.check[0];p.y=G.check[1];p.vx=p.vy=0;p.inv=1.2;fx.burst(p.x+10,p.y+14,{n:20,color:'#fff',speed:100});hud();return}
@@ -556,7 +557,7 @@ function showWin(first){const k=G.wi+':'+G.li,last=G.wi===4&&G.li===LEVELS_PER;$
   $('wNote').textContent=note.trim();$('wNext').hidden=last||G.mode==='speed';show('sWin')}
 $('wNext').onclick=()=>{let wi=G.wi,li=G.li+1;if(li>LEVELS_PER){wi++;li=0}startLevel(wi,li)};
 $('wRetry').onclick=()=>{if(G.mode==='endless')startLevel(0,3,{mode:'endless',endless:1});else startLevel(G.wi,G.li,{mode:G.mode})};$('wMap').onclick=()=>{G=null;if(mapMode)show('sMap');else show('sMenu')};
-function togglePause(){if(!G)return;if(G.state==='play'){G.state='pause';show('sPause')}else if(G.state==='pause'){G.state='play';show(null);$('hud').hidden=false;pad.show(true);last=performance.now()}}
+function togglePause(){if(!G)return;if(MPS&&G.mode==='mp'){if(confirm('Leave the multiplayer game?'))MPS.quit();return}if(G.state==='play'){G.state='pause';show('sPause')}else if(G.state==='pause'){G.state='play';show(null);$('hud').hidden=false;pad.show(true);last=performance.now()}}
 $('bPause').onclick=togglePause;$('pResume').onclick=togglePause;$('pRestart').onclick=()=>startLevel(G.wi,G.li,{mode:G.mode,endless:G.mode==='endless'?1:0});$('pQuit').onclick=()=>{G=null;show('sMap')};
 addEventListener('keydown',e=>{if(!G)return;const k=e.key.toLowerCase();if(k==='p'||k==='escape')togglePause();if([' ','arrowup','arrowdown'].includes(k))e.preventDefault()});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&G&&G.state==='play')togglePause()});
@@ -774,7 +775,27 @@ $('bPause').onclick=()=>togglePause();$('pResume').onclick=()=>togglePause();
 
 function frame(now){const dt=Math.min(.033,(now-last)/1000);last=now;update(dt);render();requestAnimationFrame(frame)}
 requestAnimationFrame(frame);show('sMenu');
-if(new URLSearchParams(location.search).has('test'))window.__pp={keys,get G(){return G},get L(){return L},D,startLevel,buildLevel,update,finish,hurt};
+
+/* ================================================================
+   MULTIPLAYER: same level; race to the flag, or climb together (shared checkpoints, team coins)
+   ================================================================ */
+let MPS=null,GHP=null;
+const _finishMP=finish;finish=function(){if(!G||G.mode!=='mp')return _finishMP();if(G.state==='won')return;G.state='won';SFX.win();D.coins+=G.coins;save();
+  for(let i=0;i<40;i++)fx.burst(G.goal.x+16,G.goal.y,{n:1,color:U.pick(['#ffd23f','#5cf2b4','#ff3d9a','#3ef0ff']),speed:250,grav:400,life:1.4});
+  G.msg={t:99,a:MPS.mode==='coop'?'YOU MADE IT!':'FINISHED!',b:MPS.mode==='coop'?'Waiting for '+MPS.peer.name+'…':''};
+  MPS.finish(MPS.mode==='coop'?{score:G.coins,txt:'🪙 · '+U.fmtTime(G.t)}:{score:+G.t.toFixed(1),won:true,txt:U.fmtTime(G.t)})};
+const _renderMP=render;render=function(){_renderMP();if(!G||G.mode!=='mp'||!GHP||GHP.x==null)return;const oy=OY();ctx.save();ctx.setTransform(DPR,0,0,DPR,0,0);ctx.translate(-camX*Z,oy);ctx.scale(Z,Z);ctx.globalAlpha=GHP.done?.3:.6;
+  drawHero(ctx,GHP.x+10,GHP.y+28,GHP.f,G.t*200,!!GHP.a,G.t,{face:MPS.peer.avatar});ctx.globalAlpha=1;ctx.font='900 9px Orbitron';ctx.textAlign='center';ctx.fillStyle='#fff';ctx.fillText(MPS.peer.name,GHP.x+10,GHP.y-26);ctx.restore();
+  if(MPS.mode==='race'&&G.goal&&G.state==='play'){const me=G.p.x/G.goal.x,op=Math.min(1,GHP.x/G.goal.x);ctx.save();ctx.setTransform(DPR,0,0,DPR,0,0);const w=Math.min(300,VW-120),x=(VW-w)/2,y=VH-26;ctx.fillStyle='#0008';ctx.fillRect(x,y,w,8);ctx.font='16px sans-serif';ctx.textAlign='center';ctx.fillText(MPS.peer.avatar,x+w*op,y-2);ctx.fillText(PROF.avatar,x+w*Math.min(1,me),y+22);ctx.fillText('🏁',x+w+12,y+10);ctx.restore()}};
+setInterval(()=>{if(!MPS||!G||G.mode!=='mp')return;const p=G.p;MPS.send('p',{x:Math.round(p.x),y:Math.round(p.y),f:p.face,a:p.ground?0:1,d:G.state==='won'?1:0});
+  if(G.state==='play')MPS.status({score:MPS.mode==='coop'?G.coins:Math.round(Math.min(1,p.x/(G.goal?G.goal.x:1))*100),txt:MPS.mode==='coop'?'🪙 coins':'% of the level'})},100);
+if(new URLSearchParams(location.search).get('mp')){const w=()=>window.KuzeyAccount&&KuzeyAccount.session?KuzeyAccount.session({
+    start(SS,go){MPS=SS;GHP={};startLevel(go.seed%3,go.seed%5,{mode:'mp'});G.msg={t:3,a:SS.mode==='coop'?'CLIMB TOGETHER!':'RACE TO THE FLAG!',b:'with '+SS.peer.name};
+      SS.recv('p',d=>{GHP={x:d.x,y:d.y,f:d.f,a:d.a,done:d.d}});
+      SS.recv('flag',i=>{const f=G&&G.flags[i];if(f&&!f.on){f.on=true;G.check=[f.x,f.y+30];fx.text(f.x,f.y-10,MPS.peer.name+' CHECKPOINT','#5cf2b4',12);SFX.levelup()}})},
+    onLose(){if(G&&G.mode==='mp'&&G.state==='play'){G.state='won';G.msg={t:99,a:MPS.peer.name.toUpperCase()+' WON!',b:'They reached the flag first'};MPS.finish({score:null,won:false,txt:'still climbing'})}}}):setTimeout(w,100);w()}
+$('mMulti').onclick=()=>{if(window.KuzeyAccount)KuzeyAccount.multiplayer('pixelpeaks')};
+if(new URLSearchParams(location.search).has('test'))window.__pp={keys,get G(){return G},get L(){return L},D,startLevel,buildLevel,update,finish:()=>finish(),hurt,get MPS(){return MPS},get GHP(){return GHP}};
 </script>
 </body>
 </html>
