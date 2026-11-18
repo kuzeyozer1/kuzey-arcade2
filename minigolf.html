@@ -99,6 +99,7 @@ table.sc td.tot{font:900 15px var(--display);color:var(--gold)}
     <h1>MINI GOLF<br>WORLD</h1>
     <p class="tag">27 crazy holes. Windmills, pirates and black holes.</p>
     <button class="btn main" id="mPlay">⛳ PLAY A COURSE<small>1–4 players on one device</small></button>
+    <button class="btn" id="mMulti" style="border-color:#3ef0ff"><span class="ic">🎮</span><span>ONLINE MULTIPLAYER<small>Alternate shot together or race a friend</small></span></button>
     <div class="row">
       <button class="btn" id="mPractice"><span class="ic">🎯</span><span>PRACTICE<small>Play any hole you've reached</small></span></button>
       <button class="btn" id="mDaily"><span class="ic">📅</span><span>HOLE OF THE DAY<small id="dailyInfo">Try for a hole-in-one</small></span></button>
@@ -464,7 +465,7 @@ function startGame(mode,holes,list){G={mode,holes,hi:0,players:list.map((p,i)=>(
 function hole(){return HOLES[G.holes[G.hi]]}
 function loadHole(){const h=hole();S=holeSetup(h);S.onHit=onHit;G.cur=0;G.strokes=0;G.ball=makeBall(h.start[0],h.start[1]);G.last=[h.start[0],h.start[1]];G.state='aim';G.trail=[];
   G.aim=Math.atan2(h.cup[1]-h.start[1],h.cup[0]-h.start[0]);refreshHud();flash(`HOLE ${G.hi+1}`,`${h.name} · Par ${h.par}`);if(h.tip&&!D.best[h.index])setTimeout(()=>{if(G&&hole()===h)UI.toast(h.tip,'💡 Tip')},1400)}
-function refreshHud(){const h=hole(),p=G.players[G.cur];$('hHole').textContent=G.mode==='course'?`HOLE ${G.hi+1}/${G.holes.length}`:G.mode==='daily'?'HOLE OF THE DAY':G.mode==='hio'?`ACE CHALLENGE ${G.hi+1}/${G.holes.length}`:'PRACTICE';$('hPar').textContent=`${h.name} · Par ${h.par}`;$('hFace').textContent=p.face;$('hName').textContent=p.name;$('hStroke').textContent=G.strokes}
+function refreshHud(){const h=hole(),p=G.players[G.cur];$('hHole').textContent=G.mode==='course'||G.mode==='mp'?`HOLE ${G.hi+1}/${G.holes.length}`:G.mode==='daily'?'HOLE OF THE DAY':G.mode==='hio'?`ACE CHALLENGE ${G.hi+1}/${G.holes.length}`:'PRACTICE';$('hPar').textContent=`${h.name} · Par ${h.par}`;$('hFace').textContent=p.face;$('hName').textContent=p.name;$('hStroke').textContent=G.strokes}
 function flash(a,b){const m=$('msg');m.innerHTML=a+(b?`<small>${b}</small>`:'');m.classList.add('show');clearTimeout(flash.t);flash.t=setTimeout(()=>m.classList.remove('show'),1500)}
 let lastHitSnd=0;
 function onHit(kind,v=0){const now=performance.now();if(now-lastHitSnd<60)return;lastHitSnd=now;
@@ -482,6 +483,7 @@ function sunk(){const p=G.players[G.cur],h=hole(),n=G.strokes,d=n-h.par;G.state=
     if(n===1){D.aces[h.index]=1;D.acesN++;ACH.unlock(GAME,'ace');if(D.acesN>=5)ACH.unlock(GAME,'ace5');if(D.acesN>=20)ACH.unlock(GAME,'ace20');if(acesN()>=9)ACH.unlock(GAME,'allaces')}
     if(d===-1)ACH.unlock(GAME,'birdie');if(d<=-2)ACH.unlock(GAME,'eagle');if(G.ball.bounces>=5)ACH.unlock(GAME,'bank5');if(G.ball.ported)ACH.unlock(GAME,'portal');if(G.startDist>400)ACH.unlock(GAME,'long');save()}
   p.scores[G.hi]=n;setTimeout(nextTurn,1700)}
+let _ntMP=null;
 function nextTurn(){if(!G)return;if(G.cur<G.players.length-1){G.cur++;const h=hole();G.strokes=0;G.ball=makeBall(h.start[0],h.start[1]);G.last=[h.start[0],h.start[1]];G.state='aim';G.aim=Math.atan2(h.cup[1]-h.start[1],h.cup[0]-h.start[0]);refreshHud();flash(`${G.players[G.cur].face} ${G.players[G.cur].name}`,'your turn!');return}
   showCard()}
 function giveUp(){const p=G.players[G.cur];p.scores[G.hi]=10;G.state='sunk';flash('PICKED UP','10 strokes');setTimeout(nextTurn,1200)}
@@ -504,16 +506,16 @@ function showCardPeek(){const st=G.state;showCard();$('cNext').hidden=false;$('c
    INPUT: pull back and let go (or keyboard)
    ================================================================ */
 const drag={on:false,sx:0,sy:0};
-cv.addEventListener('pointerdown',e=>{if(!G||G.state!=='aim'||G.players[G.cur].ai)return;drag.on=true;drag.sx=e.clientX;drag.sy=e.clientY;drag.id=e.pointerId;cv.setPointerCapture(e.pointerId)});
+cv.addEventListener('pointerdown',e=>{if(!G||G.state!=='aim'||G.players[G.cur].ai||!myShot())return;drag.on=true;drag.sx=e.clientX;drag.sy=e.clientY;drag.id=e.pointerId;cv.setPointerCapture(e.pointerId)});
 cv.addEventListener('pointermove',e=>{if(!drag.on||e.pointerId!==drag.id)return;const dx=drag.sx-e.clientX,dy=drag.sy-e.clientY,d=Math.hypot(dx,dy);if(d>6){G.aim=Math.atan2(dy,dx)}G.pull=Math.min(1,d/(Math.min(VW,VH)*.32))});
 const endDrag=e=>{if(!drag.on||e.pointerId!==drag.id)return;drag.on=false;const p=G.pull;G.pull=0;if(p>.04)shoot(p)};
 cv.addEventListener('pointerup',endDrag);cv.addEventListener('pointercancel',e=>{drag.on=false;if(G)G.pull=0});
 const keys=U.keys();let charging=false,chargeT=0;
-addEventListener('keydown',e=>{if(!G)return;const k=e.key.toLowerCase();if(k==='escape'||k==='p'){if(G.state==='pause')resume();else if(G.state==='aim'||G.state==='roll'){G.prev=G.state;G.state='pause';show('sPause')}}
-  if(k==='tab'){e.preventDefault();if(G.state==='aim')showCardPeek()}if(k===' '&&G.state==='aim'&&!charging&&!G.players[G.cur].ai){charging=true;chargeT=0}});
+addEventListener('keydown',e=>{if(!G)return;const k=e.key.toLowerCase();if((k==='escape'||k==='p')&&!G.mp){if(G.state==='pause')resume();else if(G.state==='aim'||G.state==='roll'){G.prev=G.state;G.state='pause';show('sPause')}}
+  if(k==='tab'){e.preventDefault();if(G.state==='aim')showCardPeek()}if(k===' '&&G.state==='aim'&&!charging&&!G.players[G.cur].ai&&myShot()){charging=true;chargeT=0}});
 addEventListener('keyup',e=>{if(e.key===' '&&charging&&G){charging=false;const p=G.pull;G.pull=0;shoot(p)}});
 function resume(){G.state=G.prev||'aim';show(null);$('hud').hidden=false}
-$('bPause').onclick=()=>{if(G&&(G.state==='aim'||G.state==='roll')){G.prev=G.state;G.state='pause';show('sPause')}};
+$('bPause').onclick=()=>{if(MPS&&G&&G.mp){if(confirm('Leave the multiplayer game?'))MPS.quit();return}if(G&&(G.state==='aim'||G.state==='roll')){G.prev=G.state;G.state='pause';show('sPause')}};
 $('pResume').onclick=resume;$('pSkip').onclick=()=>{resume();giveUp()};$('pQuit').onclick=()=>{G=null;$('hud').hidden=true;show('sMenu')};
 
 /* ================================================================
@@ -687,6 +689,35 @@ const origAgain=$('cAgain').onclick;
   $('mHat').onclick=()=>{const pts=acesN()+Object.keys(D.best).length;UI.modal(`<h2>🎩 My golfer</h2><p class="mute" style="margin:0">Your golfer stands next to the ball. Unlock hats by finishing holes (you have ${pts} points).</p><div class="kgrid" id="hatGrid">${HATS.map(([id,n,need])=>`<button data-hat="${id}" class="${D.hat===id?'on':''}" ${pts<need?'disabled':''} style="width:84px;height:84px;font-size:12px;display:flex;flex-direction:column;align-items:center;justify-content:center"><canvas width="96" height="96" style="width:48px;height:48px"></canvas>${pts<need?'🔒'+need:n}</button>`).join('')}</div><div style="display:flex;justify-content:flex-end"><button class="kbtn2" data-close>DONE</button></div>`,
     m=>{m.querySelectorAll('[data-hat]').forEach(b=>{const c=b.querySelector('canvas').getContext('2d');c.scale(2,2);c.translate(24,28);c.font='26px sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText(PROF.avatar,0,0);drawHat(c,b.dataset.hat,26);
       b.onclick=()=>{if(b.disabled)return;D.hat=b.dataset.hat;save();if(D.hat!=='none')ACH.unlock(GAME,'hat');m.querySelectorAll('[data-hat]').forEach(x=>x.classList.toggle('on',x===b));SFX.click()}})})}})();
+_ntMP=nextTurn;
+
+/* ================================================================
+   ONLINE MULTIPLAYER: alternate shot with one team ball (together), or the same 3 holes at the same time (race)
+   ================================================================ */
+let MPS=null,GBALL=null;
+const coopMG=()=>MPS&&MPS.mode==='coop'&&G&&G.mp;
+function myShot(){if(!coopMG())return true;return((G.shotN+G.hi)%2===0)===MPS.host}
+function shotLabel(){if(!coopMG()||G.state!=='aim')return;flash(myShot()?'👉 YOUR SHOT':'⏳ '+MPS.peer.name+'\'s shot',`Team ball · ${G.strokes} stroke${G.strokes===1?'':'s'}`)}
+const _shootMP=shoot;shoot=function(power){if(!G||G.state!=='aim')return;if(coopMG()){if(!myShot()&&!G.remoteShot)return;if(!G.remoteShot)MPS.send('shot',{a:G.aim,p:power,x:G.ball.x,y:G.ball.y,n:G.shotN,hi:G.hi});G.mine=!G.remoteShot;G.shotN++}_shootMP(power)};
+const _endMP=handleEnd;handleEnd=function(r){if(coopMG()){if(!G.mine){G.ball.vx=G.ball.vy=0;G.state='wait';return}
+    MPS.send('rest',{r,x:G.ball.x,y:G.ball.y,hi:G.hi,n:G.shotN});const res=_endMP(r);if(r!=='cup')setTimeout(shotLabel,600);return res}return _endMP(r)};
+nextTurn=function(){if(!G)return;if(!G.mp)return _ntMP();const p=G.players[0];
+  if(G.hi<G.holes.length-1){G.hi++;loadHole();if(coopMG())setTimeout(shotLabel,1800);return}
+  const tot=p.scores.reduce((a,b)=>a+(b||0),0),par=G.holes.reduce((a,i)=>a+HOLES[i].par,0),d=tot-par;G.state='card';
+  MPS.finish({score:tot,shared:MPS.mode==='coop',txt:(d===0?'par':d>0?'+'+d:d)+' · '+G.holes.length+' holes'})};
+const _loadMP=loadHole;loadHole=function(){_loadMP();if(G&&G.mp)G.shotN=0};
+const _renderMP=render;render=function(){_renderMP();if(!G||!G.mp||MPS.mode!=='race'||!GBALL||GBALL.hi!==G.hi||GBALL.done)return;ctx.save();ctx.translate(OX,OY);ctx.scale(SC,SC);ctx.globalAlpha=.55;
+  drawBall(ctx,GBALL.x,GBALL.y,BR,{col:'#ff3d9a',pat:'plain'},performance.now()/1000);ctx.globalAlpha=1;ctx.font='16px sans-serif';ctx.textAlign='center';ctx.fillText(MPS.peer.avatar,GBALL.x,GBALL.y-14);ctx.restore()};
+setInterval(()=>{if(!MPS||!G||!G.mp)return;const p=G.players[0],tot=p.scores.reduce((a,b)=>a+(b||0),0)+(G.state==='sunk'?0:G.strokes);
+  if(MPS.mode==='race')MPS.send('gb',{hi:G.hi,x:Math.round(G.ball.x),y:Math.round(G.ball.y),done:G.state==='card'?1:0});MPS.status({score:tot,txt:'hole '+(G.hi+1)+'/'+G.holes.length+' · strokes'})},100);
+function mpHoles(seed){const r=U.rng(seed),pool=Array.from({length:Math.min(18,HOLES.length)},(_,i)=>i),out=[];while(out.length<3)out.push(pool.splice(Math.floor(r()*pool.length),1)[0]);return out}
+if(new URLSearchParams(location.search).get('mp')){const w=()=>window.KuzeyAccount&&KuzeyAccount.session?KuzeyAccount.session({lowerWins:true,
+    start(SS,go){MPS=SS;const holes=mpHoles(go.seed);startGame('mp',holes,SS.mode==='coop'?[{name:'Team',face:'🤝'}]:[{name:PROF.name,face:PROF.avatar}]);G.mp=true;G.shotN=0;
+      if(SS.mode==='coop'){setTimeout(shotLabel,2000);
+        SS.recv('shot',d=>{if(!coopMG()||d.hi!==G.hi||d.n!==G.shotN||G.state!=='aim')return;G.ball.x=d.x;G.ball.y=d.y;G.aim=d.a;G.remoteShot=true;shoot(d.p);G.remoteShot=false});
+        SS.recv('rest',d=>{if(!coopMG()||d.hi!==G.hi||G.mine)return;acc=0;G.ball.x=d.x;G.ball.y=d.y;G.ball.vx=G.ball.vy=0;G.state='roll';_endMP(d.r);if(d.r!=='cup')setTimeout(shotLabel,600)})}
+      else SS.recv('gb',d=>{GBALL=d})}}):setTimeout(w,100);w()}
+$('mMulti').onclick=()=>{if(window.KuzeyAccount)KuzeyAccount.multiplayer('minigolf')};
 const _rm=refreshMenu;refreshMenu=function(){_rm();const e=$('hioInfo');if(e)e.textContent=D.hio?`Best: ${D.hio} points`:'One shot on 9 random holes'};
 
 /* ================================================================
@@ -793,7 +824,7 @@ function drawStats(){const tot=HOLES.reduce((a,h,i)=>a+(D.best[i]||0),0);let row
   COURSES.forEach(c=>{rows+=`<tr><td colspan="3" class="n">${c.name} best round</td><td class="tot">${D.courses[c.id]||'—'}</td></tr>`});$('statTable').innerHTML=rows}
 $('cMenu').addEventListener('click',()=>{if(typeof origAgain!=='undefined')$('cAgain').onclick=origAgain});
 show('sMenu');
-if(new URLSearchParams(location.search).has('test'))window.__mg={get G(){return G},D,HOLES,startGame,shoot,simulate,holeSetup,get S(){return S},showCard};
+if(new URLSearchParams(location.search).has('test'))window.__mg={get G(){return G},D,HOLES,startGame,shoot:p=>shoot(p),simulate,holeSetup,get S(){return S},showCard,get MPS(){return MPS},get GBALL(){return GBALL},myShot:()=>myShot()};
 </script>
 </body>
 </html>
