@@ -76,7 +76,7 @@ a.back{color:var(--mute);text-decoration:none;font-family:var(--display);font-si
   <div class="seg" role="group" aria-label="Mode"><button data-mode="daily" aria-pressed="true" id="mDaily">Daily</button><button data-mode="practice" aria-pressed="false" id="mPractice">Practice</button><button data-mode="rush" aria-pressed="false" id="mRush">⏱ Rush</button></div>
   <a class="back" href="./">ARCADE</a>
 </header>
-<div class="tools"><span class="det" id="det"></span><span class="coin" id="coin">🪙 0</span><button id="tHint">💡 <span id="hintLbl">Hint</span></button><button id="tStats">📊</button><button id="tAch">🏆</button><button id="tMe">👤</button></div>
+<div class="tools"><span class="det" id="det"></span><span class="coin" id="coin">🪙 0</span><button id="tHint">💡 <span id="hintLbl">Hint</span></button><button id="tMulti" title="Multiplayer">🎮</button><button id="tStats">📊</button><button id="tAch">🏆</button><button id="tMe">👤</button></div>
 <div class="status"><span id="caseNo"></span><span id="rushT" hidden></span><span id="streak"></span></div>
 <div class="grid" id="grid"></div>
 <div class="msg" id="msg" role="status"></div>
@@ -110,7 +110,7 @@ function newGame(){
   else{const saved=load('wdPractice:'+st.lang);G=saved&&!saved.done?saved:{answer:L[Math.random()*L.length|0],guesses:[],cur:'',done:false,won:false}}
   G.cur=G.cur||'';draw();
 }
-const persist=()=>put(st.mode==='daily'?'wdDaily:'+st.lang:'wdPractice:'+st.lang,G);
+const persist=()=>G&&G.mp?0:put(st.mode==='daily'?'wdDaily:'+st.lang:'wdPractice:'+st.lang,G);
 // green first, then yellow only as many times as the letter is left over
 function score(guess,answer){
   const g=[...guess],a=[...answer],res=Array(5).fill('miss'),left={};
@@ -216,7 +216,32 @@ $('tStats').onclick=()=>{const S=SD.stats[st.lang],mx=Math.max(1,...S.d);const s
     <b>${tr?'Tahmin dağılımı':'Guess distribution'}</b><div class="dist">${S.d.map((n,i)=>`<div>${i+1}<i class="${G&&G.won&&G.guesses.length===i+1?'me':''}" style="width:${8+n/mx*85}%">${n}</i></div>`).join('')}</div>
     <p style="margin:0;color:#9a94c9">🕵️ ${PROF.avatar} ${PROF.name} — ${rank()} · ${wins()} ${tr?'vaka çözüldü':'cases solved'} · 💡 ${SD.hints}</p><div style="display:flex;justify-content:flex-end"><button class="kbtn2" data-close>OK</button></div>`)};
 $('tAch').onclick=()=>UI.achievements(GAME,'Word Detective');$('tMe').onclick=()=>UI.profileEditor(draw);
-if(new URLSearchParams(location.search).has('test'))window.__wd={get G(){return G},press:k=>press(k),SD,st,newGame:()=>newGame()};
+
+/* ================= multiplayer: one board taking turns (together) or the same 3 words (race) ================= */
+let MPS=null,MPW=null;
+const mpTurn=()=>!MPS||MPS.mode!=='coop'||(G.guesses.length%2===0)===MPS.host;
+function mpWord(i){const L=WORDS[MPW.lang].filter(w=>[...w].length===5);return L[(MPW.seed+i*7919)%L.length]}
+function mpNew(){G={answer:mpWord(MPW.round),guesses:[],cur:'',done:false,won:false,hints:[],mp:true};draw()}
+function mpLabel(){if(!MPS||!G)return;const nm=MPS.peer.name,w=`${st.lang==='tr'?'Kelime':'Word'} ${Math.min(3,MPW.round+1)}/3`;
+  $('caseNo').textContent=MPS.mode==='coop'?(G.done?'🤝 '+w:mpTurn()?`🤝 ${w} · 👉 ${st.lang==='tr'?'SIRA SENDE':'YOUR TURN'}`:`🤝 ${w} · ⏳ ${nm}`):`🏁 ${w} · ${MPW.points} ${st.lang==='tr'?'puan':'pts'}`;$('end').hidden=true}
+const _draw2=draw;draw=function(){_draw2();if(MPS&&G&&G.mp)mpLabel()};
+const _newGame2=newGame;newGame=function(){if(MPS&&MPW)return mpNew();_newGame2()};
+let remote=false;
+const _press2=press;press=function(k){if(!G||G.done)return;if(MPS&&G.mp&&MPS.mode==='coop'&&!remote&&!mpTurn())return;const n=G.guesses.length;_press2(k);
+  if(MPS&&G.mp&&!remote){if(MPS.mode==='coop'){if(G.guesses.length>n)MPS.send('guess',{w:G.guesses[n],n});else MPS.send('cur',{c:G.cur,n})}
+    else if(G.guesses.length>n){const pat=score(G.guesses[n],G.answer).map(r=>r==='hit'?'🟩':r==='near'?'🟨':'⬛').join('');MPS.status({score:MPW.points,txt:`${st.lang==='tr'?'kelime':'word'} ${MPW.round+1} · ${pat}`})}}};
+const _finish2=finish;finish=function(){const first=!G.counted;_finish2();if(!MPS||!G.mp||!first)return;const n=G.guesses.length,pts=G.won?10+(6-n)*5:0;MPW.points+=pts;if(G.won)MPW.solved++;MPW.round++;
+  say(G.won?`+${pts} ${st.lang==='tr'?'puan':'points'}!`:(st.lang==='tr'?'Kelime: ':'The word was ')+G.answer);
+  if(MPS.mode==='race')MPS.status({score:MPW.points,txt:`${MPW.solved}/${MPW.round} ${st.lang==='tr'?'çözüldü':'solved'}`});
+  if(MPW.round<3)setTimeout(mpNew,1800);else setTimeout(()=>MPS.finish({score:MPW.points,shared:MPS.mode==='coop',txt:`${MPW.solved}/3 ${st.lang==='tr'?'kelime':'words'}`}),1200)};
+if(new URLSearchParams(location.search).get('mp')){const w=()=>window.KuzeyAccount&&KuzeyAccount.session?KuzeyAccount.session({hello:()=>({lang:st.lang}),goExtra:()=>({lang:st.lang}),
+    start(SS,go){MPS=SS;MPW={lang:go.lang,seed:go.seed%100000,round:0,points:0,solved:0};st.lang=go.lang;stopRush();
+      document.querySelectorAll('[data-lang],[data-mode],#tHint').forEach(b=>b.disabled=true);mpNew();
+      SS.recv('cur',d=>{if(G&&G.mp&&d.n===G.guesses.length&&!mpTurn()){G.cur=d.c;draw()}});
+      SS.recv('guess',d=>{if(!G||!G.mp||G.done||d.n!==G.guesses.length)return;G.cur=d.w;remote=true;try{press('enter')}finally{remote=false}})},
+    onLeave(){}}):setTimeout(w,100);w()}
+$('tMulti').onclick=()=>{if(window.KuzeyAccount)KuzeyAccount.multiplayer('words')};
+if(new URLSearchParams(location.search).has('test'))window.__wd={get G(){return G},press:k=>press(k),SD,st,newGame:()=>newGame(),get MPS(){return MPS},get MPW(){return MPW}};
 
 newGame();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});

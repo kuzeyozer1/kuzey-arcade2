@@ -186,7 +186,7 @@ const MPG=[['starsiege','Star Siege','🚀'],['skyraiders','Sky Raiders','✈️
  ['words','Word Detective','🔎'],['beatblaster','Beat Blaster','🎵'],['bonjourparis','Bonjour Paris','🗼'],['snake','Neon Snake Rush','🐍'],['farm','Little Farmstead','🌾'],['gearworks','Gear Works','⚙️'],['craft','Kuzey Craft','⛏️']];
 const MODES={coop:['🤝','Fight together'],race:['🏁','Race']};
 const gameInfo=id=>MPG.find(g=>g[0]===id)||[id,id,'🎮'];
-const READY={starsiege:'starsiege.html',stack:'stack.html',gemcascade:'gemcascade.html',ninjarun:'ninjarun.html',galaxyguardian:'galaxyguardian.html',neonswarm:'neonswarm.html'};// games that can really be played together: id -> page
+const READY={starsiege:'starsiege.html',stack:'stack.html',gemcascade:'gemcascade.html',ninjarun:'ninjarun.html',galaxyguardian:'galaxyguardian.html',neonswarm:'neonswarm.html',words:'words.html'};// games that can really be played together: id -> page
 let invSeen={},inbox=[],lobby=null;
 // ---- check for invites every few seconds (friend invites + game invites) ----
 async function poll(){const a=linked();if(!a||document.hidden)return;try{const r=await rpc('kz_inbox',{p_token:a.cloud.token});
@@ -301,7 +301,7 @@ async function session(o){const q=new URLSearchParams(location.search);if(!q.get
     box.querySelector('.bx').innerHTML=html;box.querySelector('#ssBack').onclick=()=>S.quit();if(r==='win'&&!S.cheered){S.cheered=true;const K=window.KIT;K&&K.sfx&&K.sfx.win()}}
   function panel(){let p=document.getElementById('ssPanel');if(!p){p=document.createElement('div');p.id='ssPanel';if(o.panelAt==='bottom')p.classList.add('bot');document.body.appendChild(p)}
     const pe=S.peer||{name:S.fname,avatar:'❔',color:'#55507a'},d=S.opp||{};
-    p.innerHTML=`<span class="acav" style="border-color:${pe.color};background:${pe.color}22">${pe.avatar}</span><div><b>${esc(pe.name)}</b><small>${S.left?'left the game':d.alive===false||S.oppFin?(S.oppFin&&S.oppFin.won?'✅ finished':'💥 out'):esc(d.txt||'playing…')}</small></div><em>${(d.score||0).toLocaleString()}${o.unit||''}</em>`}
+    p.innerHTML=`<span class="acav" style="border-color:${pe.color};background:${pe.color}22">${pe.avatar}</span><div><b>${esc(pe.name)}</b><small>${S.left?'left the game':d.alive===false||S.oppFin?(S.oppFin&&(S.oppFin.won||S.mode==='coop')?'✅ finished':'💥 out'):esc(d.txt||'playing…')}</small></div><em>${(d.score||0).toLocaleString()}${o.unit||''}</em>`}
   return S}
 function hashCode(s){let h=2166136261;for(const ch of s){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
 
