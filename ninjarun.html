@@ -115,6 +115,7 @@ h1{background:linear-gradient(180deg,#fff,#5cf2b4 50%,#2a8a5a);-webkit-backgroun
   <div class="who"><span id="whoAv" style="font-size:26px">🦊</span><span>Ninja <b id="whoName">Player</b></span><button id="whoEdit">edit</button></div>
   <div class="credits">🪙 <span id="mCoins">0</span> · best <span id="mBest">0</span> m</div>
   <button class="btn main" id="mRun">▶ RUN!<small>How far can you go?</small></button>
+  <button class="btn" id="mMulti" style="border-color:#3ef0ff"><span class="ic">🎮</span><span>MULTIPLAYER<small>Run together or race a friend on the same course</small></span></button>
   <div class="row"><button class="btn" id="mDaily"><span class="ic">📅</span><span>DAILY DASH<small id="dailyInfo">Same course for everyone</small></span></button>
     <button class="btn" id="mMissions"><span class="ic">📜</span><span>MISSIONS<small id="msInfo">Earn ninja ranks</small></span></button></div>
   <div class="row"><button class="btn" id="mOutfits"><span class="ic">🥷</span><span>OUTFITS<small>Buy, wear and sell</small></span></button>
@@ -213,12 +214,12 @@ while(D.ms.length<3)D.ms.push(newMission());
    RUN
    ================================================================ */
 let G=null,paused=false;
-function newRun(daily){const O=curOut();G={daily,O,rng:daily?U.rng(hashStr('nr'+todayKey())):Math.random,x:0,speed:420,dist:0,coins:0,kos:0,dj:0,slides:0,pups:0,stomps:0,usedSave:false,
+function newRun(daily,seed){const O=curOut();G={daily,O,rng:seed?U.rng(seed):daily?U.rng(hashStr('nr'+todayKey())):Math.random,x:0,speed:420,dist:0,coins:0,kos:0,dj:0,slides:0,pups:0,stomps:0,usedSave:false,
   p:{y:GY,vy:0,ground:true,jumps:0,slide:0,inv:0,stars:5+sh('stars')*3,starCd:0,anim:0},segs:[],obs:[],coinsL:[],items:[],shots:[],foes:[],gen:0,pw:{},phase:'run',revives:0,banner:{t:2,a:'GO!',b:''},world:0,shake:0};
   G.segs.push({x0:-200,x1:1600,y:GY});G.gen=1600;if(O.perk==='shield')G.pw.shield=99;if(sh('head'))G.pw.dash=4;fx.clear();while(G.gen<G.x+W*2)genChunk();return G}
 const R=()=>G.rng();
 // the course is made from little chunks: flat runs, gaps, raised platforms, obstacles, enemies and coin lines
-function genChunk(){const lvl=Math.min(1,G.dist/5000),x=G.gen,last=G.segs[G.segs.length-1],gy=last.y;const t=R();
+function genChunk(){const lvl=Math.min(1,G.gen/50000),x=G.gen,last=G.segs[G.segs.length-1],gy=last.y;const t=R();
   if(t<.18+lvl*.12){const gap=140+R()*(80+lvl*120);const ny=clamp(gy+(R()<.5?-1:1)*Math.floor(R()*3)*50,GY-150,GY);G.segs.push({x0:x+gap,x1:x+gap+500+R()*500,y:ny});for(let i=0;i<5;i++)G.coinsL.push({x:x+gap*.2+i*gap*.15,y:gy-120-Math.sin(i/4*Math.PI)*80});G.gen=G.segs[G.segs.length-1].x1;return}
   const len=700+R()*500;last.x1=Math.max(last.x1,x+len);
   let ox=x+200;while(ox<x+len-150){const k=R();
@@ -228,7 +229,7 @@ function genChunk(){const lvl=Math.min(1,G.dist/5000),x=G.gen,last=G.segs[G.segs
     else if(k<.75)G.foes.push({k:R()<.3+lvl*.3?'bird':'ninja',x:ox,y:gy-(R()<.5?0:0),by:gy,t:R()*6,hp:1});
     else for(let i=0;i<6;i++)G.coinsL.push({x:ox+i*40,y:gy-60-(k>.9?Math.sin(i/5*Math.PI)*90:0)});
     {const last2=G.obs[G.obs.length-1];if(last2&&last2.x===ox&&last2.k!=='bar')for(let i=0;i<5;i++)G.coinsL.push({x:ox-60+i*(last2.w+120)/4,y:gy-90-Math.sin(i/4*Math.PI)*90});else if(R()<.5)for(let i=0;i<4;i++)G.coinsL.push({x:ox+120+i*40,y:gy-50})}
-    if(R()<.06)G.items.push({k:pick(['magnet','shield','dash','double','stars']),x:ox+80,y:gy-150});ox+=260+R()*240-lvl*60}
+    if(R()<.06)G.items.push({k:['magnet','shield','dash','double','stars'][Math.floor(R()*5)],x:ox+80,y:gy-150});ox+=260+R()*240-lvl*60}
   G.gen=x+len}
 function groundAt(x){for(const s of G.segs)if(x>=s.x0&&x<=s.x1)return s.y;return null}
 function jump(){if(!G||G.phase!=='run')return;const P=G.p,max=G.O.perk==='triple'?3:2;if(P.ground||P.jumps<max){P.vy=-(820+(G.O.perk==='jump'?80:0));if(!P.ground){P.jumps++;G.dj++;fx.burst(PX,P.y,{n:8,color:'#fff',speed:100,life:.3})}else P.jumps=1;P.ground=false;P.slide=0;SFX.jump()}}
@@ -244,6 +245,7 @@ function update(dt){if(!G)return;fx.update(dt);if(G.banner){G.banner.t-=dt;if(G.
   const w=Math.min(3,Math.floor(G.dist/1500));if(w!==G.world){G.world=w;G.banner={t:2,a:WORLDS[w].name.toUpperCase(),b:Math.floor(G.dist)+' m'};SFX.levelup()}
   for(const[d,a]of[[500,'d500'],[1000,'d1000'],[3000,'d3000'],[6000,'d6000']])if(G.dist>=d)ACH.unlock(GAME,a);if(G.dist>=1500&&!G.usedSave)ACH.unlock(GAME,'nohit');if(G.daily&&G.dist>=1000)ACH.unlock(GAME,'daily');
   while(G.gen<G.x+W*2)genChunk();
+  if(MPS)mpTick(dt);
   // ninja physics
   P.vy+=2400*dt;P.y+=P.vy*dt;P.slide=Math.max(0,P.slide-dt);P.inv=Math.max(0,P.inv-dt);P.starCd-=dt;P.anim+=dt*G.speed/40;
   const gy=groundAt(G.x+PX);if(gy!=null&&P.y>=gy&&P.y-P.vy*dt<=gy+12){P.y=gy;P.vy=0;if(!P.ground)fx.burst(PX,gy,{n:5,color:'#ddd',speed:60,life:.25});P.ground=true;P.jumps=0}else if(gy==null||P.y<gy-2)P.ground=false;
@@ -256,7 +258,7 @@ function update(dt){if(!G)return;fx.update(dt);if(G.banner){G.banner.t-=dt;if(G.
     if(o.k==='log'&&bottom>o.y-46){if(G.pw.dash>0){o.done=true;fx.burst(o.x-G.x,o.y-20,{n:12,color:'#8a5a2a',speed:140})}else if(hurt())return}
     if(o.k==='bar'&&top<o.y-58&&bottom>o.y-150){if(G.pw.dash>0){o.done=true;fx.burst(o.x-G.x,o.y-80,{n:12,color:'#c84a3a',speed:140})}else if(hurt())return}}
   // enemies
-  for(const f of G.foes){if(f.dead)continue;f.t+=dt;if(f.k==='bird'){f.y=f.by-110+Math.sin(f.t*3)*40;f.x-=120*dt}else{f.x-=60*dt;if(f.thrower===undefined)f.thrower=R()<.25+Math.min(.35,G.dist/8000);if(f.thrower&&f.x-px<760&&f.x>px+200){f.warn=(f.warn||0)+dt;if(f.warn>.9&&!f.threw){f.threw=true;G.shots.push({x:f.x-20,y:f.y-44,vx:-360,enemy:true})}}}
+  for(const f of G.foes){if(f.dead)continue;f.t+=dt;if(f.k==='bird'){f.y=f.by-110+Math.sin(f.t*3)*40;f.x-=120*dt}else{f.x-=60*dt;if(f.thrower===undefined)f.thrower=((Math.sin(f.x*12.9898)*43758.5453)%1+1)%1<.25+Math.min(.35,G.dist/8000);if(f.thrower&&f.x-px<760&&f.x>px+200){f.warn=(f.warn||0)+dt;if(f.warn>.9&&!f.threw){f.threw=true;G.shots.push({x:f.x-20,y:f.y-44,vx:-360,enemy:true})}}}
     const fy=f.k==='bird'?f.y:f.y-40;if(Math.abs(f.x-px)<38&&fy>top-20&&fy<bottom+10){if(G.pw.dash>0)koFoe(f,'dash');else if(P.vy>0&&bottom<fy+10){koFoe(f,'stomp');P.vy=-700;P.jumps=1}else if(hurt())return}}
   G.foes=G.foes.filter(f=>!f.dead&&f.x>G.x-200);
   for(const s of G.shots){s.x+=s.vx*dt;if(s.enemy){if(Math.abs(s.x-px)<20&&s.y>top&&s.y<bottom){s.dead=true;if(hurt())return}}else for(const f of G.foes)if(!f.dead&&Math.abs(f.x-s.x)<30&&Math.abs((f.k==='bird'?f.y:f.y-40)-s.y)<40){f.dead=true;s.dead=true;koFoe(f,'star')}if(!s.dead)for(const q of G.shots)if(q.enemy&&!q.dead&&Math.abs(q.x-s.x)<24&&Math.abs(q.y-s.y)<30){q.dead=true;s.dead=true;fx.burst(q.x-G.x,q.y,{n:8,color:'#fff',speed:100,life:.3})}if(Math.abs(s.x-G.x)>W+200)s.dead=true}
@@ -296,7 +298,9 @@ function render(){const c=ctx,t=performance.now()/1000;c.setTransform(FIT.dpr,0,
   for(const s of G.shots){c.save();c.translate(s.x-G.x,s.y);c.rotate(t*20);c.fillStyle=s.enemy?'#ff5d5d':'#ddd';for(let k=0;k<4;k++){c.rotate(Math.PI/2);c.beginPath();c.moveTo(0,0);c.lineTo(4,-12);c.lineTo(-4,-12);c.fill()}c.restore()}
   const P=G.p;if(G.phase!=='dead'){if(G.pw.dash>0)for(let k=1;k<5;k++){c.globalAlpha=.15*k/4;drawNinja(c,G.O,PX-k*22,P.y,P.anim,P.slide>0,!P.ground)}c.globalAlpha=P.inv>0&&Math.floor(t*14)%2?.4:1;drawNinja(c,G.O,PX,P.y,P.anim,P.slide>0,!P.ground);c.globalAlpha=1;
     if(G.pw.shield>0){c.strokeStyle=`rgba(92,216,255,${.5+Math.sin(t*6)*.3})`;c.lineWidth=4;c.beginPath();c.arc(PX,P.y-45,58,0,TAU);c.stroke()}if(G.pw.magnet>0){c.strokeStyle='#ffd23f55';c.setLineDash([6,8]);c.beginPath();c.arc(PX,P.y-45,80+Math.sin(t*5)*10,0,TAU);c.stroke();c.setLineDash([])}}
+  if(MPS)mpDraw(c,t);
   fx.draw(c);c.restore();
+  if(MPS)mpHud(c,t);
   c.textAlign='left';c.textBaseline='alphabetic';c.font='900 30px Orbitron';c.fillStyle='#fff';c.strokeStyle='#0008';c.lineWidth=5;c.strokeText(Math.floor(G.dist)+' m',20,46);c.fillText(Math.floor(G.dist)+' m',20,46);
   c.font='900 20px Orbitron';c.fillStyle='#ffd23f';c.strokeText('🪙 '+Math.floor(G.coins),20,80);c.fillText('🪙 '+Math.floor(G.coins),20,80);c.fillStyle='#fff';c.strokeText('⭐ '+G.p.stars,20,110);c.fillText('⭐ '+G.p.stars,20,110);
   let px=W-80;for(const k of['magnet','dash','double']){if(G.pw[k]>0){c.font='26px sans-serif';c.textAlign='center';c.fillText({magnet:'🧲',dash:'💨',double:'✖️'}[k],px,44);c.font='900 12px Orbitron';c.fillText(Math.ceil(G.pw[k]),px,66);px-=50}}
@@ -321,23 +325,49 @@ ONSHOW.sShop=()=>upgradeList($('shopList'),{list:SHOP,save:D,key:'shop',coinKey:
 ONSHOW.sStats=()=>statGrid($('statList'),[['Best run',fmtN(D.best)+' m'],['Total distance',fmtN(D.total)+' m'],['Runs',D.runs],['Enemies knocked out',D.kos],['Rank',RANKS[Math.min(9,D.rank)]],['Coins',fmtN(D.coins)]]);
 $('whoEdit').onclick=()=>UI.profileEditor(ONSHOW.sMenu);$('mRun').onclick=()=>start(false);$('mDaily').onclick=()=>start(true);$('mMissions').onclick=()=>show('sMissions');$('mOutfits').onclick=()=>show('sOutfits');$('mShop').onclick=()=>show('sShop');
 $('mHelp').onclick=()=>show('sHelp');$('mStats').onclick=()=>show('sStats');$('mAch').onclick=()=>UI.achievements(GAME,'Ninja Run awards');$('mSound').onclick=()=>{SFX.toggle();ONSHOW.sMenu()};
-let lastDaily=false;function start(daily){lastDaily=daily;newRun(daily);paused=false;show(null)}
-function togglePause(){if(!G||G.phase!=='run')return;paused=!paused;show(paused?'sPause':null);last=performance.now()}
+let lastDaily=false;function start(daily,seed){lastDaily=daily;newRun(daily,seed);paused=false;show(null)}
+function togglePause(){if(MPS){if(G&&confirm('Leave the multiplayer game?'))MPS.quit();return}if(!G||G.phase!=='run')return;paused=!paused;show(paused?'sPause':null);last=performance.now()}
 $('bPause').onclick=togglePause;$('pResume').onclick=togglePause;$('pQuit').onclick=()=>{paused=false;G.phase='dead';G.shown=true;endRun()};
-function endRun(){const g=G;const coins=Math.floor(g.coins)+D.rank*5;
+function endRun(){const g=G;if(MPS&&mpDown())return;const coins=Math.floor(g.coins)+D.rank*5;if(MPS){MPS.finish({score:Math.floor(g.dist),txt:g.kos+' KOs'});$('eAgain').hidden=true;$('eRevive').hidden=true}
   // missions
   for(const m of D.ms){if(m.done)continue;const v={dist:g.dist,coins:g.coins,kos:g.kos,dj:g.dj,slides:g.slides,pups:g.pups,stomps:g.stomps}[m.k];m.got=Math.max(m.got,Math.floor(v));if(m.got>=m.n)m.done=true}
   let ranked=false;if(D.ms.every(m=>m.done)){D.rank++;ranked=true;D.coins+=200;D.ms=[];while(D.ms.length<3)D.ms.push(newMission());if(D.rank>=4)ACH.unlock(GAME,'rank5');if(D.rank>=8)ACH.unlock(GAME,'rank9')}
-  $('eRevive').hidden=g.revives>0||D.coins+coins<100;
+  $('eRevive').hidden=g.revives>0||D.coins+coins<100||!!MPS;
   $('eTitle').textContent=ranked?'RANK UP! '+RANKS[Math.min(9,D.rank)]:'OUCH!';statGrid($('eStats'),[['Distance',Math.floor(g.dist)+' m'],['Coins','+'+coins],['Best',Math.max(D.best,Math.floor(g.dist))+' m'],['Knock-outs',g.kos]]);drawMs($('eMs'));
-  g.pendingCoins=coins;show('sEnd');SFX.lose()}
+  g.pendingCoins=coins;show('sEnd');SFX.lose();if(MPS)bank()}
 function bank(){const g=G;if(!g||g.banked)return;g.banked=true;D.coins+=g.pendingCoins;D.best=Math.max(D.best,Math.floor(g.dist));D.total+=Math.floor(g.dist);D.runs++;if(g.daily)D.daily[todayKey()]=Math.max(D.daily[todayKey()]||0,Math.floor(g.dist));SC.submit(GAME,Math.floor(g.dist));save()}
 $('eRevive').onclick=()=>{if(D.coins+G.pendingCoins<100)return;D.coins-=100;G.revives++;G.usedSave=true;G.phase='run';G.shown=false;G.p.inv=2;G.p.y=GY-300;G.p.vy=0;G.pw.dash=1.5;for(const o of G.obs)if(o.x<G.x+800)o.done=true;show(null);save()};
 $('eAgain').onclick=()=>{bank();start(lastDaily)};$('eMenu').onclick=()=>{bank();G=null;show('sMenu')};
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&G&&!paused&&G.phase==='run')togglePause()});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&G&&!paused&&G.phase==='run'&&!MPS)togglePause()});
 let last=performance.now();function frame(now){const dt=Math.min(.033,(now-last)/1000);last=now;if(G&&!paused)update(dt);render();requestAnimationFrame(frame)}
+
+/* ================================================================
+   MULTIPLAYER: same course; race (farthest wins) or run together (rescue each other)
+   ================================================================ */
+let MPS=null,GH=null,RESC=null,downs=0;
+function mpTick(dt){G.mpT=(G.mpT||0)+dt;if(G.mpT>=.1){G.mpT=0;const P=G.p;MPS.send('p',{x:Math.round(G.x),y:Math.round(P.y),s:P.slide>0?1:0,a:P.ground?0:1})}
+  MPS.status({score:Math.floor(G.dist),txt:'🪙 '+Math.floor(G.coins)});
+  if(RESC&&!RESC.done&&G.coins-RESC.from>=RESC.need){RESC.done=true;MPS.send('rescue',{x:Math.round(G.x)});G.banner={t:2,a:'RESCUED '+MPS.peer.name.toUpperCase()+'!',b:'Your friend is back'};SFX.levelup()}}
+// I fell: in "together" my friend can rescue me (up to 3 times)
+function mpDown(){if(MPS.mode!=='coop'||G.waiting)return!!G.waiting;if(!GH||GH.out||GH.dn||downs>=3||MPS.left||MPS.oppFin)return false;
+  G.waiting=true;downs++;G.phase='wait';MPS.send('down',{need:10+downs*10});G.banner={t:99,a:'WAIT FOR '+MPS.peer.name.toUpperCase()+'!',b:'They can rescue you by collecting '+(10+downs*10)+' coins'};return true}
+function mpRevive(x){G.waiting=false;G.phase='run';G.shown=false;G.x=Math.max(G.x,x);G.dist=G.x/10;while(G.gen<G.x+W*2)genChunk();for(const o of G.obs)if(o.x<G.x+900)o.done=true;for(const f of G.foes)if(f.x<G.x+900)f.dead=true;
+  const P=G.p;P.inv=2.5;P.y=GY-300;P.vy=0;G.pw.dash=1.5;G.banner={t:2,a:'BACK IN!',b:MPS.peer.name+' saved you'};SFX.power();show(null)}
+function mpDraw(c,t){if(!GH)return;const x=GH.x-G.x+PX;if(x<-100||x>W+100)return;c.globalAlpha=GH.dn?.25:.55;drawNinja(c,GH.O||{col:'#3a3a6a',band:'#5cd8ff'},x,GH.y,t*14,GH.s,GH.a);c.globalAlpha=1;
+  c.font='900 16px Orbitron';c.textAlign='center';c.fillStyle='#fff';c.strokeStyle='#0008';c.lineWidth=4;const tag=(MPS.peer.avatar||'')+' '+MPS.peer.name+(GH.dn?' 💤':'');c.strokeText(tag,x,GH.y-120);c.fillText(tag,x,GH.y-120)}
+function mpHud(c,t){c.textAlign='center';c.font='900 22px Orbitron';c.lineWidth=5;c.strokeStyle='#0008';
+  if(RESC&&!RESC.done){const got=Math.min(RESC.need,Math.floor(G.coins-RESC.from)),s='🆘 SAVE '+MPS.peer.name.toUpperCase()+': 🪙 '+got+'/'+RESC.need;c.fillStyle=Math.floor(t*3)%2?'#ffd23f':'#fff';c.strokeText(s,W/2,128);c.fillText(s,W/2,128)}
+  if(GH&&!GH.dn&&MPS.mode==='race'){const d=Math.round((GH.x-G.x)/10),s=d>0?MPS.peer.name+' is '+d+' m ahead':d<0?'You are '+(-d)+' m ahead!':'Side by side!';c.font='900 16px Orbitron';c.fillStyle=d>0?'#ff8a3d':'#5cf2b4';c.strokeText(s,W/2,128);c.fillText(s,W/2,128)}}
+if(new URLSearchParams(location.search).get('mp')){const w=()=>window.KuzeyAccount&&KuzeyAccount.session?KuzeyAccount.session({unit:' m',hello:()=>({O:{col:curOut().col,band:curOut().band}}),
+    start(SS,go){MPS=SS;GH={x:0,y:GY,O:(SS.host?go.guest:go.host).O};start(false,go.seed);
+      SS.recv('p',d=>{GH=Object.assign(GH||{},d,{dn:false})});
+      SS.recv('down',d=>{if(GH)GH.dn=true;if(G&&G.phase==='run'){RESC={need:d.need,from:G.coins,done:false};G.banner={t:2.5,a:'🆘 '+MPS.peer.name.toUpperCase()+' FELL!',b:'Collect '+d.need+' coins to rescue them'};SFX.hurt()}});
+      SS.recv('rescue',d=>{if(G&&G.waiting)mpRevive(d.x)})},
+    onOppFinish(){if(GH)GH.out=true;RESC=null;if(G&&G.waiting){G.waiting=false;G.shown=true;endRun()}},
+    onLeave(){if(GH)GH.out=true;RESC=null;if(G&&G.waiting){G.waiting=false;G.shown=true;endRun()}}}):setTimeout(w,100);w()}
+$('mMulti').onclick=()=>{if(window.KuzeyAccount)KuzeyAccount.multiplayer('ninjarun')};
 show('sMenu');requestAnimationFrame(frame);
-if(new URLSearchParams(location.search).has('test'))window.__nr={get G(){return G},D,start,update,jump,slide,throwStar,groundAt};
+if(new URLSearchParams(location.search).has('test'))window.__nr={get G(){return G},D,start,update,jump,slide,throwStar,groundAt,get MPS(){return MPS},get GH(){return GH},get RESC(){return RESC}};
 
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 })();
