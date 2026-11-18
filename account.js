@@ -186,7 +186,7 @@ const MPG=[['starsiege','Star Siege','🚀'],['skyraiders','Sky Raiders','✈️
  ['words','Word Detective','🔎'],['beatblaster','Beat Blaster','🎵'],['bonjourparis','Bonjour Paris','🗼'],['snake','Neon Snake Rush','🐍'],['farm','Little Farmstead','🌾'],['gearworks','Gear Works','⚙️'],['craft','Kuzey Craft','⛏️']];
 const MODES={coop:['🤝','Fight together'],race:['🏁','Race']};
 const gameInfo=id=>MPG.find(g=>g[0]===id)||[id,id,'🎮'];
-const READY={starsiege:'starsiege.html'};// games that can really be played together: id -> page
+const READY={starsiege:'starsiege.html',stack:'stack.html'};// games that can really be played together: id -> page
 let invSeen={},inbox=[],lobby=null;
 // ---- check for invites every few seconds (friend invites + game invites) ----
 async function poll(){const a=linked();if(!a||document.hidden)return;try{const r=await rpc('kz_inbox',{p_token:a.cloud.token});
@@ -261,6 +261,50 @@ async function net(room){const a=linked();if(!a)throw new Error('Log in to your 
   return{me,name:a.name,avatar:a.avatar,color:a.color,send(e,d){ch.send({type:'broadcast',event:'m',payload:{e,d}}).catch(()=>{})},on(e,f){H[e]=f},
     onPeer(f){cb.peer.push(f);if(peer)f(peer)},onLeave(f){cb.leave.push(f)},peer:()=>peer,leave(){try{SB.removeChannel(ch)}catch(e){}}}}
 
+// ---- a multiplayer session inside a game page: KuzeyAccount.session({start(S,go), hello(), goExtra(peerHello), lowerWins, unit}) ----
+// Page URL has ?mp=room&mm=coop|race&h=1|0&fn=Name (the lobby sends both players there).
+// S.status({score,txt,alive}) shares live progress, S.finish({score,won,txt}) ends your part, S.send/S.recv for game messages.
+async function session(o){const q=new URLSearchParams(location.search);if(!q.get('mp'))return null;
+  const S={room:q.get('mp'),mode:q.get('mm')==='race'?'race':'coop',host:q.get('h')==='1',fname:q.get('fn')||'Friend',opp:{},peer:null,result:null,mine:null,oppFin:null,left:false};
+  const page=location.pathname.split('/').pop()||'index.html';
+  let closeWait=modal(`<h2>🎮 ${S.mode==='race'?'🏁 Race':'🤝 Fight together'}</h2><p id="ssT">Connecting to ${esc(S.fname)}…</p><button class="acb alt" id="ssX">LEAVE</button>`,(m)=>{m.dataset.sticky=1;m.querySelector('#ssX').onclick=()=>S.quit()});
+  S.quit=()=>{try{S.net&&S.net.send('bye',1);S.net&&S.net.leave()}catch(e){}location.href=page};
+  try{S.net=await net(S.room)}catch(e){const t=document.getElementById('ssT');if(t)t.textContent=e.message;return null}
+  const a=cur(),hello=Object.assign({name:a.name,avatar:a.avatar,color:a.color},o.hello?o.hello():{});let peerHello=null,go=null,acked=false,started=false;
+  const begin=g=>{if(started)return;started=true;closeWait();S.go=g;S.peer=S.host?g.guest:g.host;panel();o.start(S,g);if(!S.host)S.net.send('ok',1)};
+  S.net.on('hi',h=>{peerHello=h;const t=document.getElementById('ssT');if(t)t.textContent=h.name+' is here! Starting…';
+    if(S.host&&!go){go=Object.assign({seed:(hashCode(S.room)>>>0)||7,host:hello,guest:h},o.goExtra?o.goExtra(h):{});const snd=()=>{if(acked||!S.net)return;S.net.send('go',go);setTimeout(snd,700)};snd();setTimeout(()=>begin(go),400)}});
+  S.net.on('go',g=>{if(!S.host)begin(g)});S.net.on('ok',()=>{acked=true});
+  const hi=()=>{if(started||!S.net)return;S.net.send('hi',hello);setTimeout(hi,1000)};hi();
+  S.net.on('st',d=>{S.opp=d;panel()});
+  S.net.on('fin',d=>{if(S.oppFin)return;S.oppFin=d;S.opp=Object.assign(S.opp,d,{alive:false});panel();if(o.onOppFinish)o.onOppFinish(d);judge()});
+  const gone=()=>{if(S.left)return;S.left=true;panel();if(o.onLeave)o.onLeave();judge()};
+  S.net.on('bye',gone);S.net.onLeave(()=>setTimeout(()=>{if(S.net&&!S.net.peer())gone()},4000));
+  S.send=(e,d)=>S.net.send(e,d);S.recv=(e,f)=>S.net.on(e,f);
+  let lastSt=0;S.status=d=>{const now=performance.now();if(now-lastSt<300)return;lastSt=now;S.net.send('st',d)};
+  S.finish=d=>{if(S.mine)return;d.at=Date.now();S.mine=d;S.net.send('fin',d);setTimeout(()=>S.net&&S.net.send('fin',d),600);judge()};
+  function judge(){const m=S.mine,f=S.oppFin;
+    if(!S.result){if(S.mode==='race'){if(f&&f.won&&!(m&&m.won&&m.at<f.at))S.result='lose';else if(m&&m.won&&!(f&&f.won))S.result='win';
+        else if(m&&f){const a=m.score||0,b=f.score||0;S.result=a===b?'tie':((o.lowerWins?a<b:a>b)?'win':'lose')}else if(m&&S.left)S.result='left'}
+      else if(m&&(f||S.left||m.shared))S.result='team'}
+    if(S.result==='lose'&&!S.toldLose&&!m&&o.onLose){S.toldLose=true;o.onLose()}
+    if(m)result()}
+  function result(){let box=document.getElementById('ssRes');const nm=esc(S.peer?S.peer.name:S.fname),u=o.unit||'';
+    const sc=v=>v==null?'–':(typeof v==='number'?v.toLocaleString():v)+u;
+    let t,l;const r=S.result;
+    if(S.mode==='race'){t=r==='win'?'🏆 YOU WON!':r==='lose'?'RACE LOST':r==='tie'?'IT\'S A TIE!':r==='left'?'FRIEND LEFT':'⏳ WAITING…';
+      l=r==='win'?'You beat '+nm+'!':r==='lose'?nm+' won this time.':r==='tie'?'Exactly the same!':r==='left'?nm+' left the race.':nm+' is still playing…'}
+    else{const team=S.mine.shared?S.mine.score:(S.mine.score||0)+((S.oppFin&&S.oppFin.score)||0);t=r?'🤝 TEAM SCORE: '+sc(team):'⏳ WAITING…';l=r?(S.left&&!S.oppFin&&!S.mine.shared?nm+' left the game.':'Great teamwork with '+nm+'!'):nm+' is still playing…'}
+    const html=`<h2>${t}</h2><p>${l}</p><div class="mpplayers"><div class="mpp">${av(a)}<b>${esc(a.name)}</b><small>${sc(S.mine.score)}${S.mine.txt?' · '+esc(S.mine.txt):''}</small></div><span class="mpvs">${S.mode==='race'?'VS':'＋'}</span><div class="mpp">${av(S.peer||{avatar:'❔',color:'#55507a'})}<b>${nm}</b><small>${S.oppFin?sc(S.oppFin.score)+(S.oppFin.txt?' · '+esc(S.oppFin.txt):''):S.left?'left':'playing… '+sc(S.opp.score)}</small></div></div>
+      <button class="acb" id="ssBack">🏠 LEAVE</button>`;
+    if(!box){const m=document.createElement('div');m.className='acm';m.id='ssRes';m.innerHTML=`<div class="bx"></div>`;document.body.appendChild(m);box=m}
+    box.querySelector('.bx').innerHTML=html;box.querySelector('#ssBack').onclick=()=>S.quit();if(r==='win'&&!S.cheered){S.cheered=true;const K=window.KIT;K&&K.sfx&&K.sfx.win()}}
+  function panel(){let p=document.getElementById('ssPanel');if(!p){p=document.createElement('div');p.id='ssPanel';if(o.panelAt==='bottom')p.classList.add('bot');document.body.appendChild(p)}
+    const pe=S.peer||{name:S.fname,avatar:'❔',color:'#55507a'},d=S.opp||{};
+    p.innerHTML=`<span class="acav" style="border-color:${pe.color};background:${pe.color}22">${pe.avatar}</span><div><b>${esc(pe.name)}</b><small>${S.left?'left the game':d.alive===false||S.oppFin?(S.oppFin&&S.oppFin.won?'✅ finished':'💥 out'):esc(d.txt||'playing…')}</small></div><em>${(d.score||0).toLocaleString()}${o.unit||''}</em>`}
+  return S}
+function hashCode(s){let h=2166136261;for(const ch of s){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
+
 // ---------- stats ----------
 function trophies(){let n=0,g=0;for(const k of liveKeys())if(k.startsWith('kuzey:ach:')){const c=Object.keys(get(k,{})).length;n+=c;if(c)g++}return{n,g}}
 function bytes(){let n=0;for(const k of liveKeys())n+=k.length+(localStorage.getItem(k)||'').length;return n}
@@ -307,7 +351,9 @@ const css=`
 .mpgrid button span{font-size:28px}.mpgrid small{color:#9a94c9;font-size:10px}.mpgrid button:hover{border-color:#ffd23f}
 .mpplayers{display:flex;align-items:center;justify-content:center;gap:10px}.mpp{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;background:#0b0820;border:2px solid #2c2468;border-radius:14px;padding:12px 6px;text-align:center}
 .mpp .acav{width:60px;height:60px;font-size:34px}.mpp.wait{opacity:.5}.mpp small{color:#9a94c9}.mpvs{font:900 20px Orbitron,monospace;color:#ff3d9a}
-.mpstat{text-align:center;min-height:2.6em}.mpnote{background:#1d1748;border-left:4px solid #ffd23f;border-radius:8px;padding:10px 12px;font-size:14px}.mpcd{font:900 54px Orbitron,monospace;color:#ffd23f}`;
+.mpstat{text-align:center;min-height:2.6em}
+#ssPanel{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:8px;background:rgba(11,8,32,.82);border:2px solid #2c2468;border-radius:14px;padding:5px 10px;color:#ecebff;font:600 12px 'Chakra Petch',sans-serif;pointer-events:none;max-width:70vw}
+#ssPanel.bot{top:auto;bottom:calc(10px + env(safe-area-inset-bottom,0px))}#ssPanel .acav{width:30px;height:30px;font-size:17px;border-width:2px}#ssPanel b{display:block;font:900 11px Orbitron,monospace}#ssPanel small{color:#9a94c9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;max-width:34vw}#ssPanel em{font:900 15px Orbitron,monospace;color:#ffd23f;font-style:normal;margin-left:4px}.mpnote{background:#1d1748;border-left:4px solid #ffd23f;border-radius:8px;padding:10px 12px;font-size:14px}.mpcd{font:900 54px Orbitron,monospace;color:#ffd23f}`;
 const st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
 function modal(html,bind){const m=document.createElement('div');m.className='acm';m.innerHTML=`<div class="bx">${html}</div>`;document.body.appendChild(m);
   const close=()=>m.remove();m.addEventListener('click',e=>{if(e.target===m&&!m.dataset.sticky)close()});m.querySelectorAll('[data-x]').forEach(b=>b.onclick=close);bind&&bind(m,close);return close}
@@ -383,7 +429,7 @@ function loginUI(){modal(`<h2>📥 Log in from another device</h2><p>On your oth
 
 function toast(html){const t=document.createElement('div');t.className='acm';t.style.cssText='inset:auto 0 auto 0;top:calc(16px + env(safe-area-inset-top,0px));background:none;pointer-events:none';
   t.innerHTML=`<div class="bx" style="width:auto;max-width:90%;border-color:#ffd23f;padding:12px 16px;font-weight:600">${html}</div>`;document.body.appendChild(t);setTimeout(()=>t.remove(),3200)}
-window.KuzeyAccount={current:cur,menu,send,login:loginUI,switcher,cloud:cloudUI,sync,friends:friendsUI,multiplayer:mpUI,net};
+window.KuzeyAccount={current:cur,menu,send,login:loginUI,switcher,cloud:cloudUI,sync,friends:friendsUI,multiplayer:mpUI,net,session};
 const hub=()=>!!document.getElementById('acct');
 function start(){bar();poll();setInterval(poll,hub()?6000:8000);if(hub()){sync(false)}setInterval(()=>sync(!hub()),hub()?60000:90000)}
 document.addEventListener('visibilitychange',()=>{if(document.hidden)sync(true);else if(hub())sync(false)});
