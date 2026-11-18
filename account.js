@@ -186,7 +186,7 @@ const MPG=[['starsiege','Star Siege','🚀'],['skyraiders','Sky Raiders','✈️
  ['words','Word Detective','🔎'],['beatblaster','Beat Blaster','🎵'],['bonjourparis','Bonjour Paris','🗼'],['snake','Neon Snake Rush','🐍'],['farm','Little Farmstead','🌾'],['gearworks','Gear Works','⚙️'],['craft','Kuzey Craft','⛏️']];
 const MODES={coop:['🤝','Fight together'],race:['🏁','Race']};
 const gameInfo=id=>MPG.find(g=>g[0]===id)||[id,id,'🎮'];
-const READY={starsiege:'starsiege.html',stack:'stack.html',gemcascade:'gemcascade.html',ninjarun:'ninjarun.html',galaxyguardian:'galaxyguardian.html',neonswarm:'neonswarm.html',words:'words.html',laser:'laser.html',bonjourparis:'bonjourparis.html',beatblaster:'beatblaster.html',pinballplanet:'pinballplanet.html'};// games that can really be played together: id -> page
+const READY={starsiege:'starsiege.html',stack:'stack.html',gemcascade:'gemcascade.html',ninjarun:'ninjarun.html',galaxyguardian:'galaxyguardian.html',neonswarm:'neonswarm.html',words:'words.html',laser:'laser.html',bonjourparis:'bonjourparis.html',beatblaster:'beatblaster.html',pinballplanet:'pinballplanet.html',turbotrails:'turbotrails.html'};// games that can really be played together: id -> page
 let invSeen={},inbox=[],lobby=null;
 // ---- check for invites every few seconds (friend invites + game invites) ----
 async function poll(){const a=linked();if(!a||document.hidden)return;try{const r=await rpc('kz_inbox',{p_token:a.cloud.token});

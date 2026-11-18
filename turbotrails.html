@@ -109,6 +109,7 @@ table.res td:first-child{font:900 16px var(--display);color:var(--gold);width:40
     <div class="who"><span id="whoAv" style="font-size:26px">🦊</span><span>Driver <b id="whoName">Player</b></span><button id="whoEdit">edit</button></div>
     <div class="coins">🪙 <span class="coinN">0</span></div>
     <button class="btn main" id="mCup">🏆 GRAND PRIX<small>Win cups of 3 races to unlock new tracks</small></button>
+    <button class="btn" id="mMulti" style="border-color:#3ef0ff"><span class="ic">🎮</span><span>MULTIPLAYER<small>Race a friend 1-on-1 or Team Coin Rush</small></span></button>
     <div class="row">
       <button class="btn" id="mQuick"><span class="ic">🏁</span><span>QUICK RACE<small>Any track you have unlocked</small></span></button>
       <button class="btn" id="mTrial"><span class="ic">⏱️</span><span>TIME TRIAL<small>Race your own ghost</small></span></button>
@@ -488,7 +489,7 @@ function carPhysics(c,inp,dt){
   if(c.offroad&&c.z<=0&&fast>100&&Math.random()<.4&&!c.def.hover)fx.p.push({x:c.x,y:c.y,vx:R(-40,40),vy:R(-40,40),life:.5,max:.5,size:R(3,6),color:th.sand?'#e8c080':th.snow?'#fff':'#5a8a3a',grav:0,shape:'ci'});
   if((nos||boost)&&Math.random()<.9)fx.p.push({x:c.x-Math.cos(c.a)*22,y:c.y-Math.sin(c.a)*22,vx:-Math.cos(c.a)*120+R(-20,20),vy:-Math.sin(c.a)*120+R(-20,20),life:.25,max:.25,size:R(3,6),color:U.pick(nos?['#3ef0ff','#ffffff','#b98bff']:['#ffd23f','#ff8a3d']),grav:0,shape:'ci'});
 }
-function collideCars(){const cs=G.cars;for(let i=0;i<cs.length;i++)for(let j=i+1;j<cs.length;j++){const a=cs[i],b=cs[j];if(a.fallT||b.fallT||Math.abs(a.z-b.z)>20)continue;const dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy),m=a.r+b.r;
+function collideCars(){const cs=G.cars;for(let i=0;i<cs.length;i++)for(let j=i+1;j<cs.length;j++){const a=cs[i],b=cs[j];if(a.remote||b.remote||a.fallT||b.fallT||Math.abs(a.z-b.z)>20)continue;const dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy),m=a.r+b.r;
   if(d<m&&d>0){const nx=dx/d,ny=dy/d,ov=m-d,ma=a.def.mass,mb=b.def.mass,ta=mb/(ma+mb),tb=ma/(ma+mb);a.x-=nx*ov*ta;a.y-=ny*ov*ta;b.x+=nx*ov*tb;b.y+=ny*ov*tb;
     const rv=(b.vx-a.vx)*nx+(b.vy-a.vy)*ny;if(rv<0){const imp=-1.4*rv/(1/ma+1/mb);a.vx-=imp/ma*nx;a.vy-=imp/ma*ny;b.vx+=imp/mb*nx;b.vy+=imp/mb*ny;
       if((a.isMe||b.isMe)&&rv<-60){SFX.hit();fx.shake(4)}fx.burst(a.x+nx*a.r,a.y+ny*a.r,{n:5,color:'#ffd23f',speed:120,size:2,life:.25})}}}}
@@ -518,10 +519,11 @@ let G=null;
 const fx=new FX();fx.max=1200;
 const R=U.rand;
 function msg(t,col='#fff'){if(G){G.msg=t;G.msgCol=col;G.msgT=1.4}}
+let RNGT=Math.random,MPS=null;
 function startRace(opt){
   // opt: {mode:'race'|'trial'|'rush'|'drift', track:id, laps, riv, cup?}
   const def=TRACKS.find(t=>t.id===opt.track);TR=buildTrack(def);prepTrack(TR);fx.clear();
-  if(opt.mode==='rush'){for(let f=.02;f<1;f+=.045){const i=Math.floor(f*TR.N),o=(Math.random()-.5)*TR.w*.6;TR.coins.push({x:TR.xs[i]-Math.sin(TR.ang[i])*o,y:TR.ys[i]+Math.cos(TR.ang[i])*o,t:0})}}
+  if(opt.mode==='rush'){for(let f=.02;f<1;f+=.045){const i=Math.floor(f*TR.N),o=(RNGT()-.5)*TR.w*.6;TR.coins.push({x:TR.xs[i]-Math.sin(TR.ang[i])*o,y:TR.ys[i]+Math.cos(TR.ang[i])*o,t:0})}}
   const car=opt.daily?opt.daily.car:myCar();const riv=opt.mode==='race'?opt.riv:0;const total=riv+1,mySlot=opt.mode==='race'?Math.min(total-1,riv>=3?3:riv):0;
   G=Object.assign({state:'count',t:0,count:3.5,cars:[],skids:[],laps:opt.mode==='race'||opt.mode==='trial'?opt.laps:999,diff:D.diff,coinsGot:0,ghost:null,rec:[],recT:0,timeLeft:opt.mode==='rush'?60:opt.mode==='drift'?90:0,finishOrder:[],lastPos:total,minPos:total,camX:0,camY:0,camA:0,zoom:1,msg:null,msgT:0,drift:0,chain:0,chainT:0,wasLast:false},opt);
   const names=RIVALS.slice().sort(()=>Math.random()-.5),cars=RIVAL_CARS.slice().sort(()=>Math.random()-.5);
@@ -540,7 +542,7 @@ function onLap(c){const now=G.t;if(c.lap<1)return;
     if(c.lap>=G.laps&&!c.finish){c.finish=now;G.finishOrder.push(c);if(c.isMe)finishRace()}}}
 const fmt=s=>{s=Math.max(0,s);return Math.floor(s/60)+':'+(s%60).toFixed(2).padStart(5,'0')};
 function placeOf(c){if(c.finish)return G.finishOrder.indexOf(c)+1;const fin=G.finishOrder.length;return fin+1+G.cars.filter(o=>!o.finish&&o!==c&&o.prog>c.prog).length}
-function finishRace(){if(G.state==='done')return;G.state='done';G.doneT=0;SFX.win();msg(G.mode==='race'?placeName(placeOf(G.me))+'!':'FINISH!','#ffd23f')}
+function finishRace(){if(G.state==='done')return;G.state='done';if(MPS&&G.mp)MPS.finish(MPS.mode==='coop'?{score:G.coinsGot,shared:true,txt:'team coins'}:{score:+G.t.toFixed(2),won:true,txt:fmt(G.t)});G.doneT=0;SFX.win();msg(G.mode==='race'?placeName(placeOf(G.me))+'!':'FINISH!','#ffd23f')}
 const placeName=p=>p+(p===1?'ST':p===2?'ND':p===3?'RD':'TH');
 
 /* ================================================================
@@ -574,14 +576,14 @@ function update(dt){
     const inp=myInput();if(G.count<.45&&G.count>0&&inp.gas)G.goodStart=G.goodStart??true;if(G.count>=.45&&inp.gas)G.goodStart=false;
     if(G.count<=0){G.state='race';G.t=0;for(const c of G.cars)c.lapStart=0;G.ghostStart=0;SFX.tone(880,.4,{type:'square',vol:.12});msg('GO!','#5cf2b4');if(G.goodStart){G.me.boostT=1.2;msg('ROCKET START!','#ffd23f');SFX.whoosh()}}
     camFollow(dt);return}
-  for(const c of G.cars){let inp;
+  for(const c of G.cars){let inp;if(c.remote){remoteStep(c,dt);continue}
     if(c.isMe&&G.state==='race'){inp=myInput();c.nitroOn=inp.nitro&&c.nitro>0}
     else{if(c.ai)rubber(c);else c.skill=.9;inp=c.finish&&!c.isMe?{gas:.6,brake:0,steer:aiInput(c,dt).steer,hand:false}:aiInput(c,dt)}
     carPhysics(c,inp,dt)}
   collideCars();
   const me=G.me;if(me.touched)me.touchedEver=true;
   // coins
-  for(const co of TR.coins){if(co.t>0){co.t-=dt;continue}if((co.x-me.x)**2+(co.y-me.y)**2<26*26&&me.z<30){co.t=G.mode==='rush'?4:12;G.coinsGot++;SFX.coin();fx.burst(co.x,co.y,{n:6,color:'#ffd23f',speed:80,size:2.5,life:.3});if(G.mode==='rush'&&G.coinsGot%10===0){G.timeLeft+=3;msg('+3 SECONDS','#5cf2b4')}}}
+  for(const co of TR.coins){if(co.t>0){co.t-=dt;continue}if((co.x-me.x)**2+(co.y-me.y)**2<26*26&&me.z<30){co.t=G.mode==='rush'?4:12;G.coinsGot++;if(MPS&&MPS.mode==='coop')MPS.send('coin',TR.coins.indexOf(co));SFX.coin();fx.burst(co.x,co.y,{n:6,color:'#ffd23f',speed:80,size:2.5,life:.3});if(G.mode==='rush'&&G.coinsGot%10===0){G.timeLeft+=3;msg('+3 SECONDS','#5cf2b4')}}}
   // engine sound
   engineT-=dt;if(engineT<=0){engineT=.08;const sp=Math.hypot(me.vx,me.vy)/me.st.top;SFX.engine(Math.min(1.4,sp+(me.nitroOn?.3:0)))}
   // modes
@@ -817,11 +819,11 @@ function nextCupRace(){lastOpt={mode:'race',track:CUP.cup.tracks[CUP.race],laps:
 $('rNext').onclick=()=>{if(CUP)nextCupRace()};
 $('rRetry').onclick=()=>{if(CUP&&lastOpt.cup){CUP.race=Math.max(0,CUP.race-1)}startRace(lastOpt)};
 $('rMenu').onclick=()=>{CUP=null;G=null;show('sMenu')};
-function togglePause(){if(!G)return;if(G.state==='race'||G.state==='count'){G.prev=G.state;G.state='pause';pad.show(false);show('sPause')}else if(G.state==='pause'){G.state=G.prev;show(null);pad.show(true);last=performance.now()}}
+function togglePause(){if(!G)return;if(MPS&&G.mp){if(confirm('Leave the multiplayer game?'))MPS.quit();return}if(G.state==='race'||G.state==='count'){G.prev=G.state;G.state='pause';pad.show(false);show('sPause')}else if(G.state==='pause'){G.state=G.prev;show(null);pad.show(true);last=performance.now()}}
 $('bPause').onclick=togglePause;$('pResume').onclick=togglePause;
 $('pRestart').onclick=()=>{startRace(lastOpt)};
 $('pQuit').onclick=()=>{D.coins+=G.coinsGot;save();CUP=null;G=null;document.getElementById('hudBtns').hidden=true;show('sMenu')};
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&G&&(G.state==='race'||G.state==='count'))togglePause()});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&G&&!G.mp&&(G.state==='race'||G.state==='count'))togglePause()});
 
 /* ---- garage ---- */
 let gSel=null,gTab='cars';
@@ -853,7 +855,24 @@ function drawStats(){const cupsWon=Object.values(D.cups).filter(m=>m===3).length
   $('statList').innerHTML=[['Races finished',D.races],['Wins',D.wins],['Gold cups',cupsWon+'/4'],['Cars owned',Object.keys(D.owned).length+'/'+CARS.length],['Nitro used',Math.round(D.nitro)+'s'],['Best Coin Rush',D.rush],['Best Drift',D.drift.toLocaleString()],['Coins',D.coins.toLocaleString()]].map(([a,b])=>`<div><b>${b}</b><small>${a}</small></div>`).join('');
   $('lapTable').innerHTML='<tr><th>Track</th><th>Best lap</th><th>Car</th></tr>'+TRACKS.map(t=>{const b=D.laps[t.id];return`<tr><td style="font:600 14px var(--body);color:var(--ink);width:auto">${t.name}</td><td>${b?fmt(b.t):'—'}</td><td>${b?carById(b.car).name:''}</td></tr>`}).join('')}
 show('sMenu');
-if(new URLSearchParams(location.search).has('test'))window.__tt={get G(){return G},get TR(){return TR},D,startRace,TRACKS,CARS,showResults,finishRace};
+
+/* ================================================================
+   MULTIPLAYER: 1-on-1 race, or Team Coin Rush (collect coins together)
+   ================================================================ */
+function remoteStep(c,dt){if(c.nx==null)return;const age=Math.min(.2,(performance.now()-c.at)/1000),tx=c.nx+c.vx*age,ty=c.ny+c.vy*age,k=Math.min(1,dt*12);c.x+=(tx-c.x)*k;c.y+=(ty-c.y)*k;let d=c.na-c.a;d=Math.atan2(Math.sin(d),Math.cos(d));c.a+=d*k}
+function mpHello(){const c=myCar();return{car:c.id,pal:palOf(c.id)}}
+function mpStart(SS,go){MPS=SS;const peer=SS.host?go.guest:go.host,track=TRACKS[go.seed%TRACKS.length].id;
+  if(SS.mode==='coop'){RNGT=U.rng(go.seed);startRace({mode:'rush',track});RNGT=Math.random}else startRace({mode:'race',track,laps:3,riv:0});G.mp=true;
+  const me=G.me;if(!SS.host){const p=makeCar(TR,me.def,1);me.x=p.x;me.y=p.y;me.a=p.a;me.si=p.si;camSnap()}
+  const rc=makeCar(TR,carById(peer.car),SS.host?1:0,{remote:true,name:peer.name,icon:peer.avatar,pal:peer.pal||palOf(peer.car)});G.cars.push(rc);G.rc=rc;
+  SS.recv('car',d=>{Object.assign(rc,{nx:d.x,ny:d.y,na:d.a,vx:d.vx,vy:d.vy,z:d.z,prog:d.p,lap:d.l,drift:!!d.d,nitroOn:!!d.n,at:performance.now()});if(d.f&&!rc.finish){rc.finish=G.t;G.finishOrder.push(rc)}});
+  SS.recv('coin',i=>{const co=TR.coins[i];if(co&&co.t<=0){co.t=4;G.coinsGot++;fx.burst(co.x,co.y,{n:6,color:'#ffd23f',speed:80,size:2.5,life:.3});if(G.mode==='rush'&&G.coinsGot%10===0){G.timeLeft+=3;msg('+3 SECONDS','#5cf2b4')}}});
+  msg(SS.mode==='coop'?'TEAM COIN RUSH!':'RACE '+peer.name.toUpperCase()+'!','#ffd23f')}
+setInterval(()=>{if(!MPS||!G||!G.mp)return;const m=G.me;MPS.send('car',{x:Math.round(m.x),y:Math.round(m.y),a:+m.a.toFixed(3),vx:Math.round(m.vx),vy:Math.round(m.vy),z:Math.round(m.z),p:Math.round(m.prog),l:m.lap,d:m.drift?1:0,n:m.nitroOn?1:0,f:m.finish?1:0});
+  MPS.status({score:MPS.mode==='coop'?G.coinsGot:Math.min(G.laps,m.lap+1),txt:MPS.mode==='coop'?'🪙 team coins':'lap '+Math.min(G.laps,m.lap+1)+'/'+G.laps})},70);
+if(new URLSearchParams(location.search).get('mp')){const w=()=>window.KuzeyAccount&&KuzeyAccount.session?KuzeyAccount.session({hello:mpHello,start:mpStart}):setTimeout(w,100);w()}
+$('mMulti').onclick=()=>{if(window.KuzeyAccount)KuzeyAccount.multiplayer('turbotrails')};
+if(new URLSearchParams(location.search).has('test'))window.__tt={get G(){return G},get TR(){return TR},D,startRace,TRACKS,CARS,showResults,finishRace,get MPS(){return MPS}};
 </script>
 </body>
 </html>
