@@ -515,6 +515,7 @@ function panel(kind, arg) {
   try { CAT = await (await fetch('catalog.json')).json(); store.set('cat', CAT); } catch { CAT = store.get('cat', []); }
   CAT.forEach(b => byId[b.id] = b);
   if (!lib) { lib = CAT.filter(b => b.cat === 'Kuzey Series').map((b, i) => ({ id: b.id, added: Date.now() - i, last: 0 })); saveLib(); }
+  if (!store.get('k8added', false)) { if (byId.k8 && !inLib('k8')) lib.unshift({ id: 'k8', added: Date.now(), last: 0 }); saveLib(); store.set('k8added', true); }
   setView(lib.length ? 'library' : 'store');
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => { });
   const q = new URLSearchParams(location.search).get('book'); if (q && byId[q]) openReader(q);
