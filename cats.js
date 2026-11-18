@@ -9,9 +9,9 @@ const CATS=[
  ['racing','🏎️','Racing & Sports',['turbotrails','minigolf','goalrush','pinballplanet']],
  ['pretend','🏡','Pretend & Build',['kuzeytown','farm','craft','pixel','flipbook','app-forge']],
  ['music','🎵','Music & Art',['beatblaster','beats','piano','pixel','kaleido','flipbook','voice','fractal']],
- ['learn','📚','Learning',['bonjourparis','space','english','yazili','sosyal','elements','flags','mathgym','typing','cards','codes','words']],
+ ['learn','📚','Learning',['bonjourparis','space','reader','english','yazili','sosyal','elements','flags','mathgym','typing','cards','codes','words']],
  ['multi','🎮','Multiplayer',['starsiege','stack','gemcascade','ninjarun','galaxyguardian','neonswarm','words','laser','bonjourparis','beatblaster','pinballplanet','turbotrails','pixelpeaks','dodger','snake','minigolf','snake-arena','goalrush']],
- ['tools','🛠️','Tools',['timer','convert','weather','planner','picker','qr','bookclub','fll','elementals','minecraft','app-forge']]];
+ ['tools','🛠️','Tools',['timer','convert','weather','planner','picker','qr','reader','bookclub','fll','elementals','minecraft','app-forge']]];
 const idOf=a=>(a.getAttribute('href')||'').replace(/\.html$/,'').replace(/\/$/,'');
 let cur='all';try{cur=localStorage.getItem('kuzey:cat')||'all'}catch(e){}
 function apply(){const q=(document.getElementById('catQ').value||'').trim().toLowerCase(),cat=CATS.find(c=>c[0]===cur)||CATS[0];let shown=0;

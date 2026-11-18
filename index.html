@@ -156,6 +156,10 @@ h1{padding-right:110px}@media (max-width:520px){h1{padding-right:0;margin-top:40
       <canvas id="n24" width="160" height="90" aria-hidden="true"></canvas>
       <div class="info"><h2>Kuzey Town</h2><p>NEW! Make characters and play out stories in a little town: home, kitchen, café, park, hair salon and pet shop. Dress up, feed, nap, adopt pets!</p><span class="play">PLAY</span></div>
     </a>
+    <a class="game" href="reader/" style="--acc:#e8a050">
+      <canvas id="n25" width="160" height="90" aria-hidden="true"></canvas>
+      <div class="info"><h2>Kuzey Reader</h2><p>NEW! A Kindle-style reading app with 91 books, including all 7 Kuzey and the Seven Winds books. Highlight, take notes and change fonts.</p><span class="play">OPEN</span></div>
+    </a>
   </div>
 
   <div class="games">
@@ -446,6 +450,14 @@ NP.n24=(x,t)=>{x.fillStyle='#ffd6e8';x.fillRect(0,0,160,90);x.fillStyle='#ffc0dc
   const P=(px,py,skin,hair,top,ph)=>{const b=Math.sin(t/300+ph)*1.5;x.fillStyle=top;x.beginPath();x.roundRect(px-6,py-14+b,12,14,4);x.fill();x.fillStyle=skin;x.beginPath();x.arc(px,py-22+b,9,0,7);x.fill();x.fillStyle=hair;x.beginPath();x.ellipse(px,py-28+b,10,6,0,Math.PI,0);x.fill();x.fillStyle='#3a2030';x.fillRect(px-4,py-23+b,2,2);x.fillRect(px+2,py-23+b,2,2);x.fillStyle='#3a2030';x.fillRect(px-4,py+b,3,6);x.fillRect(px+1,py+b,3,6)};
   P(30,60,'#ffe0c8','#ff7ac0','#ffd23f',0);const wx=95+Math.sin(t/900)*20;P(wx,74,'#a86c42','#2a1a10','#7ae0a0',1);
   const dx=130+Math.sin(t/600)*10;x.fillStyle='#c8905a';x.beginPath();x.ellipse(dx,76,9,5,0,0,7);x.fill();x.beginPath();x.arc(dx+8,70,5,0,7);x.fill();x.fillStyle='#ff4a4a';x.beginPath();x.arc(120,63+Math.abs(Math.sin(t/250))*-4,4,0,7);x.fill()};
+NP.n25=(x,t)=>{const g=x.createLinearGradient(0,0,0,90);g.addColorStop(0,'#2a1d10');g.addColorStop(1,'#c2621f');x.fillStyle=g;x.fillRect(0,0,160,90);
+  const cx=80,cy=50;x.fillStyle='rgba(0,0,0,.25)';x.beginPath();x.ellipse(cx,80,58,5,0,0,7);x.fill();
+  const pg=(s,c)=>{x.fillStyle=c;x.beginPath();x.moveTo(cx,cy-24);x.quadraticCurveTo(cx+s*28,cy-32,cx+s*54,cy-26);x.lineTo(cx+s*54,cy+24);x.quadraticCurveTo(cx+s*28,cy+18,cx,cy+28);x.closePath();x.fill();
+    x.strokeStyle='rgba(120,90,50,.45)';x.lineWidth=1.2;for(let k=0;k<5;k++){const y=cy-14+k*8;x.beginPath();x.moveTo(cx+s*8,y+2);x.quadraticCurveTo(cx+s*26,y-3,cx+s*46,y-1);x.stroke()}};
+  pg(-1,'#fffaf0');pg(1,'#f4ecd8');
+  const f=(t/1600)%1,ang=f*Math.PI;x.save();x.translate(cx,cy);x.scale(Math.cos(ang),1);x.fillStyle=Math.cos(ang)>0?'#fbf3e2':'#efe4cc';x.beginPath();x.moveTo(0,-24);x.quadraticCurveTo(28,-34,52,-28);x.lineTo(52,22);x.quadraticCurveTo(28,16,0,28);x.closePath();x.fill();x.restore();
+  x.fillStyle='#ffd60a';x.globalAlpha=.55;x.fillRect(cx-46,cy-6,30,5);x.globalAlpha=1;
+  x.fillStyle='#c2621f';x.beginPath();x.moveTo(cx+36,cy-27);x.lineTo(cx+44,cy-28);x.lineTo(cx+44,cy-6);x.lineTo(cx+40,cy-10);x.lineTo(cx+36,cy-6);x.fill()};
 function megaP(t){for(const id in NP){const c=document.getElementById(id);if(c)try{NP[id](c.getContext('2d'),t)}catch(e){}}}
 NP.n1=(x,t)=>{x.fillStyle='#050a1e';x.fillRect(0,0,160,90);x.fillStyle='#fff';for(let i=0;i<30;i++){const y=((i*37+(still?0:t/20)*(1+i%3))%90);x.fillRect((i*53)%160,y,1+i%2,1+i%2)}
   const sx=80+Math.sin(still?0:t/600)*40;x.fillStyle='#3ef0ff';for(let i=0;i<5;i++){const y=(70-((still?0:t/4)+i*18)%70);x.fillRect(sx-3,y,2,5);x.fillRect(sx+2,y,2,5)}
