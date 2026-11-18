@@ -90,7 +90,7 @@ canvas{display:block;border-radius:6px;box-shadow:0 0 0 2px var(--line),0 0 40px
     <p>Eat fast to build your combo. Grab power-ups. Use the portals. Don't hit the wall or yourself.</p>
     <div class="who" id="who"></div>
     <button class="play" id="go">CLASSIC</button>
-    <div class="modes"><button class="mbtn" id="goMaze">🧱 MAZES<small id="mzInfo">20 levels</small></button><button class="mbtn" id="goTime">⏱️ TIME TRIAL<small>90 seconds</small></button><button class="mbtn" id="goDaily">📅 DAILY<small id="dyInfo">New maze daily</small></button>
+    <div class="modes"><button class="mbtn" id="goMaze">🧱 MAZES<small id="mzInfo">20 levels</small></button><button class="mbtn" id="goTime">⏱️ TIME TRIAL<small>90 seconds</small></button><button class="mbtn" id="goMP" style="border-color:#3ef0ff">🎮 MULTIPLAYER<small>Race or team up</small></button><button class="mbtn" id="goDaily">📅 DAILY<small id="dyInfo">New maze daily</small></button>
     <button class="mbtn" id="goSkins">🎨 SKINS<small id="skInfo">8 snakes</small></button><button class="mbtn" id="goAch">🏆 AWARDS<small id="achInfo">0/0</small></button><button class="mbtn" id="goMe">👤 PLAYER<small>Avatar head</small></button></div>
     <button class="mute" id="snd">SOUND ON</button>
     <a class="mute" href="./" style="text-decoration:none">BACK TO ARCADE</a>
@@ -403,7 +403,33 @@ const _render=render;render=function(){_render();if(!S)return;const t=performanc
   if(SD.head&&S.snake.length){const h=S.snake[0];ctx.globalAlpha=S.dead?.4:1;ctx.font=`${cell*.8}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(PROF.avatar,(h.x+.5)*cell,(h.y+.5)*cell+1);ctx.globalAlpha=1}};
 // redraw the eyes only when the avatar is off — the avatar covers them
 menu();applySkin();
-if(new URLSearchParams(location.search).has('test'))window.__sn={get S(){return S},SD,go,step:()=>step(),LV};
+
+/* ---------------- multiplayer: same maze for 90 seconds; race (most points) or together (shared apples) ---------------- */
+let MPS=null,GSN=null,MPSEED=1;
+const coopSN=()=>MPS&&MPS.mode==='coop'&&mode==='mpt';
+const _newGameMP=newGame;newGame=function(){_newGameMP();if(mode!=='mpt')return;S.walls=mazeWalls(PATTERNS.length+3,U.rng(MPSEED));S.portals=[];S.portalT=1e9;S.itemT=1e9;S.items=[];S.time=90;
+  S.food=coopSN()&&!MPS.host?null:freeCell();$('hudx').hidden=false;if(coopSN()&&MPS.host)setTimeout(()=>sendFood(),300)};
+function sendFood(){if(S&&S.food)MPS.send('food',{x:S.food.x,y:S.food.y,g:S.food.gold?1:0})}
+const _stepMP=step;step=function(){if(mode!=='mpt')return _stepMP();const f=S.food,e=S.eaten;_stepMP();if(!S)return;
+  if(coopSN()&&S.eaten>e){if(MPS.host)sendFood();else{S.food=null;MPS.send('ate',{x:f.x,y:f.y})}}
+  MPS.send('sn',{b:S.snake.slice(0,40).map(p=>[p.x,p.y]),d:S.dead?1:0})};
+const _dieMP=die;die=function(why){if(mode!=='mpt')return _dieMP(why);if(S.over)return;
+  if(why!=='Time up'){S.dead=true;S.shake=10;for(const p of S.snake.slice(0,8))burst(p.x,p.y,COL.snake,5,4);beep(220,.3,'sawtooth',-180,.05);S.combo=0;
+    setTimeout(()=>{if(!S||S.over)return;const m=N>>1;S.snake=[{x:m,y:m},{x:m-1,y:m},{x:m-2,y:m}];S.dir={x:1,y:0};S.queue=[];S.grow=0;S.dead=false;S.fx={ghost:1.5};pop(m,m,'BACK!','#5cf2b4')},1500);return}
+  S.over=true;_dieMP(why);MPS.finish({score:S.score,shared:false,txt:S.eaten+' apples'})};
+const _updateMP=update;update=function(dt){if(S&&mode==='mpt')S.paused=false;_updateMP(dt);if(!S||mode!=='mpt'||S.over)return;S.time-=dt;if(S.time<=0){S.time=0;S.dead=false;die('Time up');return}
+  const o=MPS.opp||{};$('hudx').textContent=`⏱ ${Math.ceil(S.time)}s · ${PROF.avatar} ${S.score}`+(MPS.mode==='coop'?` · 🤝 team ${S.score+(o.score||0)}`:` · ${MPS.peer.avatar} ${o.score||0}`);
+  MPS.status({score:S.score,txt:'🍎 '+S.eaten+(S.dead?' · 💥':'')})};
+const _renderMP=render;render=function(){_renderMP();if(!S||mode!=='mpt'||!GSN)return;ctx.globalAlpha=GSN.d?.15:.4;for(const[x,y]of GSN.b){ctx.fillStyle='#ff3d9a';ctx.fillRect(x*cell+3,y*cell+3,cell-6,cell-6)}
+  const h=GSN.b[0];if(h){ctx.globalAlpha=GSN.d?.3:.9;ctx.font=`${cell*.8}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(MPS.peer.avatar,(h[0]+.5)*cell,(h[1]+.5)*cell+1)}ctx.globalAlpha=1};
+if(new URLSearchParams(location.search).get('mp')){const w=()=>window.KuzeyAccount&&KuzeyAccount.session?KuzeyAccount.session({
+    start(SS,go){MPS=SS;MPSEED=go.seed;go2('mpt');
+      SS.recv('sn',d=>{GSN=d});
+      SS.recv('food',d=>{if(S&&coopSN()&&!MPS.host){S.food={x:d.x,y:d.y,gold:!!d.g,ttl:d.g?5:undefined}}});
+      SS.recv('ate',d=>{if(!S||!coopSN()||!MPS.host)return;if(S.food&&S.food.x===d.x&&S.food.y===d.y){burst(d.x,d.y,COL.food,10,4);S.food=freeCell();sendFood()}})}}):setTimeout(w,100);w()}
+function go2(m){mode=m;lvI=0;start()}
+$('goMP').onclick=()=>{if(window.KuzeyAccount)KuzeyAccount.multiplayer('snake')};
+if(new URLSearchParams(location.search).has('test'))window.__sn={get S(){return S},SD,go,step:()=>step(),LV,get MPS(){return MPS},get GSN(){return GSN},turn:(a,b)=>turn(a,b)};
 
 fit();requestAnimationFrame(loop);
 })();
