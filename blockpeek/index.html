@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Block Peek</title>
+<meta name="description" content="Open .mcworld, .mcaddon, .mcpack, .mcstructure and .litematic files and explore them in 3D.">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+<script type="importmap">{"imports":{
+  "three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
+  "fflate":"https://cdn.jsdelivr.net/npm/fflate@0.8.2/esm/browser.js"}}</script>
+<style>
+:root{--bg:#121a14;--panel:#1b261e;--panel2:#233227;--ink:#eef5ee;--mute:#9fb3a3;--line:#2f4434;--acc:#7bd88f;--acc2:#ffd23f;--warn:#ff8a6a;
+  --body:system-ui,-apple-system,"Segoe UI",sans-serif;--mono:ui-monospace,Menlo,Consolas,monospace}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--body);-webkit-text-size-adjust:100%}
+button{font:inherit;color:inherit}
+a{color:var(--acc)}
+main{max-width:980px;margin:0 auto;padding:16px 16px 60px}
+.top{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.top a.back{text-decoration:none;font-size:15px;white-space:nowrap}
+.logo{display:flex;align-items:center;gap:12px;margin:8px 0 6px}
+.logo canvas{width:56px;height:56px;image-rendering:pixelated;border-radius:10px}
+h1{margin:0;font-size:30px;letter-spacing:.5px}
+h2{font-size:20px;margin:0 0 8px}
+.sub{color:var(--mute);margin:0 0 18px}
+.drop{border:3px dashed var(--line);border-radius:18px;padding:28px 16px;text-align:center;background:var(--panel);transition:.15s}
+.drop.over{border-color:var(--acc);background:var(--panel2)}
+.drop p{margin:10px 0 0;color:var(--mute);font-size:14px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:14px;padding:13px 20px;background:var(--acc);color:#0d1a10;font-weight:700;font-size:17px;cursor:pointer;text-decoration:none}
+.btn.alt{background:var(--panel2);color:var(--ink);border:2px solid var(--line);font-weight:600}
+.btn.small{padding:8px 12px;font-size:14px;border-radius:10px}
+.btn:active{transform:translateY(1px)}
+.demos{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin-top:14px}
+.demo{display:flex;gap:10px;align-items:center;text-align:left;background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:10px 12px;cursor:pointer}
+.demo:hover{border-color:var(--acc)}
+.demo .em{font-size:26px}.demo b{display:block;font-size:15px}.demo small{color:var(--mute);font-size:12px}
+.kinds{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-top:18px;font-size:14px;color:var(--mute)}
+.kinds div{background:var(--panel);border-radius:12px;padding:10px 12px}.kinds b{color:var(--ink)}
+#status{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#000c;color:#fff;padding:10px 16px;border-radius:12px;z-index:60;font-size:15px;max-width:92vw;text-align:center}
+#status[hidden]{display:none}
+/* document view */
+.hero{display:flex;gap:14px;align-items:flex-start;background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:14px;margin-bottom:14px}
+.hero img{width:96px;height:96px;border-radius:12px;object-fit:cover;image-rendering:pixelated;flex:none;background:#000}
+.hero .t{flex:1;min-width:0}.hero h2{font-size:22px;margin:0 0 4px;word-break:break-word}
+.hero p{margin:0 0 8px;color:var(--mute)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.chip{background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:13px}
+.chip.g{background:#2a5a33;border-color:#3d7a48}.chip.y{background:#5a4a1a;border-color:#7a6424}.chip.b{background:#1f3c5a;border-color:#2e577f}
+details.sec{background:var(--panel);border:2px solid var(--line);border-radius:16px;margin:12px 0;overflow:hidden}
+details.sec>summary{cursor:pointer;padding:12px 14px;font-weight:700;font-size:17px;list-style:none;display:flex;align-items:center;gap:8px}
+details.sec>summary::-webkit-details-marker{display:none}
+details.sec>summary::after{content:"▸";margin-left:auto;color:var(--mute);transition:.2s}
+details.sec[open]>summary::after{transform:rotate(90deg)}
+details.sec>summary small{color:var(--mute);font-weight:400}
+.secbody{padding:0 14px 14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.card{background:var(--panel2);border:2px solid var(--line);border-radius:12px;padding:8px;text-align:center;cursor:pointer;min-width:0}
+.card:hover{border-color:var(--acc)}
+.card canvas,.card img{width:100%;aspect-ratio:1;image-rendering:pixelated;object-fit:contain;display:block;border-radius:8px;background:#0b120d}
+.card b{display:block;font-size:13px;margin-top:6px;word-break:break-word;line-height:1.25}
+.card small{display:block;color:var(--mute);font-size:11px;word-break:break-all;line-height:1.2}
+.tex{grid-template-columns:repeat(auto-fill,minmax(74px,1fr))}
+.tex .card{padding:5px}.tex .card b{font-size:10px;font-weight:400;color:var(--mute)}
+table.kv{border-collapse:collapse;width:100%;font-size:14px}
+table.kv td{padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+table.kv td:first-child{color:var(--mute);width:42%}
+.files{font:13px var(--mono);max-height:420px;overflow:auto;background:#0b120d;border-radius:10px;padding:6px}
+.files div{padding:4px 6px;border-radius:6px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.files div:hover{background:var(--panel2)}.files div small{color:var(--mute);float:right;margin-left:10px}
+.list{display:flex;flex-direction:column;gap:6px}
+.row{display:flex;align-items:center;gap:10px;background:var(--panel2);border-radius:10px;padding:8px 10px;cursor:pointer;min-width:0}
+.row:hover{outline:2px solid var(--acc)}
+.row .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row small{color:var(--mute)}
+.explore{background:linear-gradient(135deg,#2c6e3a,#1f4b5a);border-radius:18px;padding:16px;margin-bottom:14px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.explore p{margin:0;flex:1;min-width:200px}
+.note{background:#3a3218;border:1px solid #6a5a24;border-radius:12px;padding:10px 12px;font-size:14px;margin:10px 0}
+/* modal */
+#modal{position:fixed;inset:0;background:#000b;z-index:40;display:flex;align-items:center;justify-content:center;padding:14px}
+#modal[hidden]{display:none}
+#modal .box{background:var(--panel);border:2px solid var(--line);border-radius:16px;max-width:900px;width:100%;max-height:92vh;display:flex;flex-direction:column;overflow:hidden}
+#modal .mh{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line)}
+#modal .mh b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#modal .mb{overflow:auto;padding:12px}
+#modal pre{margin:0;font:12.5px/1.45 var(--mono);white-space:pre-wrap;word-break:break-word}
+#modal img{max-width:100%;image-rendering:pixelated;min-width:160px;background:repeating-conic-gradient(#2a2a2a 0 25%,#1a1a1a 0 50%) 0 0/16px 16px}
+.k{color:#7fc8ff}.s{color:#b5e48c}.n{color:#ffd166}.c{color:#7b8a7f}
+/* 3D views */
+#view{position:fixed;inset:0;z-index:30;background:#000;touch-action:none;-webkit-user-select:none;user-select:none}
+#view[hidden]{display:none}
+#view canvas.gl{position:absolute;inset:0;width:100%;height:100%;display:block}
+.hud{position:absolute;pointer-events:none;color:#fff;text-shadow:0 1px 3px #000,0 0 2px #000}
+.hud button,.hud select{pointer-events:auto}
+.hb{background:#000a;border:2px solid #ffffff40;color:#fff;border-radius:12px;min-width:46px;height:46px;padding:0 12px;font-size:18px;cursor:pointer;text-shadow:none}
+.hb.on{background:#2c6e3acc;border-color:#7bd88f}
+#vTop{top:max(10px,env(safe-area-inset-top));left:10px;right:10px;display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap}
+#vTop .sp{flex:1}
+#vTitle{font-weight:700;font-size:16px;max-width:40vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;align-self:center}
+#vLook{top:calc(max(10px,env(safe-area-inset-top)) + 58px);left:50%;transform:translateX(-50%);background:#0008;padding:4px 12px;border-radius:10px;font-size:15px;white-space:nowrap}
+#vLook:empty{display:none}
+#vPos{bottom:max(12px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);font:13px var(--mono);background:#0007;padding:4px 10px;border-radius:8px;white-space:nowrap}
+#cross{left:50%;top:50%;width:22px;height:22px;margin:-11px 0 0 -11px}
+#cross:before,#cross:after{content:"";position:absolute;background:#fff;mix-blend-mode:difference}
+#cross:before{left:10px;top:0;width:2px;height:22px}#cross:after{top:10px;left:0;height:2px;width:22px}
+#joy{left:max(18px,env(safe-area-inset-left));bottom:max(18px,env(safe-area-inset-bottom));width:140px;height:140px;border-radius:50%;background:#ffffff1a;border:2px solid #ffffff40;pointer-events:auto}
+#joy i{position:absolute;left:45px;top:45px;width:50px;height:50px;border-radius:50%;background:#ffffff70}
+#vBtns{right:max(16px,env(safe-area-inset-right));bottom:max(18px,env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px}
+#vBtns .hb{width:64px;height:64px;font-size:26px;border-radius:50%}
+#vLoad{top:50%;left:50%;transform:translate(-50%,40px);background:#000a;padding:6px 12px;border-radius:10px;font-size:14px}
+#vLoad:empty{display:none}
+#menu3d{position:absolute;right:10px;top:calc(max(10px,env(safe-area-inset-top)) + 56px);background:#101a12ee;border:2px solid #ffffff30;border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:6px;min-width:220px;pointer-events:auto;z-index:2}
+#menu3d[hidden]{display:none}
+#menu3d button{background:#ffffff14;border:0;border-radius:10px;padding:10px 12px;text-align:left;color:#fff;cursor:pointer;font-size:15px}
+#menu3d button:hover{background:#ffffff28}
+#menu3d .lbl{font-size:12px;color:#bcd;padding:4px 4px 0}
+#help3d{left:10px;bottom:170px;font-size:13px;background:#0008;padding:8px 10px;border-radius:10px;max-width:260px;line-height:1.4}
+#view[data-mode=model] :is(#joy,#vBtns,#cross,#vMode,#vSpeed,#vPos,#help3d,#vLook,#vLoad){display:none}
+@media (hover:hover) and (pointer:fine){#joy,#vBtns{display:none}#help3d{bottom:50px}}
+@media (max-width:520px){#vTitle{display:none}.hb{min-width:42px;height:42px;padding:0 9px;font-size:16px}}
+</style>
+</head>
+<body>
+<main id="home">
+  <div class="top"><a class="back" href="../">← Kuzey Arcade</a></div>
+  <div class="logo"><canvas id="logo" width="16" height="16"></canvas><div><h1>Block Peek</h1></div></div>
+  <p class="sub">Open Minecraft Bedrock files and look inside. Walk around worlds in 3D, see the mobs, blocks, items and textures in add-ons, and preview builds.</p>
+  <div class="drop" id="drop">
+    <label class="btn" for="file">📂 Open a file</label>
+    <input id="file" type="file" hidden>
+    <p>.mcworld · .mcaddon · .mcpack · .mctemplate · .mcstructure · .litematic · .zip<br>On iPad: tap Open, then pick the file from <b>Files</b>. On a computer you can drag it here.</p>
+  </div>
+  <h2 style="margin-top:22px">Try one</h2>
+  <div class="demos" id="demos"></div>
+  <div class="kinds">
+    <div><b>🌍 Worlds</b> (.mcworld) — walk or fly around the real blocks, go to the spawn or where you last stood, visit the Nether and the End.</div>
+    <div><b>🧩 Add-ons</b> (.mcaddon, .mcpack) — see the 3D mob models, custom blocks, items, textures, sounds, scripts and functions.</div>
+    <div><b>🏗 Builds</b> (.mcstructure, .litematic, build functions) — see them in 3D.</div>
+    <div><b>🔒 Private</b> — your files never leave this device. Nothing is uploaded.</div>
+  </div>
+</main>
+<main id="doc" hidden></main>
+<div id="modal" hidden><div class="box"><div class="mh"><b id="mTitle"></b><button class="btn alt small" id="mClose">✕ Close</button></div><div class="mb" id="mBody"></div></div></div>
+<div id="view" hidden>
+  <div class="hud" id="vTop">
+    <button class="hb" id="vClose" title="Close">✕</button>
+    <span id="vTitle"></span><span class="sp"></span>
+    <button class="hb" id="vMode" title="Walk or fly">🕊 Fly</button>
+    <button class="hb" id="vSpeed" title="Speed">🐇</button>
+    <button class="hb" id="vMenuB" title="More">☰</button>
+  </div>
+  <div class="hud" id="vLook"></div>
+  <div class="hud" id="cross"></div>
+  <div class="hud" id="vLoad"></div>
+  <div class="hud" id="vPos"></div>
+  <div class="hud" id="joy"><i></i></div>
+  <div class="hud" id="vBtns"><button class="hb" id="vUp">⬆</button><button class="hb" id="vDown">⬇</button></div>
+  <div class="hud" id="help3d"></div>
+  <div id="menu3d" hidden></div>
+</div>
+<div id="status" hidden></div>
+<script type="module" src="app.js"></script>
+</body>
+</html>
