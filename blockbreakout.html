@@ -153,6 +153,8 @@ h2{font-family:var(--display);font-size:22px;margin:0;color:var(--gold);letter-s
 .crate.shake{animation:shake .5s}
 @keyframes shake{25%{transform:rotate(-6deg)}75%{transform:rotate(6deg)}}
 .cwin{text-align:center;font:700 20px var(--body);min-height:30px;color:var(--gold)}
+.mc{background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:12px;font-size:14px;line-height:1.55}.mc ol{margin:6px 0 10px;padding-left:20px}
+a.btn,a.btn *{text-decoration:none;color:inherit}
 
 </style>
 </head>
@@ -186,6 +188,7 @@ h2{font-family:var(--display);font-size:22px;margin:0;color:var(--gold);letter-s
   <button class="btn main" id="mPlay">⛏ MINE<small id="mInfo">Rank A</small></button>
   <div class="row"><button class="btn" id="mHelp"><span class="ic">❔</span><span>HOW TO PLAY<small>Controls and tips</small></span></button>
     <button class="btn" id="mSound"><span class="ic" id="sndIc">🔊</span><span>SOUND<small>On or off</small></span></button></div>
+  <button class="btn" id="mMC"><span class="ic">⛏</span><span>MINECRAFT VERSION<small>Play Rock Bottom Prison in Minecraft Bedrock with friends</small></span></button>
   <div class="row"><button class="btn" id="mStats"><span class="ic">📊</span><span>MY STATS<small id="mStatsInfo">Blocks mined</small></span></button>
     <button class="btn" id="mReset" style="opacity:.75"><span class="ic">🧹</span><span>START OVER<small>Delete your save</small></span></button></div>
 </div></div>
@@ -236,6 +239,22 @@ h2{font-family:var(--display);font-size:22px;margin:0;color:var(--gold);letter-s
   <button class="btn" id="prestNo">NOT YET</button>
 </div></div>
 
+<div class="screen" id="sMC" hidden><div class="box">
+  <button class="back" data-go="sMenu">← BACK</button>
+  <h1 style="font-size:26px">ROCK BOTTOM PRISON<br><small style="font-size:14px;color:var(--mute)">for Minecraft Bedrock</small></h1>
+  <div class="mc"><b>What's inside</b><br>⛏ 26 mines, A to Z, that refill by themselves<br>💰 Sell, money, rank up, and break out (prestige)<br>⚡ Pickaxe upgrades: Efficiency, Fortune, Backpack, Explosive, Auto-Sell…<br>🎁 Crates with money, diamonds and rare prizes (even an Elytra!)<br>🏡 10 plots to claim and build on, plus a Build Shop<br>👥 Friends who join get their own money and rank<br>🧭 Everything is in the <b>compass menu</b></div>
+  <button class="btn main" id="mcShare">📲 SEND THE WORLD TO MINECRAFT</button>
+  <p class="tag" id="mcShareNote" style="margin:0;font-size:13px">Opens the share menu: pick <b>Minecraft</b> (scroll the apps or tap <b>More</b>).</p>
+  <a class="btn" id="mcDl" href="blockbreakout-prison.mcworld" download="blockbreakout-prison.mcworld"><span class="ic">⬇</span><span>DOWNLOAD THE WORLD<small>.mcworld: Files → hold it → Share → Minecraft</small></span></a>
+  <a class="btn" href="blockbreakout-prison.mcaddon" download="blockbreakout-prison.mcaddon"><span class="ic">🧩</span><span>ADD-ON ONLY (BACKUP)<small>.mcaddon, if the world file won't open</small></span></a>
+  <div class="mc"><b>How to play it (iPad)</b><ol>
+   <li>Tap <b>📲 SEND THE WORLD TO MINECRAFT</b> and pick <b>Minecraft</b>. It says "Import started", then "Successfully imported".</li>
+   <li>Open Minecraft → <b>Play</b> → <b>Worlds</b> → <b>Block Breakout Prison</b>.</li>
+   <li>The first time, <b>wait about 30 seconds</b> while the prison builds itself around you (watch the % at the bottom).</li>
+   <li>Use the <b>compass</b> to open the menu: Sell, Rank Up, Mines, Upgrades, Crates, Plot, Build Shop.</li>
+   <li><b>Friends:</b> they join your world from the Friends tab. The add-on downloads to them automatically, and each friend starts at rank A.</li></ol>
+   <b>If the world won't import</b>, use the add-on instead: import the .mcaddon, then make a <b>new world</b> → World Type <b>Flat</b> → <b>Behavior Packs</b> → turn on <b>Block Breakout</b> → Create. The prison builds itself when you join.</div>
+</div></div>
 <script src="kit.js"></script>
 <script>
 (()=>{
@@ -586,6 +605,12 @@ genMine();toTop();
 ONSHOW.sMenu=()=>{$('mInfo').textContent=`Rank ${RANKS[S.rank]}${S.prest?' · Broke out '+S.prest+'×':''} · $${fmtN(S.money)}`;$('sndIc').textContent=SFX.muted?'🔇':'🔊';$('mStatsInfo').textContent=fmtN(S.stats.mined)+' blocks mined'};
 $('mPlay').onclick=()=>{SFX.click();start()};
 $('mHelp').onclick=()=>show('sHelp');
+$('mMC').onclick=()=>{SFX.click();show('sMC')};
+$('mcShare').onclick=async()=>{const note=$('mcShareNote');try{const r=await fetch('blockbreakout-prison.mcworld');const blob=await r.blob();
+  const f=new File([blob],'blockbreakout-prison.mcworld',{type:'application/octet-stream'});
+  if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});note.innerHTML='Did you pick <b>Minecraft</b>? It should say <b>Import started</b>.'}
+  else{$('mcDl').click();note.innerHTML='Downloaded! Now open <b>Files</b> → Downloads, hold the file → <b>Share</b> → <b>Minecraft</b>.'}}
+  catch(e){if(e&&e.name==='AbortError')return;note.textContent='Could not open the share menu. Use DOWNLOAD THE WORLD below instead.'}};
 $('mSound').onclick=()=>{SFX.toggle();ONSHOW.sMenu()};
 $('mStats').onclick=()=>{statGrid($('statsGrid'),[['Blocks mined',fmtN(S.stats.mined)],['Blocks sold',fmtN(S.stats.sold)],['Money earned','$'+fmtN(S.stats.earned)],['Rank',RANKS[S.rank]],['Times broke out',S.prest],['Crates opened',S.stats.crates],['Explosions',fmtN(S.stats.booms)],['Pickaxe skins',S.skins.length+'/'+SKINS.length]]);show('sStats')};
 $('mReset').onclick=()=>{if(!confirm('Delete your Block Breakout save and start again at rank A?'))return;localStorage.removeItem(SAVEKEY);location.reload()};
