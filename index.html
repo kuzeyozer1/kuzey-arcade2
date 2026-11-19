@@ -160,6 +160,10 @@ h1{padding-right:110px}@media (max-width:520px){h1{padding-right:0;margin-top:40
       <canvas id="n25" width="160" height="90" aria-hidden="true"></canvas>
       <div class="info"><h2>Kuzey Reader</h2><p>NEW! A Kindle-style reading app with 91 books, including all 7 Kuzey and the Seven Winds books. Highlight, take notes and change fonts.</p><span class="play">OPEN</span></div>
     </a>
+    <a class="game" href="blockbreakout.html" style="--acc:#ff8a2a">
+      <canvas id="n26" width="160" height="90" aria-hidden="true"></canvas>
+      <div class="info"><h2>Block Breakout</h2><p>NEW! Locked in Rock Bottom Prison! Mine blocks, sell them, rank up from A to Z, upgrade your pickaxe, open crates and break out.</p><span class="play">PLAY</span></div>
+    </a>
   </div>
 
   <div class="games">
@@ -458,6 +462,13 @@ NP.n25=(x,t)=>{const g=x.createLinearGradient(0,0,0,90);g.addColorStop(0,'#2a1d1
   const f=(t/1600)%1,ang=f*Math.PI;x.save();x.translate(cx,cy);x.scale(Math.cos(ang),1);x.fillStyle=Math.cos(ang)>0?'#fbf3e2':'#efe4cc';x.beginPath();x.moveTo(0,-24);x.quadraticCurveTo(28,-34,52,-28);x.lineTo(52,22);x.quadraticCurveTo(28,16,0,28);x.closePath();x.fill();x.restore();
   x.fillStyle='#ffd60a';x.globalAlpha=.55;x.fillRect(cx-46,cy-6,30,5);x.globalAlpha=1;
   x.fillStyle='#c2621f';x.beginPath();x.moveTo(cx+36,cy-27);x.lineTo(cx+44,cy-28);x.lineTo(cx+44,cy-6);x.lineTo(cx+40,cy-10);x.lineTo(cx+36,cy-6);x.fill()};
+NP.n26=(x,t)=>{const g=x.createLinearGradient(0,0,0,90);g.addColorStop(0,'#6a6060');g.addColorStop(.3,'#4a4040');g.addColorStop(.31,'#2a1a10');g.addColorStop(1,'#0c0806');x.fillStyle=g;x.fillRect(0,0,160,90);
+  const C=[['#8a5a32','#6a4224'],['#8a8a8a','#ffd23f'],['#8a8a8a','#6af0ff'],['#8a8a8a','#1c1c1c'],['#7a867a','#2ae07a'],['#8a8a8a','#e8c8a8']];
+  for(let r=0;r<4;r++)for(let c=0;c<11;c++){if(r===0&&(c===5||c===6))continue;if(r===1&&c===6)continue;const k=(r*7+c*3)%6;const X=4+c*14,Y=30+r*14;x.fillStyle=C[k][0];x.fillRect(X,Y,13,13);if(k){x.fillStyle=C[k][1];x.fillRect(X+3,Y+4,4,3);x.fillRect(X+7,Y+8,3,3)}}
+  x.fillStyle='#ff8a2a';x.fillRect(72,14,10,16);x.fillStyle='#f0c08a';x.fillRect(73,6,8,8);x.fillStyle='#2a2a2a';x.fillRect(73,30,3,0);
+  const a=-.6+Math.sin(t/120)*.7;x.save();x.translate(82,20);x.rotate(a);x.fillStyle='#6a4424';x.fillRect(-1,-2,2,14);x.fillStyle='#6af0ff';x.beginPath();x.moveTo(-8,-1);x.quadraticCurveTo(0,-7,8,-1);x.lineTo(6,1);x.quadraticCurveTo(0,-4,-6,1);x.fill();x.restore();
+  for(let k=0;k<5;k++){const f=((t/500+k*.2)%1);x.fillStyle=k%2?'#ffd23f':'#8a5a32';x.fillRect(90+k*3,44-f*24+f*f*30,3,3)}
+  x.fillStyle='#ffd23f';x.font='bold 11px sans-serif';x.textAlign='left';x.fillText('RANK A→Z',4,12)};
 function megaP(t){for(const id in NP){const c=document.getElementById(id);if(c)try{NP[id](c.getContext('2d'),t)}catch(e){}}}
 NP.n1=(x,t)=>{x.fillStyle='#050a1e';x.fillRect(0,0,160,90);x.fillStyle='#fff';for(let i=0;i<30;i++){const y=((i*37+(still?0:t/20)*(1+i%3))%90);x.fillRect((i*53)%160,y,1+i%2,1+i%2)}
   const sx=80+Math.sin(still?0:t/600)*40;x.fillStyle='#3ef0ff';for(let i=0;i<5;i++){const y=(70-((still?0:t/4)+i*18)%70);x.fillRect(sx-3,y,2,5);x.fillRect(sx+2,y,2,5)}

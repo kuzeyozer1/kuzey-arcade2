@@ -2,10 +2,10 @@
 (function(){
 const CATS=[
  ['all','⭐','All'],
- ['adventure','🗺️','Adventure',['pixelpeaks','crypt','cardquest','temples','bandit','craft','voidbridge','ninjarun','kuzeytown']],
+ ['adventure','🗺️','Adventure',['blockbreakout','pixelpeaks','crypt','cardquest','temples','bandit','craft','voidbridge','ninjarun','kuzeytown']],
  ['action','💥','Action',['starsiege','skyraiders','neonswarm','tankcommander','galaxyguardian','monstersurvivors','dodger','snake','snake-arena','voidbridge','ninjarun','temples']],
  ['puzzle','🧩','Puzzle',['laser','gemcascade','stack','words','gearworks','illusions']],
- ['strategy','🏰','Strategy',['bastion','roborampart','castlesiege','cardquest','gearworks','farm']],
+ ['strategy','🏰','Strategy',['blockbreakout','bastion','roborampart','castlesiege','cardquest','gearworks','farm']],
  ['racing','🏎️','Racing & Sports',['turbotrails','minigolf','goalrush','pinballplanet']],
  ['pretend','🏡','Pretend & Build',['kuzeytown','farm','craft','pixel','flipbook','app-forge']],
  ['music','🎵','Music & Art',['beatblaster','beats','piano','pixel','kaleido','flipbook','voice','fractal']],

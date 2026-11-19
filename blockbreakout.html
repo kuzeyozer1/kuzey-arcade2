@@ -1,0 +1,636 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#1a1410">
+<title>Block Breakout</title>
+<link rel="icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Chakra+Petch:wght@400;600&display=swap">
+<style>
+:root{--night:#15100c;--panel:#2a2018;--line:#5a4430;--ink:#fff6ea;--mute:#d8c4a8;--cyan:#6ad8ff;--pink:#ff7ac0;--gold:#ffd23f;--green:#7ae0a0;--orange:#ff8a2a;--display:'Orbitron',ui-monospace,monospace;--body:'Chakra Petch',system-ui,sans-serif;color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%;background:var(--night);color:var(--ink);font-family:var(--body);overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
+#stage{position:fixed;inset:0;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 0%,#1a3a7a,#0a1430 70%)}
+#cv{display:block;background:#000;box-shadow:0 0 40px rgba(92,216,255,.15);border-left:1px solid #26407a;border-right:1px solid #26407a}
+.screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;z-index:10;background:rgba(8,14,36,.85);overflow:auto}
+.screen[hidden]{display:none}
+.box{width:min(560px,100%);display:flex;flex-direction:column;gap:14px;margin:auto}
+h1{font-family:var(--display);font-weight:900;font-size:clamp(36px,10vw,62px);margin:0;line-height:1;text-align:center;letter-spacing:.06em;
+  background:linear-gradient(180deg,#fff,var(--cyan) 45%,var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 18px rgba(92,216,255,.4))}
+h2{font-family:var(--display);font-size:22px;margin:0;color:var(--gold);letter-spacing:.05em}
+.tag{text-align:center;color:var(--mute);margin:-4px 0 4px}
+.btn{font:900 15px var(--display);letter-spacing:.08em;border:2px solid var(--line);background:var(--panel);color:var(--ink);border-radius:12px;padding:14px 16px;cursor:pointer;text-align:left;display:flex;align-items:center;gap:12px;width:100%}
+.btn:hover,.btn:focus-visible{border-color:var(--cyan);outline:none}
+.btn.main{background:linear-gradient(90deg,var(--cyan),#ffd23f);color:#0a1430;border:0;justify-content:center;font-size:18px}
+.btn small{display:block;font:400 13px var(--body);color:var(--mute);letter-spacing:0}
+.btn.main small{color:#132}
+.btn .ic{font-size:24px}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1 1 140px}
+.who{display:flex;align-items:center;gap:10px;justify-content:center;color:var(--mute);font-size:15px}
+.who b{color:var(--ink)}
+.who button{background:none;border:1px solid var(--line);color:var(--mute);border-radius:8px;padding:4px 10px;cursor:pointer;font:inherit}
+.credits{font:900 18px var(--display);color:var(--gold);text-align:center}
+.sectors{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+.sec{border:2px solid var(--line);border-radius:14px;padding:10px;background:var(--panel);color:var(--ink);cursor:pointer;text-align:left;font:600 14px var(--body);display:flex;flex-direction:column;gap:4px;min-height:118px;position:relative;overflow:hidden}
+.sec b{font:900 13px var(--display);color:var(--c)}
+.sec .pl{width:38px;height:38px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff8,var(--c) 40%,#000 100%);box-shadow:0 0 16px var(--c)}
+.sec small{color:var(--mute)}
+.sec[disabled]{opacity:.35;cursor:default}
+.sec .st{position:absolute;right:8px;top:8px;font-size:14px}
+.ships{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.ship{border:2px solid var(--line);border-radius:14px;background:var(--panel);color:var(--ink);padding:8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;font:600 13px var(--body)}
+.ship.on{border-color:var(--gold);box-shadow:0 0 0 2px #ffd23f55}
+.shipwrap{display:flex;flex-direction:column;gap:4px}.shipwrap .ship{flex:1}
+.sell{border:1px solid var(--line);border-radius:10px;background:#3a2430;color:#ffb3c0;font:900 11px var(--display);padding:7px 4px;cursor:pointer}.sell:hover{border-color:#ff8a9a}
+.ship canvas{width:110px;height:110px}
+.ship b{font:900 13px var(--display)}
+.ship .bars{width:100%;display:grid;grid-template-columns:auto 1fr;gap:2px 6px;font-size:11px;color:var(--mute);align-items:center}
+.ship .bars i{display:block;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--cyan),var(--green))}
+.ship .price{color:var(--gold);font-family:var(--display);font-size:12px}
+.ship[disabled]{opacity:.45}
+.paint{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.paint button{width:34px;height:34px;border-radius:50%;border:3px solid transparent;cursor:pointer}
+.paint button.on{border-color:#fff}
+.ups{display:flex;flex-direction:column;gap:8px}
+.up{display:grid;grid-template-columns:40px 1fr auto;gap:10px;align-items:center;border:2px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--panel)}
+.up .ic{font-size:26px;text-align:center}
+.up b{font-family:var(--display);font-size:13px}
+.up small{display:block;color:var(--mute)}
+.up .pips{display:flex;gap:3px;margin-top:4px}.up .pips i{width:18px;height:6px;border-radius:3px;background:#26407a}.up .pips i.on{background:var(--gold)}
+.up button{font:900 13px var(--display);border:0;border-radius:10px;padding:10px 12px;background:var(--gold);color:#0a1430;cursor:pointer;min-width:84px}
+.up button[disabled]{background:#26407a;color:var(--mute);cursor:default}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stats div{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}
+.stats b{display:block;font:900 22px var(--display);color:var(--cyan)}
+.stats small{color:var(--mute)}
+.big{font:900 clamp(26px,7vw,40px) var(--display);text-align:center;margin:0}
+.center{text-align:center}
+.mute{color:var(--mute)}
+#hudBtns{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));right:calc(8px + env(safe-area-inset-right,0px));z-index:5;display:flex;gap:8px}
+#hudBtns[hidden]{display:none}
+#hudBtns button{width:44px;height:44px;border-radius:12px;border:2px solid #26407a;background:rgba(19,32,74,.85);color:#fff;font-size:20px;cursor:pointer}
+.help{font-size:14px;color:var(--mute);line-height:1.5}
+.help b{color:var(--ink)}
+.back{align-self:flex-start;background:none;border:0;color:var(--cyan);font:900 13px var(--display);cursor:pointer;padding:6px 0;letter-spacing:.08em}
+.daily{font-size:13px;color:var(--mute)}
+.stars{color:var(--gold);letter-spacing:2px}
+.codex{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.cx{background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:8px;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;font-size:13px}
+.cx canvas{width:80px;height:80px}.cx b{font:900 12px var(--display)}.cx small{color:var(--mute)}
+.cx.no{opacity:.4}
+.brief{background:var(--panel);border:2px solid var(--line);border-left:6px solid var(--c);border-radius:14px;padding:14px 16px;font-size:16px;line-height:1.55}
+.brief b{color:var(--c)}
+@media (max-height:620px){.btn{padding:10px 12px}}
+#cv{border:1px solid #26407a;border-left:1px solid #26407a}
+.region{border:2px solid var(--line);border-radius:14px;padding:10px;background:linear-gradient(160deg,var(--c1),var(--c2));color:var(--ink);cursor:pointer;text-align:left;font:600 14px var(--body);display:flex;flex-direction:column;gap:4px;min-height:118px;position:relative;overflow:hidden;text-shadow:0 1px 2px #0008}
+.region b{font:900 13px var(--display)}
+.region small{color:#e8f0ffcc}
+.region[disabled]{opacity:.35;cursor:default}
+.region .st{position:absolute;right:8px;top:8px;font-size:14px}
+.region .em{font-size:30px}
+#tBtns{position:fixed;right:calc(14px + env(safe-area-inset-right,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:5;display:flex;gap:12px}
+#tBtns button{width:76px;height:76px;border-radius:50%;border:2px solid #ffffff55;background:#ffffff1a;color:#fff;font:900 11px var(--display);touch-action:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+#tBtns button span{font-size:26px}
+#tBtns button.off{opacity:.35}
+
+#stage{background:radial-gradient(ellipse at 50% 0%,#3a2a1a,#0c0806 70%)}
+#cv{border:0;box-shadow:none}
+#hud{position:fixed;left:0;right:0;top:0;z-index:5;padding:max(6px,env(safe-area-inset-top)) 8px 6px;background:linear-gradient(#000a,#0000)}
+.hrow{display:flex;gap:6px;align-items:stretch;flex-wrap:wrap}
+.stat{background:#2a2018e6;border:2px solid var(--line);border-radius:10px;padding:3px 10px;min-width:64px;display:flex;flex-direction:column;justify-content:center}
+.stat small{font-size:10px;color:var(--mute);letter-spacing:.08em}
+.stat b{font-family:var(--display);font-size:17px}
+.stat.money b{color:var(--gold)}
+.stat.bp{min-width:130px}
+.bpbar{height:8px;border-radius:4px;background:#0006;overflow:hidden;margin-top:3px}
+.bpbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--gold));transition:width .15s}
+.bpbar i.full{background:#ff5050;animation:blink .6s infinite alternate}
+@keyframes blink{to{opacity:.4}}
+.sp{flex:1}
+.hb{background:#2a2018e6;border:2px solid var(--line);color:var(--ink);border-radius:10px;padding:4px 12px;font:600 14px var(--body);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1}
+.hb small{font-size:10px;color:var(--mute)}
+.hb.act{background:#3a6a2a;border-color:#7ae0a0}
+.hb.gold{background:#7a5a10;border-color:var(--gold)}
+.hb:disabled{opacity:.45}
+.hb.pulse{animation:pulse 1s infinite}
+@keyframes pulse{50%{transform:scale(1.07);box-shadow:0 0 18px var(--gold)}}
+#pad{position:fixed;left:0;right:0;bottom:0;z-index:5;display:flex;justify-content:space-between;padding:0 14px max(14px,env(safe-area-inset-bottom));pointer-events:none}
+#pad>div{display:flex;gap:10px;pointer-events:auto}
+.pb{width:76px;height:76px;border-radius:20px;background:#00000066;border:2px solid #ffffff44;color:#fff;font:700 20px var(--body);touch-action:none}
+.pb.big{width:96px}
+.pb.on{background:#ffffff33}
+@media (hover:hover) and (pointer:fine){#pad{display:none!important}}
+#toast{position:fixed;left:50%;top:76px;transform:translateX(-50%);z-index:8;pointer-events:none;display:flex;flex-direction:column;gap:6px;align-items:center}
+#toast div{background:#000c;border:2px solid var(--gold);color:var(--ink);padding:8px 16px;border-radius:12px;font:600 15px var(--body);animation:tin .25s}
+@keyframes tin{from{transform:translateY(-10px);opacity:0}}
+.box.wide{width:min(760px,100%)}
+.help p{line-height:1.5;margin:0 0 10px;color:var(--mute)}.help b{color:var(--ink)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stats div{background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:10px}
+.stats b{display:block;font-family:var(--display);font-size:20px}.stats small{color:var(--mute)}
+.sh{font-size:14px;letter-spacing:.12em;color:var(--mute);margin:6px 0 0}
+.ups{display:flex;flex-direction:column;gap:8px}
+.up{display:flex;gap:12px;align-items:center;background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:10px 12px}
+.up .ic{font-size:26px;width:34px;text-align:center}
+.up>div{flex:1}.up b{display:block}.up small{color:var(--mute)}
+.up button{min-width:118px;padding:10px;border-radius:10px;border:2px solid var(--gold);background:#7a5a10;color:#fff;font:700 14px var(--body)}
+.up button:disabled{opacity:.4;border-color:var(--line);background:#0003}
+.lvl{font-family:var(--display);font-size:12px;color:var(--gold)}
+.pickrow{display:flex;gap:14px;align-items:center;background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:10px}
+.pickrow b{font-size:18px}.pickrow small{display:block;color:var(--mute)}
+.skins{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.skins button{width:34px;height:34px;border-radius:8px;border:2px solid var(--line);cursor:pointer}
+.skins button.on{border-color:#fff;box-shadow:0 0 10px #fff}
+.skins button.lock{opacity:.25;cursor:not-allowed}
+.crate{width:150px;height:130px;margin:6px auto;position:relative}
+.crate .body{position:absolute;bottom:0;left:0;right:0;height:96px;background:linear-gradient(#8a5a2a,#5a3a1a);border:4px solid #3a2410;border-radius:8px;display:grid;place-items:center;font:900 40px var(--display);color:var(--gold)}
+.crate .lid{position:absolute;top:8px;left:-6px;right:-6px;height:34px;background:linear-gradient(#a06a32,#7a4a20);border:4px solid #3a2410;border-radius:8px;transform-origin:0 100%;transition:transform .5s}
+.crate.open .lid{transform:rotate(-70deg) translateY(-10px)}
+.crate.shake{animation:shake .5s}
+@keyframes shake{25%{transform:rotate(-6deg)}75%{transform:rotate(6deg)}}
+.cwin{text-align:center;font:700 20px var(--body);min-height:30px;color:var(--gold)}
+
+</style>
+</head>
+<body>
+<div id="stage"><canvas id="cv" width="1280" height="720" aria-label="Block Breakout mine"></canvas></div>
+<div id="hud" hidden>
+  <div class="hrow">
+    <button class="hb" id="hMenu" title="Menu">☰</button>
+    <div class="stat"><small>RANK</small><b id="hRank">A</b></div>
+    <div class="stat money"><small>MONEY</small><b id="hMoney">$0</b></div>
+    <div class="stat"><small>TOKENS</small><b id="hTok">0</b></div>
+    <div class="stat bp"><small>BACKPACK <span id="hBpN">0/40</span></small><div class="bpbar"><i id="hBp"></i></div></div>
+    <div class="sp"></div>
+    <button class="hb act" id="hSell">SELL</button>
+    <button class="hb act gold" id="hRankUp">RANK UP<small id="hRankCost">$250</small></button>
+    <button class="hb" id="hShop">PICKAXE</button>
+    <button class="hb" id="hCrate">CRATES<small id="hKeys">0 keys</small></button>
+    <button class="hb" id="hTop" title="Back to the top of the mine">⇧ TOP</button>
+  </div>
+</div>
+<div id="pad" hidden>
+  <div class="pl"><button class="pb" data-k="left">◀</button><button class="pb" data-k="right">▶</button></div>
+  <div class="pr"><button class="pb" data-k="down">⛏↓</button><button class="pb big" data-k="jump">JUMP</button></div>
+</div>
+<div id="toast"></div>
+
+<div class="screen" id="sMenu"><div class="box">
+  <a href="index.html" class="back">← ARCADE</a>
+  <h1>BLOCK BREAKOUT</h1>
+  <p class="tag">You're locked in Rock Bottom Prison. Mine your way to freedom: sell blocks, rank up from A to Z, and break out!</p>
+  <button class="btn main" id="mPlay">⛏ MINE<small id="mInfo">Rank A</small></button>
+  <div class="row"><button class="btn" id="mHelp"><span class="ic">❔</span><span>HOW TO PLAY<small>Controls and tips</small></span></button>
+    <button class="btn" id="mSound"><span class="ic" id="sndIc">🔊</span><span>SOUND<small>On or off</small></span></button></div>
+  <div class="row"><button class="btn" id="mStats"><span class="ic">📊</span><span>MY STATS<small id="mStatsInfo">Blocks mined</small></span></button>
+    <button class="btn" id="mReset" style="opacity:.75"><span class="ic">🧹</span><span>START OVER<small>Delete your save</small></span></button></div>
+</div></div>
+
+<div class="screen" id="sHelp" hidden><div class="box">
+  <h1 style="font-size:28px">HOW TO PLAY</h1>
+  <div class="help">
+  <p><b>Mine.</b> Tap or click a block near your prisoner (and hold) to break it. On a keyboard, walk into a block with ← → or A D to dig, press ↓ or S to dig down, and ↑ / W / Space to jump.</p>
+  <p><b>Sell.</b> Blocks go in your backpack. When it's full, press <b>SELL</b>. Better blocks are worth more money.</p>
+  <p><b>Rank up.</b> Spend money to go from rank A to Z. Every rank opens a deeper mine with rarer blocks: coal, iron, gold, diamonds, emeralds, and things even stranger.</p>
+  <p><b>Pickaxe.</b> Upgrade <b>Efficiency</b> (faster), <b>Fortune</b> (more blocks per break), and <b>Backpack</b> (holds more). Tokens buy special powers like <b>Explosive</b> and <b>Auto-Sell</b>.</p>
+  <p><b>Crates.</b> You sometimes find crate keys while mining, and you get a free key every day. Crates hold money, tokens and pickaxe skins.</p>
+  <p><b>Break out.</b> Reach rank Z and <b>BREAK OUT</b> (prestige): you go back to rank A, but every block sells for more, forever.</p>
+  <p><b>Stuck in a hole?</b> Press <b>⇧ TOP</b>. When most of the mine is empty, it refills automatically.</p>
+  </div>
+  <button class="btn" data-go="sMenu">BACK</button>
+</div></div>
+
+<div class="screen" id="sStats" hidden><div class="box">
+  <h1 style="font-size:28px">MY STATS</h1>
+  <div class="stats" id="statsGrid"></div>
+  <button class="btn" data-go="sMenu">BACK</button>
+</div></div>
+
+<div class="screen" id="sShop" hidden><div class="box wide">
+  <h1 style="font-size:28px">PICKAXE</h1>
+  <div class="pickrow"><canvas id="pickCv" width="120" height="120"></canvas><div><b id="pickName">Wooden Pickaxe</b><small id="pickInfo"></small><div class="skins" id="skins"></div></div></div>
+  <h2 class="sh">Money upgrades</h2><div class="ups" id="upsMoney"></div>
+  <h2 class="sh">Token powers</h2><div class="ups" id="upsTok"></div>
+  <button class="btn" id="shopBack">BACK TO THE MINE</button>
+</div></div>
+
+<div class="screen" id="sCrate" hidden><div class="box">
+  <h1 style="font-size:28px">CRATES</h1>
+  <p class="tag" id="crateInfo"></p>
+  <div class="crate" id="crateBox"><div class="lid"></div><div class="body">?</div></div>
+  <div id="crateWin" class="cwin"></div>
+  <button class="btn main" id="crateOpen">OPEN A CRATE<small id="crateKeys">0 keys</small></button>
+  <button class="btn" id="crateDaily">FREE DAILY KEY</button>
+  <button class="btn" id="crateBack">BACK TO THE MINE</button>
+</div></div>
+
+<div class="screen" id="sPrestige" hidden><div class="box">
+  <h1 style="font-size:28px">BREAK OUT!</h1>
+  <p class="tag">You reached rank Z. You can break out of Rock Bottom Prison right now. You'll start again at rank A with no money, but you keep your pickaxe, tokens and skins, and <b>every block will sell for more, forever</b>.</p>
+  <p class="tag" id="prestInfo"></p>
+  <button class="btn main" id="prestYes">⛓ BREAK OUT</button>
+  <button class="btn" id="prestNo">NOT YET</button>
+</div></div>
+
+<script src="kit.js"></script>
+<script>
+(()=>{
+'use strict';
+/* ---------- shared helpers (same in every game of this batch) ---------- */
+const {sfx:SFX,FX,util:U,scores:SC,ach:ACH,profile:PROF,ui:UI}=KIT;
+const $=id=>document.getElementById(id);
+const TAU=Math.PI*2,rnd=(a,b)=>a+Math.random()*(b-a),clamp=U.clamp,pick=a=>a[Math.floor(Math.random()*a.length)];
+function hashStr(s){let h=2166136261;for(const ch of s){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
+const todayKey=()=>{const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()};
+const fmtN=n=>Math.floor(n).toLocaleString();
+// scale a fixed-size canvas (W x H game units) to fit the window; reserve `below` pixels under it
+function makeFit(cv,W,H,below=()=>0){const st={dpr:1,s:1};function fit(){st.dpr=Math.min(2,devicePixelRatio||1);const s=Math.min(innerWidth/W,(innerHeight-below())/H);st.s=s;cv.style.width=W*s+'px';cv.style.height=H*s+'px';cv.width=Math.round(W*st.dpr);cv.height=Math.round(H*st.dpr)}
+  addEventListener('resize',fit);fit();st.fit=fit;st.toGame=(cx,cy)=>{const r=cv.getBoundingClientRect();return[(cx-r.left)/r.width*W,(cy-r.top)/r.height*H]};return st}
+const ONSHOW={};
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.hidden=s.id!==id);if(ONSHOW['*'])ONSHOW['*'](id);if(ONSHOW[id])ONSHOW[id]()}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b){SFX.click();show(b.dataset.go)}});
+function statGrid(el,rows){el.innerHTML=rows.map(([a,b])=>`<div><b>${b}</b><small>${a}</small></div>`).join('')}
+/* hangar: cards you can buy, choose and sell (the first item can never be sold) */
+function hangar(el,o){// o:{game,items:[{id,name,cost,desc,needs?,extra?}],save,coinKey,icon,draw(ctx,item,w,h),onChange,lockText}
+  const S=o.save,cur=()=>{const id=PROF.vehicle(o.game,o.items[0].id);return o.items.find(x=>x.id===id&&S.owned[id])||o.items[0]},icon=o.icon||'🪙';
+  const sellP=it=>Math.floor(it.cost/2);
+  function draw(){const c=cur();el.innerHTML=o.items.map((it,i)=>{const own=!!S.owned[it.id]||i===0,locked=it.needs&&!ACH.has(o.game,it.needs);
+      return`<div class="shipwrap"><button class="ship ${c.id===it.id?'on':''}" data-hid="${it.id}" ${!own&&(locked||S[o.coinKey]<it.cost)?'disabled':''}><canvas width="220" height="160"></canvas><b>${it.name}</b><small class="mute">${it.desc}</small>${it.extra||''}<span class="price">${own?(c.id===it.id?'✔ CHOSEN':'TAP TO CHOOSE'):locked?'🔒 '+(o.lockText||'Locked'):icon+' '+it.cost}</span></button>${own&&i>0?`<button class="sell" data-hsell="${it.id}">💰 SELL for ${icon}${sellP(it)}</button>`:''}</div>`}).join('');
+    el.querySelectorAll('[data-hid]').forEach(b=>{const it=o.items.find(x=>x.id===b.dataset.hid),g=b.querySelector('canvas').getContext('2d');g.scale(2,2);try{o.draw(g,it,110,80)}catch(e){}
+      b.onclick=()=>{if(!S.owned[it.id]&&it!==o.items[0]){if(S[o.coinKey]<it.cost)return;S[o.coinKey]-=it.cost;S.owned[it.id]=1;SFX.coin();o.onBuy&&o.onBuy(it)}PROF.setVehicle(o.game,it.id);SFX.click();o.onChange&&o.onChange();draw()}});
+    el.querySelectorAll('[data-hsell]').forEach(b=>b.onclick=()=>{const it=o.items.find(x=>x.id===b.dataset.hsell);
+      UI.modal(`<h2>💰 Sell ${it.name}?</h2><p style="margin:0">You get <b>${icon} ${sellP(it)}</b> back (half the price). You can buy it again later for ${icon} ${it.cost}.</p><div style="display:flex;gap:8px;justify-content:flex-end"><button class="kbtn2 alt" data-close>KEEP IT</button><button class="kbtn2" id="hsellYes">SELL</button></div>`,(m,close)=>{
+        m.querySelector('#hsellYes').onclick=()=>{delete S.owned[it.id];S[o.coinKey]+=sellP(it);if(PROF.vehicle(o.game,o.items[0].id)===it.id)PROF.setVehicle(o.game,o.items[0].id);SFX.coin();close();o.onChange&&o.onChange();draw()}})})}
+  draw();return{cur,draw}}
+/* upgrade list: o:{list:[{id,ic,name,desc,max,cost(l)}],save,key,coinKey,icon,onChange} */
+function upgradeList(el,o){const S=o.save,lv=id=>S[o.key][id]||0,icon=o.icon||'🪙';
+  el.innerHTML=o.list.map(u=>{const l=lv(u.id),full=l>=u.max,c=u.cost(l);return`<div class="up"><span class="ic">${u.ic}</span><div><b>${u.name}</b><small>${u.desc}</small><div class="pips">${Array.from({length:u.max},(_,i)=>`<i class="${i<l?'on':''}"></i>`).join('')}</div></div><button data-uid="${u.id}" ${full||S[o.coinKey]<c?'disabled':''}>${full?'MAX':icon+' '+c}</button></div>`}).join('');
+  el.querySelectorAll('[data-uid]').forEach(b=>b.onclick=()=>{const u=o.list.find(x=>x.id===b.dataset.uid),c=u.cost(lv(u.id));if(S[o.coinKey]<c||lv(u.id)>=u.max)return;S[o.coinKey]-=c;S[o.key][u.id]=lv(u.id)+1;SFX.coin();o.onChange&&o.onChange();upgradeList(el,o)})}
+// a simple two-stick touch controller: left half moves, right half aims (used by the arena games)
+function twinSticks(cv,toGame){const st={move:null,aim:null,mx:0,my:0,ax:0,ay:0,aiming:false};const R=60;
+  const upd=(s,e)=>{const dx=e.clientX-s.ox,dy=e.clientY-s.oy,d=Math.hypot(dx,dy),k=d>R?R/d:1;s.x=dx*k/R;s.y=dy*k/R};
+  cv.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse')return;e.preventDefault();const r=cv.getBoundingClientRect();const left=e.clientX<r.left+r.width/2;const s={id:e.pointerId,ox:e.clientX,oy:e.clientY,x:0,y:0};if(left&&!st.move)st.move=s;else if(!st.aim)st.aim=s});
+  cv.addEventListener('pointermove',e=>{for(const k of['move','aim']){const s=st[k];if(s&&s.id===e.pointerId)upd(s,e)}});
+  const end=e=>{for(const k of['move','aim'])if(st[k]&&st[k].id===e.pointerId)st[k]=null};cv.addEventListener('pointerup',end);cv.addEventListener('pointercancel',end);
+  st.draw=(ctx,scale)=>{for(const k of['move','aim']){const s=st[k];if(!s)continue;const r=cv.getBoundingClientRect();const[ox,oy]=toGame(s.ox,s.oy);ctx.strokeStyle='#ffffff44';ctx.lineWidth=3;ctx.beginPath();ctx.arc(ox,oy,R/scale,0,TAU);ctx.stroke();ctx.fillStyle='#ffffff55';ctx.beginPath();ctx.arc(ox+s.x*R/scale,oy+s.y*R/scale,22/scale,0,TAU);ctx.fill()}};
+  return st}
+/* ---------- data: blocks, ranks, upgrades ---------- */
+// id, name, base value, hardness, colors [base, dark, ore/spot], style
+const BLOCKS=[
+ ['dirt','Dirt',1,.45,['#8a5a32','#6a4224','#a8784a'],'dirt'],
+ ['stone','Stone',2,.8,['#8a8a8a','#6e6e6e','#a4a4a4'],'stone'],
+ ['coal','Coal',5,1,['#8a8a8a','#6e6e6e','#1c1c1c'],'ore'],
+ ['copper','Copper',9,1.2,['#8a8a8a','#6e6e6e','#e07a3a'],'ore'],
+ ['iron','Iron',16,1.5,['#8a8a8a','#6e6e6e','#e8c8a8'],'ore'],
+ ['lapis','Lapis',28,1.6,['#7a7a86','#5e5e6a','#2a5adc'],'ore'],
+ ['gold','Gold',45,1.8,['#8a8a8a','#6e6e6e','#ffd23f'],'ore'],
+ ['redstone','Redstone',70,1.9,['#86787a','#6a5e5e','#ff2a2a'],'ore'],
+ ['emerald','Emerald',120,2.2,['#7a867a','#5e6a5e','#2ae07a'],'gem'],
+ ['diamond','Diamond',200,2.5,['#7a8286','#5e666a','#6af0ff'],'gem'],
+ ['amethyst','Amethyst',340,2.6,['#6a4a9a','#4a2a7a','#c89aff'],'crystal'],
+ ['obsidian','Obsidian',520,3.4,['#2a1a3a','#140a20','#6a3a9a'],'obsidian'],
+ ['ruby','Ruby',800,2.9,['#5a3a3a','#3e2626','#ff3a5a'],'gem'],
+ ['starstone','Starstone',1300,3.1,['#1a2a5a','#0e1a3e','#fff6a0'],'star'],
+ ['magma','Magma Rock',2100,3.3,['#5a1a0a','#3a0e06','#ff8a1a'],'magma'],
+ ['frost','Frostcore',3300,3.4,['#8ad8f0','#5ab0d0','#ffffff'],'crystal'],
+ ['void','Voidstone',5200,3.8,['#0a0612','#000000','#b05aff'],'void'],
+ ['sun','Sunshard',8000,4,['#ffb020','#d07a00','#fff8c0'],'star'],
+];
+const BI={};BLOCKS.forEach((b,i)=>BI[b[0]]=i);
+const RANKS='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+// which blocks appear in a rank's mine (weights)
+function mineTable(r){
+  const lo=Math.min(BLOCKS.length-5,Math.floor(r*0.56));
+  const w=[42,28,16,9,5];
+  const t=[];for(let i=0;i<5;i++)t.push([lo+i,w[i]]);
+  if(r<2)t[0]=[0,42];
+  return t}
+const rankCost=(r,p)=>Math.round(250*Math.pow(1.6,r)*(1+p*0.6));
+const rankValueMul=r=>1+r*0.06;
+const SKINS=[
+ ['wood','Wooden',['#8a5a32','#5a3a1a']],
+ ['stone','Stone',['#9a9a9a','#5a5a5a']],
+ ['iron','Iron',['#e8e8e8','#9a9aa8']],
+ ['gold','Golden',['#ffd23f','#c89a10']],
+ ['diamond','Diamond',['#6af0ff','#2aa8c8']],
+ ['emerald','Emerald',['#5af09a','#1a9a5a']],
+ ['ruby','Ruby',['#ff5a7a','#b01a3a']],
+ ['neon','Neon',['#ff7ac0','#6ad8ff']],
+ ['void','Void',['#b05aff','#2a0a4a']],
+ ['rainbow','Rainbow',['rainbow','#fff']],
+];
+const UPS_MONEY=[
+ {id:'eff',ic:'⚡',name:'Efficiency',desc:l=>`Mine ${Math.round(25*l)}% faster`,max:60,cost:l=>Math.round(60*Math.pow(1.32,l))},
+ {id:'fort',ic:'🍀',name:'Fortune',desc:l=>`${(1+l*0.2).toFixed(1)} blocks for every block you break`,max:40,cost:l=>Math.round(150*Math.pow(1.42,l))},
+ {id:'bag',ic:'🎒',name:'Backpack',desc:l=>`Holds ${bagCap(l)} blocks`,max:40,cost:l=>Math.round(90*Math.pow(1.36,l))},
+ {id:'luck',ic:'🔑',name:'Key Finder',desc:l=>`${(0.25+l*0.15).toFixed(2)}% chance to find a crate key`,max:20,cost:l=>Math.round(400*Math.pow(1.6,l))},
+];
+const UPS_TOK=[
+ {id:'boom',ic:'💥',name:'Explosive',desc:l=>`${l*3}% chance to blow up the blocks around you`,max:15,cost:l=>20+l*15},
+ {id:'laser',ic:'🔆',name:'Laser',desc:l=>`${l*1.5}% chance to clear a whole row`,max:10,cost:l=>40+l*25},
+ {id:'tokf',ic:'🪙',name:'Token Finder',desc:l=>`${(2+l*1.5).toFixed(1)}% chance to find a token`,max:15,cost:l=>15+l*10},
+ {id:'jump',ic:'🦘',name:'Jump Boost',desc:l=>`Jump ${[1,2,3][l]} block${l?'s':''} high`,max:2,cost:l=>[30,90][l]},
+ {id:'speed',ic:'👟',name:'Speed',desc:l=>`Walk ${l*20}% faster`,max:5,cost:l=>25+l*20},
+ {id:'auto',ic:'🤖',name:'Auto-Sell',desc:l=>l?'Your backpack sells itself when full':'Sells your backpack automatically when it is full',max:1,cost:l=>60},
+];
+const bagCap=l=>40+l*25;
+/* ---------- textures ---------- */
+const T=40; // tile size
+const TEX=[];
+function seeded(s){return()=>{s=(s*16807)%2147483647;return(s-1)/2147483646}}
+function makeTex(b,i){
+  const c=document.createElement('canvas');c.width=c.height=T;const x=c.getContext('2d');const [base,dark,spot]=b[4];const r=seeded(i*977+13);
+  x.fillStyle=base;x.fillRect(0,0,T,T);
+  for(let k=0;k<26;k++){x.fillStyle=r()<.5?dark:shade(base,.12);const s=4+Math.floor(r()*2)*2;x.fillRect(Math.floor(r()*10)*4,Math.floor(r()*10)*4,s,s)}
+  const st=b[5];
+  if(st==='dirt'){for(let k=0;k<8;k++){x.fillStyle=spot;x.fillRect(Math.floor(r()*10)*4,Math.floor(r()*10)*4,4,4)}}
+  if(st==='ore'){for(let k=0;k<5;k++){const ox=4+Math.floor(r()*7)*4,oy=4+Math.floor(r()*7)*4;x.fillStyle=spot;x.fillRect(ox,oy,8,4);x.fillRect(ox+4,oy+4,4,4);x.fillStyle=shade(spot,.35);x.fillRect(ox,oy,4,4)}}
+  if(st==='gem'){for(let k=0;k<4;k++){const ox=4+Math.floor(r()*7)*4,oy=4+Math.floor(r()*7)*4;x.fillStyle=spot;x.fillRect(ox+4,oy,4,12);x.fillRect(ox,oy+4,12,4);x.fillStyle='#fff';x.fillRect(ox+4,oy+4,4,4)}}
+  if(st==='crystal'){for(let k=0;k<3;k++){const ox=6+Math.floor(r()*6)*4;x.fillStyle=spot;x.beginPath();x.moveTo(ox,T-4);x.lineTo(ox+6,8+r()*10);x.lineTo(ox+12,T-4);x.fill();x.fillStyle='#ffffff88';x.fillRect(ox+5,T-16,2,10)}}
+  if(st==='obsidian'){x.strokeStyle=spot;x.lineWidth=2;for(let k=0;k<3;k++){x.beginPath();x.moveTo(r()*T,r()*T);x.lineTo(r()*T,r()*T);x.stroke()}}
+  if(st==='star'){for(let k=0;k<7;k++){const ox=r()*T,oy=r()*T;x.fillStyle=spot;x.fillRect(ox,oy,3,3);x.fillStyle=spot+'66';x.fillRect(ox-3,oy+1,9,1);x.fillRect(ox+1,oy-3,1,9)}}
+  if(st==='magma'){x.strokeStyle=spot;x.lineWidth=3;for(let k=0;k<4;k++){x.beginPath();let px=r()*T,py=r()*T;x.moveTo(px,py);for(let j=0;j<3;j++){px+=r()*16-8;py+=r()*16-8;x.lineTo(px,py)}x.stroke()}}
+  if(st==='void'){for(let k=0;k<10;k++){x.fillStyle=k%2?spot:'#ffffff';x.globalAlpha=.4+r()*.6;x.fillRect(r()*T,r()*T,2,2)}x.globalAlpha=1}
+  x.strokeStyle='#00000040';x.lineWidth=2;x.strokeRect(1,1,T-2,T-2);
+  return c}
+function shade(hex,a){const n=parseInt(hex.slice(1),16);let r=n>>16,g=n>>8&255,b=n&255;r=Math.min(255,r+255*a);g=Math.min(255,g+255*a);b=Math.min(255,b+255*a);return'#'+[r,g,b].map(v=>Math.round(v).toString(16).padStart(2,'0')).join('')}
+BLOCKS.forEach((b,i)=>TEX[i]=makeTex(b,i));
+const BEDROCK=(()=>{const c=document.createElement('canvas');c.width=c.height=T;const x=c.getContext('2d');const r=seeded(4242);x.fillStyle='#3a3a3e';x.fillRect(0,0,T,T);for(let k=0;k<30;k++){x.fillStyle=r()<.5?'#1e1e22':'#5a5a60';x.fillRect(Math.floor(r()*10)*4,Math.floor(r()*10)*4,4+Math.floor(r()*2)*4,4)}return c})();
+const WALL=(()=>{const c=document.createElement('canvas');c.width=c.height=T;const x=c.getContext('2d');x.fillStyle='#5a4a3a';x.fillRect(0,0,T,T);x.fillStyle='#4a3a2c';for(let row=0;row<4;row++){const off=row%2?10:0;for(let k=-1;k<3;k++)x.fillRect(off+k*20,row*10,18,8)}x.fillStyle='#6a5a48';for(let row=0;row<4;row++){const off=row%2?10:0;for(let k=-1;k<3;k++)x.fillRect(off+k*20,row*10,18,2)}return c})();
+function skinCols(id,t){const s=SKINS.find(k=>k[0]===id)||SKINS[0];if(s[2][0]==='rainbow'){const h=(t/8)%360;return[`hsl(${h},90%,60%)`,`hsl(${(h+60)%360},90%,45%)`]}return s[2]}
+function drawPick(x,cx,cy,sz,ang,skin,t){
+  x.save();x.translate(cx,cy);x.rotate(ang);const [a,b]=skinCols(skin,t);
+  x.fillStyle='#6a4424';x.fillRect(-sz*.06,-sz*.05,sz*.12,sz*.75);
+  x.fillStyle=a;x.beginPath();x.moveTo(-sz*.5,sz*.02);x.quadraticCurveTo(0,-sz*.32,sz*.5,sz*.02);x.lineTo(sz*.4,sz*.08);x.quadraticCurveTo(0,-sz*.16,-sz*.4,sz*.08);x.fill();
+  x.fillStyle=b;x.fillRect(-sz*.1,-sz*.16,sz*.2,sz*.16);x.restore()}
+function drawPrisoner(x,px,py,face,swing,walk,skin,t){
+  // px,py = feet center in pixels
+  const s=T/40;x.save();x.translate(px,py);x.scale(face,1);
+  const leg=Math.sin(walk)*6*s;
+  x.fillStyle='#2a2a2a';x.fillRect(-9*s+leg*.3,-14*s,7*s,14*s);x.fillRect(2*s-leg*.3,-14*s,7*s,14*s);
+  x.fillStyle='#ff8a2a';x.fillRect(-11*s,-40*s,22*s,28*s); // jumpsuit
+  x.fillStyle='#e0701a';for(let k=0;k<3;k++)x.fillRect(-11*s,(-36+k*9)*s,22*s,3*s);
+  x.fillStyle='#ffffffcc';x.font=`bold ${7*s}px monospace`;x.textAlign='center';x.fillText('42',0,-26*s);
+  x.fillStyle='#f0c08a';x.fillRect(-9*s,-58*s,18*s,18*s); // head
+  x.fillStyle='#3a2414';x.fillRect(-9*s,-60*s,18*s,6*s);
+  x.fillStyle='#000';x.fillRect(2*s,-51*s,3*s,3*s);
+  drawPick(x,10*s,-30*s,30*s,-.9+swing,skin,t);
+  x.restore()}
+/* ---------- game ---------- */
+const W=1280,H=720,COLS=32,MX0=4,MX1=27,TOP=4,DEPTH=26,ROWS=TOP+DEPTH+1;
+const cv=$('cv'),ctx=cv.getContext('2d');
+const FIT=makeFit(cv,W,H);
+const SAVEKEY='bb.save';
+const DEF={rank:0,prest:0,money:0,tok:0,keys:1,up:{},skin:'wood',skins:['wood'],bag:{},stats:{mined:0,earned:0,sold:0,crates:0,booms:0,start:Date.now()},daily:''};
+let S;try{S=Object.assign(JSON.parse(JSON.stringify(DEF)),JSON.parse(localStorage.getItem(SAVEKEY)||'{}'))}catch(e){S=JSON.parse(JSON.stringify(DEF))}
+S.up=S.up||{};S.stats=Object.assign({},DEF.stats,S.stats||{});
+const save=()=>{try{localStorage.setItem(SAVEKEY,JSON.stringify(S))}catch(e){}};
+const lv=id=>S.up[id]||0;
+const grid=new Uint8Array(COLS*ROWS);
+const g=(x,y)=>(x<0||x>=COLS||y<0)?254:y>=ROWS?255:grid[y*COLS+x];
+const sg=(x,y,v)=>{grid[y*COLS+x]=v};
+let total=0,left=0;
+function genMine(){
+  const tab=mineTable(S.rank),sum=tab.reduce((a,b)=>a+b[1],0);
+  for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){
+    let v=0;
+    if(y>=TOP){if(x<MX0||x>MX1)v=254;else if(y===ROWS-1)v=255;else{
+      let r=Math.random()*sum;let pick=tab[0][0];
+      // rarer blocks a bit more common deeper
+      const deep=(y-TOP)/DEPTH;
+      for(const [bi,w] of tab){const ww=w*(bi===tab[0][0]?(1.25-deep*.5):(.8+deep*.6));r-=ww*sum/(sum*1.0);if(r<=0){pick=bi;break}}
+      v=pick+1}}
+    sg(x,y,v)}
+  total=left=(MX1-MX0+1)*(DEPTH-1+0);
+  left=0;for(let y=TOP;y<ROWS-1;y++)for(let x=MX0;x<=MX1;x++)if(g(x,y)>0&&g(x,y)<254)left++;total=left;
+  resetPending=0}
+let resetPending=0;
+/* ---------- player ---------- */
+const P={x:15.5,y:TOP,vx:0,vy:0,face:1,ground:false,walk:0,swing:0};
+const PW=.7,PH=1.55;
+const solid=(x,y)=>g(Math.floor(x),Math.floor(y))!==0;
+function collide(nx,ny){for(const ox of[-PW/2+.01,PW/2-.01])for(const oy of[0,-PH/2,-PH+.01])if(solid(nx+ox,ny+oy))return true;return false}
+function toTop(){P.x=15.5+(Math.random()*4-2);P.y=TOP;P.vx=P.vy=0;
+  // stand on top of whatever is there
+  while(collide(P.x,P.y)&&P.y>1)P.y-=1}
+/* ---------- input ---------- */
+const K={left:false,right:false,jump:false,down:false};
+const keymap={ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',ArrowUp:'jump',KeyW:'jump',Space:'jump',ArrowDown:'down',KeyS:'down'};
+addEventListener('keydown',e=>{const k=keymap[e.code];if(k&&playing){K[k]=true;e.preventDefault()}});
+addEventListener('keyup',e=>{const k=keymap[e.code];if(k)K[k]=false});
+document.querySelectorAll('#pad [data-k]').forEach(b=>{const k=b.dataset.k;
+  const on=e=>{e.preventDefault();K[k]=true;b.classList.add('on')},off=e=>{K[k]=false;b.classList.remove('on')};
+  b.addEventListener('pointerdown',on);b.addEventListener('pointerup',off);b.addEventListener('pointercancel',off);b.addEventListener('pointerleave',off)});
+const ptr={down:false,gx:0,gy:0};
+cv.addEventListener('pointerdown',e=>{if(!playing)return;e.preventDefault();ptr.down=true;[ptr.gx,ptr.gy]=FIT.toGame(e.clientX,e.clientY);try{cv.setPointerCapture(e.pointerId)}catch(_){}});
+cv.addEventListener('pointermove',e=>{[ptr.gx,ptr.gy]=FIT.toGame(e.clientX,e.clientY);ptr.hover=true});
+const pup=()=>{ptr.down=false};cv.addEventListener('pointerup',pup);cv.addEventListener('pointercancel',pup);
+/* ---------- audio ---------- */
+let AC=null;function snd(type){if(SFX.muted)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime;
+  if(type==='tick'||type==='break'){const len=type==='tick'?.04:.12;const b=AC.createBuffer(1,AC.sampleRate*len,AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2);const s=AC.createBufferSource();s.buffer=b;const f=AC.createBiquadFilter();f.type='lowpass';f.frequency.value=type==='tick'?1400:900;const gn=AC.createGain();gn.gain.value=type==='tick'?.18:.4;s.connect(f).connect(gn).connect(AC.destination);s.start(t)}
+  if(type==='boom'){const b=AC.createBuffer(1,AC.sampleRate*.5,AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,3);const s=AC.createBufferSource();s.buffer=b;const f=AC.createBiquadFilter();f.type='lowpass';f.frequency.value=300;const gn=AC.createGain();gn.gain.value=.9;s.connect(f).connect(gn).connect(AC.destination);s.start(t)}
+  if(type==='gem'||type==='key'){const o=AC.createOscillator(),gn=AC.createGain();o.type='triangle';o.frequency.setValueAtTime(type==='key'?660:880,t);o.frequency.exponentialRampToValueAtTime(type==='key'?1320:1760,t+.15);gn.gain.setValueAtTime(.15,t);gn.gain.exponentialRampToValueAtTime(.001,t+.3);o.connect(gn).connect(AC.destination);o.start(t);o.stop(t+.3)}
+}catch(e){}}
+/* ---------- effects ---------- */
+const parts=[],floats=[];
+function burst(tx,ty,bi,n=10){const c=BLOCKS[bi]?BLOCKS[bi][4]:['#555','#333','#777'];for(let i=0;i<n;i++)parts.push({x:(tx+.5)*T,y:(ty+.5)*T,vx:rnd(-160,160),vy:rnd(-260,40),l:rnd(.4,.8),c:pick(c),s:rnd(3,7)})}
+function floatTxt(x,y,t,c='#ffd23f'){floats.push({x,y,t,c,l:1.2})}
+function toast(t){const d=document.createElement('div');d.textContent=t;$('toast').append(d);setTimeout(()=>d.remove(),2200);while($('toast').children.length>3)$('toast').firstChild.remove()}
+/* ---------- economy ---------- */
+const bagCount=()=>Object.values(S.bag).reduce((a,b)=>a+b,0);
+const cap=()=>bagCap(lv('bag'));
+const sellMul=()=>rankValueMul(S.rank)*(1+S.prest*0.5);
+function bagValue(){let v=0;for(const [i,n] of Object.entries(S.bag))v+=BLOCKS[i][2]*n;return Math.floor(v*sellMul())}
+function sellAll(quiet){const n=bagCount();if(!n){if(!quiet)toast('Your backpack is empty. Go mine!');return 0}
+  const v=bagValue();S.money+=v;S.stats.earned+=v;S.stats.sold+=n;S.bag={};if(!quiet){SFX.coins?SFX.coins():SFX.coin();toast(`Sold ${fmtN(n)} blocks for $${fmtN(v)}!`)}
+  floatTxt(P.x*T,(P.y-2)*T,'+$'+fmtN(v));save();hud(true);return v}
+function addDrops(bi,n){const room=cap()-bagCount();if(room<=0)return false;S.bag[bi]=(S.bag[bi]||0)+Math.min(n,room);return true}
+function bagFull(){return bagCount()>=cap()}
+/* ---------- mining ---------- */
+let mt=null; // {tx,ty,p}
+const mineable=v=>v>0&&v<254;
+function reach(tx,ty){const cx=P.x,cy=P.y-.9;return Math.hypot(tx+.5-cx,ty+.5-cy)<=2.7}
+function breakBlock(tx,ty,chain){
+  const v=g(tx,ty);if(!mineable(v))return;
+  if(bagFull()){if(lv('auto'))sellAll(true);else{if(!chain)fullWarn();return}}
+  const bi=v-1;sg(tx,ty,0);left--;S.stats.mined++;
+  const fort=1+lv('fort')*.2;let n=Math.floor(fort);if(Math.random()<fort-n)n++;
+  addDrops(bi,n);burst(tx,ty,bi,chain?5:10);
+  if(!chain){snd(BLOCKS[bi][5]==='gem'||BLOCKS[bi][5]==='crystal'||BLOCKS[bi][5]==='star'?'gem':'break');
+    const val=Math.floor(BLOCKS[bi][2]*sellMul()*n);floatTxt((tx+.5)*T,ty*T,`+${n} ${BLOCKS[bi][1]} ($${fmtN(val)})`,'#fff')}
+  if(Math.random()*100<2+lv('tokf')*1.5){const k=1+Math.floor(Math.random()*3);S.tok+=k;floatTxt((tx+.5)*T,(ty-.5)*T,`+${k} 🪙`,'#6ad8ff')}
+  if(Math.random()*100<.25+lv('luck')*.15){S.keys++;snd('key');toast('🔑 You found a crate key!')}
+  if(!chain){
+    if(Math.random()*100<lv('boom')*3){S.stats.booms++;snd('boom');shake=8;const r=lv('boom')>=8?2:1;for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++)if(dx||dy)breakBlock(tx+dx,ty+dy,true);floatTxt((tx+.5)*T,(ty-1)*T,'💥 BOOM!','#ff8a2a')}
+    if(Math.random()*100<lv('laser')*1.5){snd('gem');laserY=ty;laserT=.4;for(let x=MX0;x<=MX1;x++)if(x!==tx)breakBlock(x,ty,true);floatTxt((tx+.5)*T,(ty-1)*T,'🔆 LASER!','#fff6a0')}
+  }
+  if(bagFull()&&lv('auto'))sellAll(true);
+  checkReset();hud()}
+let warnT=0;function fullWarn(){if(warnT>0)return;warnT=2.5;toast('🎒 Backpack full! Press SELL.');$('hSell').classList.add('pulse')}
+let shake=0,laserY=-1,laserT=0;
+function checkReset(){if(!resetPending&&left<total*.3){resetPending=3;toast('⏳ The mine refills in 3 seconds!')}}
+function mineAt(tx,ty,dt){
+  const v=g(tx,ty);if(!mineable(v)){mt=null;return}
+  if(!reach(tx,ty)){mt=null;return}
+  if(bagFull()&&!lv('auto')){fullWarn();return}
+  if(!mt||mt.tx!==tx||mt.ty!==ty)mt={tx,ty,p:0,tick:0};
+  const rate=(1+lv('eff')*.25)*2.2/BLOCKS[v-1][3];
+  mt.p+=dt*rate;mt.tick-=dt;if(mt.tick<=0){mt.tick=.12;snd('tick')}
+  P.swing+=dt*18;P.face=tx+.5<P.x?-1:1;
+  if(mt.p>=1){breakBlock(tx,ty);mt=null}}
+/* ---------- loop ---------- */
+let playing=false,last=0,camY=0,hudT=0,saveT=0;
+function step(dt){
+  // movement
+  const sp=(5+lv('speed')*1)*(1);
+  let ax=(K.right?1:0)-(K.left?1:0);
+  P.vx=ax*sp;if(ax)P.face=ax;
+  // gravity / jump
+  P.vy+=30*dt;if(P.vy>22)P.vy=22;
+  if(K.jump&&P.ground){const h=[1.25,2.25,3.25][lv('jump')];P.vy=-Math.sqrt(2*30*h);P.ground=false}
+  // horizontal
+  let nx=P.x+P.vx*dt;
+  if(collide(nx,P.y)){
+    // keyboard/pad digging sideways
+    if(ax&&P.ground){const tx=Math.floor(P.x+ax*(PW/2+.2));const ty1=Math.floor(P.y-.5),ty2=Math.floor(P.y-1.3);
+      if(mineable(g(tx,ty1)))mineAt(tx,ty1,dt);else if(mineable(g(tx,ty2)))mineAt(tx,ty2,dt)}
+    nx=P.x}
+  P.x=nx;
+  let ny=P.y+P.vy*dt;
+  if(collide(P.x,ny)){if(P.vy>0){P.ground=true;ny=Math.floor(ny)-.0001}else{ny=Math.floor(ny-PH)+1+PH}P.vy=0}else P.ground=false;
+  P.y=ny;
+  // line up with the block under you (so you can drop into 1-wide holes)
+  if(!ax){const cx=Math.floor(P.x)+.5;const holeBelow=!g(Math.floor(P.x),Math.floor(P.y+.05));if(K.down||holeBelow){const d=cx-P.x;if(Math.abs(d)>.01){const nx2=P.x+Math.sign(d)*Math.min(Math.abs(d),6*dt);if(!collide(nx2,P.y))P.x=nx2}}}
+  if(K.down&&P.ground){const tx=Math.floor(P.x),ty=Math.floor(P.y+.05);mineAt(tx,ty,dt)}
+  if(Math.abs(P.vx)>.1&&P.ground)P.walk+=dt*14;else P.walk*=.8;
+  // pointer mining
+  if(ptr.down){const tx=Math.floor(ptr.gx/T),ty=Math.floor((ptr.gy+camY)/T);mineAt(tx,ty,dt)}
+  else if(!K.down&&!(ax&&P.ground&&collide(P.x+ax*.25,P.y)))mt=null;
+  if(!ptr.down&&!K.down&&!mt)P.swing*=.85;
+  // reset
+  if(resetPending){resetPending-=dt;if(resetPending<=0){genMine();if(P.y>TOP-.1)toTop();toast('⛏ The mine has been refilled!');snd('gem')}}
+  warnT=Math.max(0,warnT-dt);if(!bagFull())$('hSell').classList.remove('pulse');
+  // fx
+  for(const p of parts){p.vy+=700*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.l-=dt}for(let i=parts.length-1;i>=0;i--)if(parts[i].l<=0)parts.splice(i,1);
+  for(const f of floats){f.y-=40*dt;f.l-=dt}for(let i=floats.length-1;i>=0;i--)if(floats[i].l<=0)floats.splice(i,1);
+  shake=Math.max(0,shake-dt*30);laserT=Math.max(0,laserT-dt);
+  // camera
+  const want=P.y*T-H*.55;camY+=(clamp(want,0,ROWS*T-H)-camY)*Math.min(1,dt*8);
+  hudT-=dt;if(hudT<=0){hud();hudT=.25}
+  saveT-=dt;if(saveT<=0){save();saveT=5}}
+function draw(t){
+  const d=FIT.dpr*FIT.s*0+FIT.dpr;ctx.setTransform(cv.width/W,0,0,cv.height/H,0,0);
+  const sx=shake?rnd(-shake,shake):0,sy=shake?rnd(-shake,shake):0;
+  ctx.save();ctx.translate(sx,-camY+sy);
+  // sky / prison yard
+  const sky=ctx.createLinearGradient(0,0,0,TOP*T);sky.addColorStop(0,'#5a6a8a');sky.addColorStop(1,'#a8a090');ctx.fillStyle=sky;ctx.fillRect(0,-200,W,TOP*T+200);
+  // back wall of the prison
+  ctx.fillStyle='#6a6060';ctx.fillRect(0,T*.6,W,T*2.2);ctx.fillStyle='#5a5050';for(let x=0;x<W;x+=60)ctx.fillRect(x,T*.6,4,T*2.2);
+  ctx.fillStyle='#3a3434';for(let x=20;x<W;x+=120){ctx.fillRect(x,T*1.1,40,30);ctx.fillStyle='#1a1414';for(let k=0;k<4;k++)ctx.fillRect(x+4+k*10,T*1.1,3,30);ctx.fillStyle='#3a3434'}
+  // fence with wire
+  ctx.strokeStyle='#bbb';ctx.lineWidth=2;ctx.beginPath();for(let x=0;x<W;x+=16){ctx.moveTo(x,T*.2);ctx.lineTo(x+8,T*.6)}ctx.stroke();
+  // guard tower
+  ctx.fillStyle='#4a4040';ctx.fillRect(40,-60,70,T*TOP+60);ctx.fillStyle='#2a2424';ctx.fillRect(30,-80,90,30);ctx.fillStyle=`rgba(255,240,150,${.5+.4*Math.sin(t/400)})`;ctx.beginPath();ctx.moveTo(75,-50);ctx.lineTo(260,TOP*T);ctx.lineTo(160,TOP*T);ctx.fill();
+  ctx.fillStyle='#4a4040';ctx.fillRect(W-110,-60,70,T*TOP+60);ctx.fillStyle='#2a2424';ctx.fillRect(W-120,-80,90,30);
+  // mine sign
+  const sxm=(MX0+MX1+1)/2*T;ctx.fillStyle='#3a2414';ctx.fillRect(sxm-110,T*.15,220,52);ctx.fillStyle='#ffd23f';ctx.font='900 30px Orbitron, monospace';ctx.textAlign='center';ctx.fillText('MINE '+RANKS[S.rank],sxm,T*.15+38);
+  ctx.fillStyle='#3a2414';ctx.fillRect(sxm-100,T*.15+52,10,T*1.5);ctx.fillRect(sxm+90,T*.15+52,10,T*1.5);
+  if(S.prest){ctx.fillStyle='#ff7ac0';ctx.font='600 14px Chakra Petch, sans-serif';ctx.fillText('BROKE OUT ×'+S.prest,sxm,T*.15+70)}
+  // tiles
+  const y0=Math.max(0,Math.floor(camY/T)),y1=Math.min(ROWS-1,Math.ceil((camY+H)/T));
+  for(let y=y0;y<=y1;y++)for(let x=0;x<COLS;x++){const v=g(x,y);if(!v){if(y>=TOP&&x>=MX0&&x<=MX1){ctx.fillStyle='#1a120c';ctx.fillRect(x*T,y*T,T,T)}continue}
+    ctx.drawImage(v===255?BEDROCK:v===254?WALL:TEX[v-1],x*T,y*T)}
+  // air above blocks shading (cave background)
+  // crack
+  if(mt){const p=clamp(mt.p,0,1);ctx.strokeStyle='#000c';ctx.lineWidth=2;const cx=mt.tx*T,cy=mt.ty*T;ctx.beginPath();const n=Math.ceil(p*6);const r=seeded(mt.tx*31+mt.ty);for(let k=0;k<n;k++){let px=cx+T/2,py=cy+T/2;ctx.moveTo(px,py);for(let j=0;j<3;j++){px+=(r()-.5)*T*.6;py+=(r()-.5)*T*.6;ctx.lineTo(px,py)}}ctx.stroke();ctx.fillStyle=`rgba(0,0,0,${p*.35})`;ctx.fillRect(cx,cy,T,T)}
+  // hover/target outline
+  if(ptr.hover||ptr.down){const tx=Math.floor(ptr.gx/T),ty=Math.floor((ptr.gy+camY)/T);if(mineable(g(tx,ty))&&reach(tx,ty)){ctx.strokeStyle='#ffffffcc';ctx.lineWidth=2;ctx.strokeRect(tx*T+1,ty*T+1,T-2,T-2)}}
+  if(laserT>0){ctx.fillStyle=`rgba(255,246,160,${laserT*2})`;ctx.fillRect(MX0*T,laserY*T+T*.3,(MX1-MX0+1)*T,T*.4)}
+  // player
+  drawPrisoner(ctx,P.x*T,P.y*T,P.face,Math.sin(P.swing)*.8,P.walk,S.skin,t);
+  // particles
+  for(const p of parts){ctx.fillStyle=p.c;ctx.fillRect(p.x,p.y,p.s,p.s)}
+  ctx.textAlign='center';ctx.font='700 16px Chakra Petch, sans-serif';
+  for(const f of floats){ctx.globalAlpha=clamp(f.l,0,1);ctx.fillStyle='#000';ctx.fillText(f.t,f.x+1,f.y+1);ctx.fillStyle=f.c;ctx.fillText(f.t,f.x,f.y)}ctx.globalAlpha=1;
+  ctx.restore();
+  // depth darkness
+  const depth=clamp((camY/T-TOP)/DEPTH,0,1);if(depth>0){const gr=ctx.createRadialGradient(P.x*T,P.y*T-camY-30,120,P.x*T,P.y*T-camY-30,700);gr.addColorStop(0,'rgba(0,0,0,0)');gr.addColorStop(1,`rgba(0,0,0,${depth*.6})`);ctx.fillStyle=gr;ctx.fillRect(0,0,W,H)}
+  // mine left meter
+  ctx.fillStyle='#000a';ctx.fillRect(W-200,H-40,184,26);ctx.fillStyle='#7ae0a0';ctx.fillRect(W-197,H-37,178*clamp(left/total,0,1),20);ctx.fillStyle='#fff';ctx.font='600 13px Chakra Petch, sans-serif';ctx.textAlign='center';ctx.fillText('MINE '+Math.round(left/total*100)+'% FULL',W-108,H-22);
+}
+function loop(t){if(!playing)return;const dt=Math.min(.05,(t-(last||t))/1000);last=t;step(dt);draw(t);requestAnimationFrame(loop)}
+/* ---------- HUD ---------- */
+let lastHud='';
+function hud(force){
+  const c=rankCost(S.rank,S.prest);const z=S.rank>=RANKS.length-1;
+  $('hRank').textContent=RANKS[S.rank]+(S.prest?' ✦'+S.prest:'');$('hMoney').textContent='$'+fmtN(S.money);$('hTok').textContent=fmtN(S.tok);
+  const n=bagCount(),cp=cap();$('hBpN').textContent=fmtN(n)+'/'+fmtN(cp);const bi=$('hBp');bi.style.width=Math.min(100,n/cp*100)+'%';bi.classList.toggle('full',n>=cp);
+  $('hRankUp').firstChild.textContent=z?'BREAK OUT':'RANK UP';$('hRankCost').textContent=z?'Prestige!':'$'+fmtN(c);
+  const can=z||S.money>=c;$('hRankUp').disabled=!can;$('hRankUp').classList.toggle('pulse',can);
+  $('hKeys').textContent=S.keys+' key'+(S.keys===1?'':'s');$('hSell').querySelector&&($('hSell').title='Backpack worth $'+fmtN(bagValue()))}
+$('hSell').onclick=()=>sellAll();
+$('hTop').onclick=()=>{toTop();SFX.click()};
+$('hRankUp').onclick=()=>{if(S.rank>=RANKS.length-1){openPrestige();return}const c=rankCost(S.rank,S.prest);if(S.money<c)return;S.money-=c;S.rank++;SFX.power?SFX.power():SFX.coin();toast(`⭐ RANK ${RANKS[S.rank]}! A new mine with better blocks.`);
+  const nb=mineTable(S.rank).map(x=>BLOCKS[x[0]][1]);toast('New blocks: '+nb.slice(-3).join(', '));genMine();toTop();save();hud(true)};
+$('hMenu').onclick=()=>{stop();show('sMenu')};
+$('hShop').onclick=()=>{stop();openShop()};
+$('hCrate').onclick=()=>{stop();openCrates()};
+function start(){show(null);document.querySelectorAll('.screen').forEach(s=>s.hidden=true);$('hud').hidden=false;$('pad').hidden=false;playing=true;last=0;hud(true);requestAnimationFrame(loop)}
+function stop(){playing=false;save();$('hud').hidden=true;$('pad').hidden=true;for(const k in K)K[k]=false;ptr.down=false}
+genMine();toTop();
+/* ---------- menus ---------- */
+ONSHOW.sMenu=()=>{$('mInfo').textContent=`Rank ${RANKS[S.rank]}${S.prest?' · Broke out '+S.prest+'×':''} · $${fmtN(S.money)}`;$('sndIc').textContent=SFX.muted?'🔇':'🔊';$('mStatsInfo').textContent=fmtN(S.stats.mined)+' blocks mined'};
+$('mPlay').onclick=()=>{SFX.click();start()};
+$('mHelp').onclick=()=>show('sHelp');
+$('mSound').onclick=()=>{SFX.toggle();ONSHOW.sMenu()};
+$('mStats').onclick=()=>{statGrid($('statsGrid'),[['Blocks mined',fmtN(S.stats.mined)],['Blocks sold',fmtN(S.stats.sold)],['Money earned','$'+fmtN(S.stats.earned)],['Rank',RANKS[S.rank]],['Times broke out',S.prest],['Crates opened',S.stats.crates],['Explosions',fmtN(S.stats.booms)],['Pickaxe skins',S.skins.length+'/'+SKINS.length]]);show('sStats')};
+$('mReset').onclick=()=>{if(!confirm('Delete your Block Breakout save and start again at rank A?'))return;localStorage.removeItem(SAVEKEY);location.reload()};
+/* shop */
+function openShop(){show('sShop');drawShop()}
+let pickRaf=0;
+function drawShop(){
+  const sk=SKINS.find(s=>s[0]===S.skin)||SKINS[0];$('pickName').textContent=sk[1]+' Pickaxe';
+  $('pickInfo').textContent=`Mining speed ×${(1+lv('eff')*.25).toFixed(2)} · Fortune ×${(1+lv('fort')*.2).toFixed(1)} · Backpack ${fmtN(cap())}`;
+  $('skins').innerHTML=SKINS.map(s=>{const own=S.skins.includes(s[0]);const c=s[2][0]==='rainbow'?'linear-gradient(90deg,red,orange,yellow,lime,cyan,violet)':s[2][0];return`<button title="${s[1]}${own?'':' (find it in a crate)'}" data-skin="${s[0]}" class="${S.skin===s[0]?'on':''} ${own?'':'lock'}" style="background:${c}"></button>`}).join('');
+  $('skins').querySelectorAll('[data-skin]').forEach(b=>b.onclick=()=>{if(!S.skins.includes(b.dataset.skin)){toast('Find this skin in a crate!');return}S.skin=b.dataset.skin;save();SFX.click();drawShop()});
+  const row=(u,cur,icon)=>{const l=lv(u.id),full=l>=u.max,c=u.cost(l),have=cur==='tok'?S.tok:S.money;
+    return`<div class="up"><span class="ic">${u.ic}</span><div><b>${u.name} <span class="lvl">${u.max>1?'LV '+l+'/'+u.max:(l?'OWNED':'')}</span></b><small>${u.desc(l)}${full?'':' → '+u.desc(l+1).replace(/^\w/,m=>m.toLowerCase())}</small></div><button data-u="${u.id}" data-cur="${cur}" ${full||have<c?'disabled':''}>${full?'MAX':(cur==='tok'?'🪙 '+fmtN(c):'$'+fmtN(c))}</button></div>`};
+  $('upsMoney').innerHTML=UPS_MONEY.map(u=>row(u,'money')).join('');
+  $('upsTok').innerHTML=UPS_TOK.map(u=>row(u,'tok')).join('');
+  document.querySelectorAll('#sShop [data-u]').forEach(b=>b.onclick=()=>{const list=b.dataset.cur==='tok'?UPS_TOK:UPS_MONEY;const u=list.find(x=>x.id===b.dataset.u);const l=lv(u.id),c=u.cost(l);
+    if(b.dataset.cur==='tok'){if(S.tok<c)return;S.tok-=c}else{if(S.money<c)return;S.money-=c}S.up[u.id]=l+1;SFX.coin();save();drawShop()});
+  cancelAnimationFrame(pickRaf);const pc=$('pickCv'),px=pc.getContext('2d');const anim=t=>{px.clearRect(0,0,120,120);drawPick(px,60,62,90,-.6+Math.sin(t/500)*.15,S.skin,t);if(!$('sShop').hidden)pickRaf=requestAnimationFrame(anim)};pickRaf=requestAnimationFrame(anim)}
+$('shopBack').onclick=()=>{SFX.click();start()};
+/* crates */
+function openCrates(){show('sCrate');drawCrate()}
+function drawCrate(){$('crateKeys').textContent=S.keys+' key'+(S.keys===1?'':'s');$('crateOpen').disabled=S.keys<1;
+  const got=S.daily===todayKey();$('crateDaily').disabled=got;$('crateDaily').textContent=got?'DAILY KEY: COME BACK TOMORROW':'🎁 FREE DAILY KEY';
+  $('crateInfo').textContent='Crates can hold money, tokens or a new pickaxe skin. Find keys while you mine!'}
+$('crateDaily').onclick=()=>{if(S.daily===todayKey())return;S.daily=todayKey();S.keys++;SFX.coin();save();drawCrate();$('crateWin').textContent='🔑 +1 key!'};
+let opening=false;
+$('crateOpen').onclick=()=>{if(S.keys<1||opening)return;opening=true;S.keys--;S.stats.crates++;const box=$('crateBox');box.classList.remove('open');box.classList.add('shake');$('crateWin').textContent='';snd('tick');
+  setTimeout(()=>{box.classList.remove('shake');box.classList.add('open');
+    const r=Math.random();let msg;const base=rankCost(S.rank,S.prest);
+    const locked=SKINS.filter(s=>!S.skins.includes(s[0]));
+    if(r<.18&&locked.length){const s=locked[Math.min(locked.length-1,Math.floor(Math.random()*Math.random()*locked.length))];S.skins.push(s[0]);S.skin=s[0];msg=`⛏ NEW SKIN: ${s[1]} Pickaxe!`}
+    else if(r<.55){const k=10+Math.floor(Math.random()*40);S.tok+=k;msg=`🪙 ${k} tokens!`}
+    else{const m=Math.round(base*(.15+Math.random()*.35));S.money+=m;msg=`💰 $${fmtN(m)}!`}
+    $('crateWin').textContent=msg;SFX.power?SFX.power():SFX.coin();save();drawCrate();opening=false},650)};
+$('crateBack').onclick=()=>{SFX.click();$('crateBox').classList.remove('open');$('crateWin').textContent='';start()};
+/* prestige */
+function openPrestige(){stop();$('prestInfo').textContent=`Right now blocks sell for ×${(1+S.prest*.5).toFixed(1)}. After breaking out: ×${(1+(S.prest+1)*.5).toFixed(1)}. Rank costs go up a little too.`;show('sPrestige')}
+$('prestYes').onclick=()=>{S.prest++;S.rank=0;S.money=0;S.bag={};S.keys+=3;save();genMine();toTop();SFX.power?SFX.power():SFX.coin();start();toast(`⛓ YOU BROKE OUT! Prestige ${S.prest}. +3 crate keys!`)};
+$('prestNo').onclick=()=>start();
+addEventListener('pagehide',save);document.addEventListener('visibilitychange',()=>{if(document.hidden)save()});
+show('sMenu');
+window.__bb={P,get mt(){return mt},g,get S(){return S},bagCount,hud,get camY(){return camY},get left(){return left},get total(){return total},RANKS};
+
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>
