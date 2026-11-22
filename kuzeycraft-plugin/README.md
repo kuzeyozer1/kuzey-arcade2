@@ -8,7 +8,14 @@ A Lifeboat-style plugin for a **Minecraft Java (Paper) server**. It builds every
 - **Spleef:** dig the snow out from under the others. Snowballs break snow too.
 - **TNT Run:** the floor vanishes where you walk. You get 2 double jumps.
 - **Parkour:** a rainbow course in the sky, with checkpoints, a timer and best times.
-- **Prison:** mine, `/sell` for gold, `/gradeup` from A to F, buy pickaxes, then escape!
+- **Prison:** 26 mines from A to Z. Mine, `/sell` for gold, `/gradeup`, then escape at Z!
+  - Tool shop, an armour and sword shop, and an **Enchanter** where you pick a tool or armour piece from your inventory.
+  - A **PvP arena** with a mine of gold and diamonds. If someone beats you there, they take your blocks.
+- **Daily wheel:** right-click the sunflower in the hub (or type `/spin`) for a free prize every day.
+- **Bots:** `/bots <number>` adds pretend players.
+  - Half hang out in the hub, chatting and doing parkour.
+  - 20% mine in the prison, and some of those fight in the PvP arena.
+  - The rest join the games you join.
 
 Each game gets its own sky world (`kc_hub`, `kc_skywars`, `kc_sg`, `kc_spleef`, `kc_tntrun`, `kc_parkour`, `kc_prison`). Your normal world is not touched.
 
@@ -29,6 +36,8 @@ Each game gets its own sky world (`kc_hub`, `kc_skywars`, `kc_sg`, `kc_spleef`, 
 | `/leave` | Leave your game |
 | `/stats` | Your coins, wins and knock-outs |
 | `/sell`, `/gradeup` | Prison: sell your blocks, and grade up |
+| `/spin` | Spin the daily wheel (in the hub) |
+| `/bots <number>` | Admin: add bots (`/bots 0` removes them) |
 | `/kc start <game>` | Admin: start a game now, even with 1 player |
 | `/kc rebuild <hub/parkour/prison/game>` | Admin: build it again |
 | `/kc setaddress <address>` | Admin: the address shown on the scoreboard |
@@ -37,6 +46,9 @@ Each game gets its own sky world (`kc_hub`, `kc_skywars`, `kc_sg`, `kc_spleef`, 
 
 A game starts by itself when **2 players** are waiting (you can change this in `plugins/KuzeyCraft/config.yml`).
 Admins in **creative mode** can build in the hub.
+
+**About the bots:** they are mobs dressed as players (a Steve head, coloured clothes and a name). They walk, chat, mine, fight and play games.
+Their names show a grey **[Bot]** tag so your friends know they are bots. You can turn that off in `config.yml` with `bots-show-tag: false`.
 
 ## 3. An address your friends can join
 

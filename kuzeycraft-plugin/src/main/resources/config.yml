@@ -27,3 +27,8 @@ coins:
 # Survival Games: seconds before the border starts to shrink, and how long it takes.
 sg-border-wait: 60
 sg-border-shrink: 240
+
+# Bots (pretend players). Change this with /bots <number> in the game.
+bots: 0
+# Show a grey [Bot] tag before the bots' names, so everyone knows they are bots.
+bots-show-tag: true

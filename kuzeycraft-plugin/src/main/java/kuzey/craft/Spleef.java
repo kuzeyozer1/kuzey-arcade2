@@ -42,7 +42,7 @@ public class Spleef extends Game {
 
     @Override protected void everySecond() {
         if (seconds == 120) { tell("&c&lThe top floor is melting!"); meltTop(); }
-        if (seconds >= 300) end(null);
+        if (seconds >= 300) end((java.util.UUID) null);
     }
 
     private void meltTop() {

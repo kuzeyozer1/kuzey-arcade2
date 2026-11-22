@@ -130,6 +130,7 @@ public class Hub {
     public void giveItems(Player p) {
         p.getInventory().setItem(0, U.item(Material.COMPASS, "&a&lGame Menu &7(right-click)", "&7Pick a game to play!"));
         p.getInventory().setItem(1, U.item(Material.CHEST, "&e&lKits &7(right-click)", "&7Buy kits for SkyWars", "&7and Survival Games with coins."));
+        p.getInventory().setItem(2, U.item(Material.SUNFLOWER, "&6&lDaily Wheel &7(right-click)", "&7One free spin every day!"));
         p.getInventory().setItem(4, U.item(Material.NETHER_STAR, "&b&lMy Profile &7(right-click)", "&7Coins, wins and kills"));
         p.getInventory().setItem(8, U.item(Material.FEATHER, "&f&lDouble jump", "&7Press jump twice in the air!"));
     }
@@ -145,7 +146,7 @@ public class Hub {
             g.set(slot++, U.item(game.icon, "&e&l" + game.name, "&7" + game.help(), "", game.stateText(), "", "&aClick to play!"), pl -> { pl.closeInventory(); game.join(pl); });
         }
         g.set(slot++, U.item(Material.FEATHER, "&e&lParkour", "&7Jump to the top as fast as you can!", "", "&7" + kc.parkour.count() + " climbing", "", "&aClick to play!"), pl -> { pl.closeInventory(); kc.parkour.join(pl); });
-        g.set(slot, U.item(Material.IRON_PICKAXE, "&e&lPrison", "&7Mine, sell, grade up from A to F", "&7and escape!", "", "&7" + kc.prison.count() + " prisoners", "", "&aClick to play!"), pl -> { pl.closeInventory(); kc.prison.join(pl); });
+        g.set(slot, U.item(Material.IRON_PICKAXE, "&e&lPrison", "&7Mine, sell, grade up from A to Z", "&7and escape!", "", "&7" + kc.prison.count() + " prisoners", "", "&aClick to play!"), pl -> { pl.closeInventory(); kc.prison.join(pl); });
         g.set(22, U.item(Material.BARRIER, "&cClose"), Player::closeInventory);
         g.open(p);
     }
@@ -210,7 +211,7 @@ public class Hub {
         } else if (kc.prison.in(p)) {
             lines.add("&fGrade: &e" + U.grade(d.grade));
             lines.add("&fGold: &6" + d.gold);
-            lines.add("&fNext grade: &7" + (d.grade >= 5 ? "ESCAPE!" : kc.prison.cost(d) + " gold"));
+            lines.add("&fNext grade: &7" + (d.grade >= Prison.MINES - 1 ? "ESCAPE!" : kc.prison.cost(d) + " gold"));
         } else if (kc.parkour.in(p)) {
             lines.add("&fParkour");
             lines.add("&fBest: &e" + (d.parkourBest > 0 ? U.time(d.parkourBest) : "-"));
@@ -220,7 +221,7 @@ public class Hub {
             lines.add("&fKit: &b" + d.kit);
         }
         lines.add("  ");
-        lines.add("&fOnline: &a" + Bukkit.getOnlinePlayers().size());
+        lines.add("&fOnline: &a" + Bukkit.getOnlinePlayers().size() + (kc.bots.count() > 0 ? " &7(+" + kc.bots.count() + " bots)" : ""));
         lines.add("   ");
         lines.add("&e" + kc.getConfig().getString("address", ""));
         for (String e : new ArrayList<>(sb.getEntries())) sb.resetScores(e);

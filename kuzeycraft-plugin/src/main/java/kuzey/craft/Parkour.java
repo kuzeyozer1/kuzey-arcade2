@@ -52,6 +52,14 @@ public class Parkour {
         b.run(done);
     }
 
+    public int stepCount() { return steps.size(); }
+
+    /** Standing on step i (for the bots that do the parkour). */
+    public Location stepLoc(int i) {
+        int[] s = steps.get(Math.max(0, Math.min(i, steps.size() - 1)));
+        return new Location(world, s[0] + 0.5, s[1] + 1, s[2] + 0.5);
+    }
+
     public Location startLoc() { Location l = new Location(world, 0.5, Y + 1, -1.5); l.setYaw(0); return l; }
 
     public void join(Player p) {

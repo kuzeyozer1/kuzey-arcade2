@@ -23,6 +23,8 @@ public class KuzeyCraft extends JavaPlugin {
     public Hub hub;
     public Parkour parkour;
     public Prison prison;
+    public Bots bots;
+    public Wheel wheel;
     public final Map<String, Game> games = new LinkedHashMap<>();
     private final Set<World> worlds = new HashSet<>();
 
@@ -33,6 +35,8 @@ public class KuzeyCraft extends JavaPlugin {
         saveDefaultConfig();
         getDataFolder().mkdirs();
         data = new Data(getDataFolder());
+        bots = new Bots(this);
+        wheel = new Wheel(this);
         hub = new Hub(world("kc_hub"));
         games.put("skywars", new SkyWars(world("kc_skywars")));
         games.put("sg", new SurvivalGames(world("kc_sg")));
@@ -47,6 +51,8 @@ public class KuzeyCraft extends JavaPlugin {
             getLogger().info("The hub is ready!");
             for (Player p : Bukkit.getOnlinePlayers()) if (getConfig().getBoolean("send-to-hub-on-join", true)) hub.send(p);
         });
+        // the bots come once everything is built
+        Bukkit.getScheduler().runTaskLater(this, () -> { bots.removeAll(); bots.set(getConfig().getInt("bots", 0)); }, 200L);
         parkour.build(() -> getLogger().info("Parkour is ready!"));
         prison.build(() -> getLogger().info("The prison is ready!"));
         for (Game g : games.values()) g.reset();
@@ -64,12 +70,14 @@ public class KuzeyCraft extends JavaPlugin {
         }, 20L, 20L);
         // ten times a second
         Bukkit.getScheduler().runTaskTimer(this, () -> { for (Game g : games.values()) g.tick(); parkour.tick(); }, 2L, 2L);
+        Bukkit.getScheduler().runTaskTimer(this, () -> bots.tick(), 10L, 10L);
         // save every minute
         Bukkit.getScheduler().runTaskTimer(this, () -> data.save(), 1200L, 1200L);
     }
 
     @Override public void onDisable() {
         for (Player p : Bukkit.getOnlinePlayers()) prison.leave(p);
+        if (bots != null) bots.removeAll();
         data.save();
     }
 
@@ -143,6 +151,17 @@ public class KuzeyCraft extends JavaPlugin {
                 U.msg(p, "&eCoins: &f" + d.coins + "  &6Wins: &f" + d.wins + "  &cKnock-outs: &f" + d.kills + "  &bGames: &f" + d.played); break;
             case "sell": prison.sell(p); break;
             case "gradeup": prison.gradeUp(p); break;
+            case "spin": if (hub.in(p)) wheel.open(p); else U.msg(p, "&7Go to the &e/hub &7to spin the daily wheel."); break;
+            case "bots":
+                if (!p.hasPermission("kuzeycraft.admin")) { U.msg(p, "&cOnly admins can add bots."); break; }
+                if (a.length == 0) { U.msg(p, "&7There are &e" + bots.count() + " &7bots. Use &e/bots <number> &7(0 removes them)."); break; }
+                try {
+                    int n = Math.max(0, Math.min(200, Integer.parseInt(a[0])));
+                    getConfig().set("bots", n); saveConfig();
+                    bots.set(n);
+                    U.msg(p, n == 0 ? "&aAll bots are gone." : "&aMade &e" + n + " &abots! Half are in the hub, some are in the prison, and the rest will join the games you play.");
+                } catch (NumberFormatException ex) { U.msg(p, "&cUse: /bots <number>"); }
+                break;
         }
         return true;
     }

@@ -54,8 +54,10 @@ public class TntRun extends Game {
 
     @Override protected void everyTick() {
         if (protectedNow()) return;
-        for (Player p : online(alive)) {
-            Location l = p.getLocation();
+        List<Location> feet = new java.util.ArrayList<>();
+        for (Player p : online(alive)) feet.add(p.getLocation());
+        for (UUID b : bots) { org.bukkit.entity.Entity e = Bukkit.getEntity(b); if (e != null && alive.contains(b)) feet.add(e.getLocation()); }
+        for (Location l : feet) {
             // the blocks under the player's feet (their feet are 0.6 wide)
             for (double dx : new double[]{-0.3, 0.3}) for (double dz : new double[]{-0.3, 0.3}) {
                 Block top = world.getBlockAt((int) Math.floor(l.getX() + dx), (int) Math.floor(l.getY() - 0.1), (int) Math.floor(l.getZ() + dz));
@@ -75,5 +77,5 @@ public class TntRun extends Game {
         }, 8L);
     }
 
-    @Override protected void everySecond() { if (seconds >= 300) end(null); }
+    @Override protected void everySecond() { if (seconds >= 300) end((java.util.UUID) null); }
 }

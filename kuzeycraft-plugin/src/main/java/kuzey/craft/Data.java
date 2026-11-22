@@ -15,6 +15,7 @@ public class Data {
         public long parkourBest; // milliseconds, 0 = never finished
         public int gold, grade, escapes;
         public String kit = "none";
+        public String lastSpin = "";
         public Set<String> kits = new HashSet<>();
         public List<ItemStack> prisonInv = null;
     }
@@ -39,6 +40,7 @@ public class Data {
                 p.grade = y.getInt(k + ".grade");
                 p.escapes = y.getInt(k + ".escapes");
                 p.kit = y.getString(k + ".kit", "none");
+                p.lastSpin = y.getString(k + ".last-spin", "");
                 p.kits = new HashSet<>(y.getStringList(k + ".kits"));
                 List<?> inv = y.getList(k + ".prison-inv");
                 if (inv != null) {
@@ -74,6 +76,7 @@ public class Data {
             y.set(k + ".grade", p.grade);
             y.set(k + ".escapes", p.escapes);
             y.set(k + ".kit", p.kit);
+            y.set(k + ".last-spin", p.lastSpin);
             y.set(k + ".kits", new ArrayList<>(p.kits));
             if (p.prisonInv != null) y.set(k + ".prison-inv", p.prisonInv);
         }

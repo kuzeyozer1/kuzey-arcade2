@@ -2,7 +2,7 @@ name: KuzeyCraft
 version: '${version}'
 main: kuzey.craft.KuzeyCraft
 api-version: '1.21'
-description: A Lifeboat-style hub with SkyWars, Survival Games, Spleef, TNT Run, Parkour and Prison.
+description: A Lifeboat-style hub with SkyWars, Survival Games, Spleef, TNT Run, Parkour and Prison (A to Z).
 author: Kuzey
 commands:
   hub:
@@ -21,6 +21,13 @@ commands:
   gradeup:
     description: (Prison) Grade up if you have enough gold.
     aliases: [rankup]
+  spin:
+    description: Spin the daily prize wheel.
+    aliases: [wheel, daily]
+  bots:
+    description: Add pretend players. /bots <number> (0 removes them)
+    usage: /bots <number>
+    permission: kuzeycraft.admin
   kc:
     description: KuzeyCraft admin commands.
     usage: /kc help

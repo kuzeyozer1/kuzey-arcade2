@@ -77,6 +77,6 @@ public class SkyWars extends Game {
             tell("&e&lThe chests have been refilled!");
         }
         if (seconds == 600) tell("&c&lHurry up! The round ends in 1 minute.");
-        if (seconds >= 660) end(null);
+        if (seconds >= 660) end((java.util.UUID) null);
     }
 }

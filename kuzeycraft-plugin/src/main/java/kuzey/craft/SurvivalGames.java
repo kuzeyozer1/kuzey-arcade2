@@ -93,6 +93,6 @@ public class SurvivalGames extends Game {
             tell("&c&lThe border is shrinking! Go to the middle!");
         }
         if (seconds == wait + shrink) tell("&4&lDEATHMATCH! Last one standing wins!");
-        if (seconds >= wait + shrink + 120) end(null);
+        if (seconds >= wait + shrink + 120) end((java.util.UUID) null);
     }
 }
