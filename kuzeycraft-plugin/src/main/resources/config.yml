@@ -1,0 +1,29 @@
+# KuzeyCraft settings. After changing this file, type /kc reload in the server.
+
+# The address your friends type to join. It is shown at the bottom of the scoreboard.
+# Change it to your playit.gg address (see the README), for example: kuzey.joinmc.link
+address: "your.address.here"
+
+# Server name shown at the top of the scoreboard.
+server-name: "KUZEYCRAFT"
+
+# Send everyone to the hub when they join the server.
+send-to-hub-on-join: true
+
+# Players needed before a game starts by itself (an admin can always use /kc start <game>).
+min-players: 2
+
+# Seconds to wait once enough players are in the queue.
+countdown: 20
+
+# Coins you get.
+coins:
+  win: 50
+  kill: 10
+  play: 5
+  parkour-first: 100
+  parkour-again: 20
+
+# Survival Games: seconds before the border starts to shrink, and how long it takes.
+sg-border-wait: 60
+sg-border-shrink: 240

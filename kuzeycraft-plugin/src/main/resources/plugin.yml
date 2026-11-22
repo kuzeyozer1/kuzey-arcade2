@@ -1,0 +1,31 @@
+name: KuzeyCraft
+version: '${version}'
+main: kuzey.craft.KuzeyCraft
+api-version: '1.21'
+description: A Lifeboat-style hub with SkyWars, Survival Games, Spleef, TNT Run, Parkour and Prison.
+author: Kuzey
+commands:
+  hub:
+    description: Go back to the hub.
+    aliases: [lobby, l]
+  play:
+    description: Join a game. /play skywars|sg|spleef|tntrun|parkour|prison
+    usage: /play <game>
+  leave:
+    description: Leave your game and go back to the hub.
+  stats:
+    description: See your coins, wins and kills.
+    aliases: [coins]
+  sell:
+    description: (Prison) Sell your blocks for gold.
+  gradeup:
+    description: (Prison) Grade up if you have enough gold.
+    aliases: [rankup]
+  kc:
+    description: KuzeyCraft admin commands.
+    usage: /kc help
+    permission: kuzeycraft.admin
+permissions:
+  kuzeycraft.admin:
+    description: Use /kc admin commands and build in the hub.
+    default: op

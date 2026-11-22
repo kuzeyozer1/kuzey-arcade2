@@ -1,0 +1,54 @@
+# Builds the KuzeyCraft Minecraft plugin every time its code changes,
+# runs the tests, and puts the newest KuzeyCraft.jar on the Releases page.
+# (This only BUILDS the plugin. The Minecraft server itself runs on your own computer.)
+name: Build KuzeyCraft plugin
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'kuzeycraft-plugin/**'
+      - '.github/workflows/kuzeycraft.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: kuzeycraft-plugin
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.14.3'
+
+      - name: Build and test
+        run: gradle build --no-daemon
+
+      - name: Keep the jar with this run
+        uses: actions/upload-artifact@v4
+        with:
+          name: KuzeyCraft
+          path: kuzeycraft-plugin/build/libs/KuzeyCraft.jar
+
+      - name: Put the newest jar on the Releases page
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: kuzeycraft-latest
+          name: KuzeyCraft plugin (newest)
+          body: |
+            The newest KuzeyCraft plugin, built automatically from the code in kuzeycraft-plugin/.
+            Download KuzeyCraft.jar below and put it in your Paper server's plugins folder.
+            Needs Paper 1.21.1 (or a newer 1.21 version) and Java 21.
+          files: kuzeycraft-plugin/build/libs/KuzeyCraft.jar
+          make_latest: true
