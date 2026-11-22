@@ -58,15 +58,61 @@ They can use your computer's local address, like `192.168.1.20`. On Windows, typ
 Forward **TCP port 25565** on the router to the server computer, then share the public IP from a "what is my IP" website.
 This shows your home's internet address to everyone who joins, and it can change, so **playit.gg is better**.
 
-## 4. Let iPad, phone and Xbox players join too
+## 4. Let iPad, phone and Xbox players join too (Bedrock + Java)
 
-Bedrock players (like on an iPad) can't join a Java server by themselves. Add these two free plugins from **geysermc.org/download**:
-**Geyser-Spigot** and **Floodgate**. Then:
+Bedrock players (like on an iPad) can't join a Java server by themselves. Two free plugins fix that:
 
-- With playit.gg, add a second tunnel: **Minecraft Bedrock**, local port **19132**.
-- On the iPad, go to **Play**, then **Servers**, then **Add Server**. Type the Bedrock address and port that playit gives you.
+| Plugin | What it does |
+|---|---|
+| **Geyser** | Translates Bedrock into Java, so Bedrock players can connect |
+| **Floodgate** | Lets Bedrock players join without a Java account |
 
-## 5. Building the plugin yourself
+1. Go to **geysermc.org/download**. Download **Geyser** and **Floodgate** for **Spigot/Paper**.
+2. Put both `.jar` files in the `plugins` folder, next to KuzeyCraft.jar, and restart the server.
+3. Open `plugins/Geyser-Spigot/config.yml` and check that it says `port: 19132` under `bedrock:`. That's usually already set. Geyser finds Floodgate by itself.
+4. Your server now has two "doors":
+
+   | Who | Port | playit.gg tunnel |
+   |---|---|---|
+   | Java players (PC) | **25565** | Minecraft Java |
+   | Bedrock players (iPad, phone, Xbox) | **19132** | Minecraft Bedrock |
+
+   In playit.gg, add **both** tunnels. The Bedrock tunnel gives you an address **and** a port number. Write both down.
+5. **Joining on iPad:** go to **Play**, then **Servers**, then scroll down to **Add Server**. Type the Bedrock address and port from playit.
+   On the same Wi-Fi, you can use the computer's local address (like `192.168.1.20`) with port **19132** instead.
+
+Good to know:
+- Bedrock players' names get a dot in front, like `.Kuzey`.
+- The KuzeyCraft menus, gold plates, games and scoreboard all work for Bedrock players too.
+- Geyser lets the newest Bedrock version join, so you don't need to match versions.
+
+## 5. Staying safe
+
+The plugins are safe **if you download them from the real websites**. The bigger risk is strangers joining.
+
+**Only download from the official sites:**
+- **papermc.io** (the server)
+- **geysermc.org** (Geyser and Floodgate)
+- **playit.gg** (the address)
+
+Never use "free", "cracked" or "modded" downloads from YouTube links or random websites, because they can have viruses.
+
+**Lock your server so only friends can join.** Type these in the server console:
+```
+whitelist on
+whitelist add FriendName
+fwhitelist add BedrockFriendName
+```
+`fwhitelist` is the Floodgate command for iPad, phone and Xbox friends.
+
+**More good habits:**
+- Only share the address with friends you know in real life. Don't post it online.
+- Only make yourself admin (`op`). Don't give it to anyone else.
+- Keep `online-mode=true` in `server.properties` (it's on by default).
+- Back up your server folder now and then, so you can fix anything that gets broken.
+- **Set it up with a grown-up**, especially the playit.gg account and installing programs.
+
+## 6. Building the plugin yourself
 
 Every change to `kuzeycraft-plugin/` is built and tested automatically by GitHub Actions (see `.github/workflows/kuzeycraft.yml`), and the newest `KuzeyCraft.jar` goes to the Releases page.
 To build it on a computer: install Java 21 and Gradle, then run `gradle build` in this folder. The jar is put in `build/libs/`.
